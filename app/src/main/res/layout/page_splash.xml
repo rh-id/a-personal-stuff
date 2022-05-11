@@ -12,6 +12,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/ic_coffee_black" />
+        app:srcCompat="@drawable/ic_splash_white" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
