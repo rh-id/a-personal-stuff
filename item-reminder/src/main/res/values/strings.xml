@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Item reminder</string>
+    <string name="notification_description_item_reminder">Item reminder notification channel</string>
+    <string name="save">Save</string>
+    <string name="form_reminder_date_time">Reminder date time</string>
+    <string name="form_message">Message</string>
+    <string name="reminder_date_time_is_required">Reminder date time is required</string>
+    <string name="message_is_required">Message is required</string>
+    <string name="title_add_item_reminder">Add Item Reminder</string>
+    <string name="success_add_item_reminder">Item reminder added</string>
+    <string name="title_reminders">Reminders</string>
+    <string name="title_add">Add</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Delete %s ?</string>
+    <string name="success_delete_item_reminder">Item reminder deleted</string>
+</resources>

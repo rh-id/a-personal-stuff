@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="barcode_route_scan_barcode_page">barcode/scanBarcodePage</string>
+    <string name="unable_to_access_camera">Unable to access camera</string>
+</resources>

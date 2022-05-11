@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">Amount cannot be 0</string>
+    <string name="description_is_required">Description is required</string>
+    <string name="amount_">Amount: %d</string>
+    <string name="description_">Description: %s</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
+    <string name="success_delete_item_usage">Item usage deleted</string>
+    <string name="title_usages">Usages</string>
+    <string name="title_update_item_usage">Update Item Usage</string>
+    <string name="title_add_item_usage">Add Item Usage</string>
+    <string name="success_add_item_usage_image">Item usage image added</string>
+    <string name="success_delete_item_usage_image">item usage image deleted</string>
+    <string name="success_add_item_usage">Item usage added</string>
+    <string name="title_add">Add</string>
+    <string name="save">Save</string>
+    <string name="hint_type_to_search">Type to search</string>
+    <string name="form_amount">Amount</string>
+    <string name="form_description">Description</string>
+</resources>
