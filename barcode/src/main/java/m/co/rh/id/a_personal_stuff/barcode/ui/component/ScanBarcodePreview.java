@@ -148,7 +148,6 @@ public class ScanBarcodePreview extends SurfaceView implements SurfaceHolder.Cal
         long currentTimeMillis = System.currentTimeMillis();
         long previousTimeMillis = mLastProcessedPreview;
         long differenceMilis = (currentTimeMillis - previousTimeMillis);
-        mLogger.v(TAG, "onPreviewFrame differenceMilis:" + differenceMilis);
         // capture every 16 milisecs (more or less 60fps) to avoid out of memory error
         if (differenceMilis >= 16) {
             int width = mPreviewWidth;
@@ -212,6 +211,6 @@ public class ScanBarcodePreview extends SurfaceView implements SurfaceHolder.Cal
     }
 
     public Flowable<Result> getBarcodeResultFlow() {
-        return Flowable.fromObservable(mBarcodeResultSubject, BackpressureStrategy.MISSING);
+        return Flowable.fromObservable(mBarcodeResultSubject, BackpressureStrategy.BUFFER);
     }
 }
