@@ -211,6 +211,6 @@ public class ScanBarcodePreview extends SurfaceView implements SurfaceHolder.Cal
     }
 
     public Flowable<Result> getBarcodeResultFlow() {
-        return Flowable.fromObservable(mBarcodeResultSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mBarcodeResultSubject, BackpressureStrategy.LATEST);
     }
 }
