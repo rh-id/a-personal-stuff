@@ -1,0 +1,14 @@
+App used to track, manage and remind you of your own stuff.
+Sometimes we forgot where to put something somewhere or forgot when something is going to expire.
+it could be your cooked food that have short expiry or maybe raw meat or chicken that people forgot to cook or even dispose them from refrigerator, or could be anything with expiry or need action that you store somewhere and forgot about it.
+Having calendar events to all of these doesn't really solve problems, because it can be a lot of things to put in and you do not want to mix important events with your raw meat expiration events.
+Having todo list app or notes also not much helpful since it was meant to be as generic as possible.
+  similar to like warehouse logistics system but more to personal.
+
+Features of this app:
+<ul>
+  <li>Allow user to manage item easily</li>
+  <li>Setup notification to remind you of something</li>
+  <li>Allow user to manage the amount and reminder of the items to keep track of the item.</li>
+  <li>Support barcode scan as input & search</li>
+</ul>
