@@ -20,14 +20,14 @@ public class QueryItemCmd {
         mItemDao = provider.get(ItemDao.class);
     }
 
-    public Single<List<ItemState>> findItemStateByIds(List<Long> itemIds) {
+    public Single<List<ItemState>> findItemStateByItemIds(List<Long> itemIds) {
         return Single.fromFuture(mExecutorService.submit(() ->
                 mItemDao.findItemStatesByIds(itemIds)));
     }
 
     public Single<ItemState> findItemStateByItemId(long itemId) {
         return Single.fromFuture(mExecutorService.submit(() ->
-                findItemStateByIds(Collections.singletonList(itemId)).blockingGet()
+                findItemStateByItemIds(Collections.singletonList(itemId)).blockingGet()
                         .get(0)));
     }
 

@@ -3,9 +3,11 @@ package m.co.rh.id.a_personal_stuff.app.provider.command;
 import android.content.Context;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -113,11 +115,15 @@ public class PagedItemCmd {
     }
 
     private void load() {
+        executeLoad(this::loadItems);
+    }
+
+    private void executeLoad(Callable<ArrayList<ItemState>> callable) {
         mExecutorService.execute(() -> {
             mIsLoadingSubject.onNext(true);
             try {
                 mItemStatesSubject.onNext(
-                        loadItems());
+                        callable.call());
             } catch (Throwable throwable) {
                 mItemStatesSubject.onError(throwable);
             } finally {
@@ -146,4 +152,9 @@ public class PagedItemCmd {
         mLimit = 30;
     }
 
+    public void refreshWithItemId(long itemId) {
+        executeLoad(() -> new ArrayList<>(
+                mItemDao.findItemStatesByIds(Collections.singletonList(itemId))
+        ));
+    }
 }

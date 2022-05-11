@@ -8,7 +8,13 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import java.util.concurrent.ExecutorService;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -38,7 +44,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     // component
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
+    private transient AppNotificationHandler mAppNotificationHandler;
     private transient RxDisposer mRxDisposer;
+    private transient QueryItemCmd mQueryItemCmd;
 
     // View related
     private transient DrawerLayout mDrawerLayout;
@@ -51,7 +60,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
+        mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
@@ -85,6 +97,23 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addItemReminderButton.setOnClickListener(this);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
+        mRxDisposer.add("createView_onNotificationEvent",
+                mAppNotificationHandler.getItemReminderFlow()
+                        .map(itemReminder -> mQueryItemCmd
+                                .findItemStateByItemId(itemReminder.itemId)
+                                .blockingGet())
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> {
+                            NavRoute currentRoute = mNavigator.getCurrentRoute();
+                            if (Routes.ITEMS_PAGE.equals(currentRoute.getRouteName())) {
+                                mNavigator.push(Routes.ITEM_DETAIL_PAGE,
+                                        ItemDetailPage.Args.forUpdate(itemState));
+                            } else {
+                                mNavigator.push(Routes.ITEMS_PAGE,
+                                        ItemsPage.Args.showItem(itemState.getItemId()));
+                            }
+                        }));
         return rootLayout;
     }
 

@@ -16,6 +16,7 @@
             android:name=".app.MainActivity"
             android:configChanges="uiMode|locale|layoutDirection|orientation|screenSize|screenLayout|density|colorMode|fontScale|fontWeightAdjustment|keyboard|keyboardHidden|smallestScreenSize"
             android:exported="true"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.Apersonalstuff.NoActionBar"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -44,6 +45,7 @@
                 android:value="androidx.startup"
                 tools:node="remove" />
         </provider>
+
         <receiver android:name=".app.receiver.NotificationDeleteReceiver" />
     </application>
 

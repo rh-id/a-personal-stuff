@@ -67,8 +67,9 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient TextWatcher mSearchTextWatcher;
     private transient RecyclerView.OnScrollListener mItemsOnScrollListener;
 
-    private SerialBehaviorSubject<String> mSearchString;
     private boolean mSelectMode;
+    private SerialBehaviorSubject<String> mSearchString;
+    private SerialBehaviorSubject<Long> mShowItemId;
 
     public ItemListSV() {
         this(false);
@@ -77,6 +78,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     public ItemListSV(boolean selectMode) {
         mSelectMode = selectMode;
         mSearchString = new SerialBehaviorSubject<>();
+        mShowItemId = new SerialBehaviorSubject<>();
     }
 
     @Override
@@ -135,6 +137,11 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
         recyclerView.setAdapter(mItemRecyclerViewAdapter);
         recyclerView.addOnScrollListener(mItemsOnScrollListener);
+        mRxDisposer.add("createView_onShowItemId",
+                mShowItemId.getSubject()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(itemId -> mPagedItemCmd.refreshWithItemId(itemId))
+        );
         mRxDisposer.add("createView_onSearch",
                 mSearchString.getSubject().debounce(700, TimeUnit.MILLISECONDS)
                         .observeOn(Schedulers.from(mExecutorService))
@@ -194,7 +201,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                                         updatedItemIds.add(itemId);
                                     }
                                 }
-                                updatedItemState = mQueryItemCmd.findItemStateByIds(updatedItemIds)
+                                updatedItemState = mQueryItemCmd.findItemStateByItemIds(updatedItemIds)
                                         .blockingGet();
                             }
                             return updatedItemState;
@@ -210,7 +217,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                         }));
         mRxDisposer.add("createView_onItemImagesAdded",
                 mItemChangeNotifier.getAddedItemImageFlow()
-                        .map(itemImage -> mQueryItemCmd.findItemStateByIds(
+                        .map(itemImage -> mQueryItemCmd.findItemStateByItemIds(
                                         Collections.singletonList(itemImage.itemId))
                                 .blockingGet().get(0))
                         .subscribeOn(Schedulers.from(mExecutorService))
@@ -245,6 +252,10 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mNavigator.push(mNavExtDialogConfig.route_confirmDialog(),
                 mNavExtDialogConfig.args_confirmDialog(title, message),
                 (navigator, navRoute, activity, currentView) -> confirmDeleteItem(navRoute, itemState));
+    }
+
+    public void showItemId(long itemId) {
+        mShowItemId.onNext(itemId);
     }
 
     private void confirmDeleteItem(NavRoute navRoute, ItemState itemState) {

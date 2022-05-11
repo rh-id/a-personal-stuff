@@ -14,6 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_personal_stuff.base.BaseApplication;
 import m.co.rh.id.a_personal_stuff.base.R;
 import m.co.rh.id.a_personal_stuff.base.provider.RxProviderModule;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
     private Provider mProvider;
     private RxDisposer mRxDisposer;
     private SettingsSharedPreferences mSettingsSharedPreferences;
+    private AppNotificationHandler mAppNotificationHandler;
     private BehaviorSubject<Boolean> mRebuildUi;
 
     @Override
@@ -34,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
         mRxDisposer = mProvider.get(RxDisposer.class);
         mSettingsSharedPreferences = BaseApplication.of(this).getProvider()
                 .get(SettingsSharedPreferences.class);
+        mAppNotificationHandler = BaseApplication.of(this).getProvider()
+                .get(AppNotificationHandler.class);
         mRebuildUi = BehaviorSubject.create();
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
         mRxDisposer
@@ -60,12 +64,14 @@ public class MainActivity extends AppCompatActivity {
                                 .getNavigator(MainActivity.this).onBackPressed();
                     }
                 });
+        mAppNotificationHandler.processNotification(getIntent());
         super.onCreate(savedInstanceState);
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        mAppNotificationHandler.processNotification(intent);
     }
 
     @Override
