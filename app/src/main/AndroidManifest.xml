@@ -3,6 +3,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="m.co.rh.id.a_personal_stuff">
 
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
+
     <application
         android:name=".app.MainApplication"
         android:allowBackup="true"
