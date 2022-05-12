@@ -97,4 +97,8 @@ public class ItemUsageState implements Serializable, Cloneable {
     public String getItemUsageDescription() {
         return getItemUsage().description;
     }
+
+    public Long getItemId() {
+        return getItemUsage().itemId;
+    }
 }

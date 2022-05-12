@@ -36,6 +36,7 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -59,6 +60,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient NavBarcodeConfig mNavBarcodeConfig;
     private transient RxDisposer mRxDisposer;
     private transient ItemChangeNotifier mItemChangeNotifier;
+    private transient ItemUsageChangeNotifier mItemUsageChangeNotifier;
     private transient PagedItemCmd mPagedItemCmd;
     private transient DeleteItemCmd mDeleteItemCmd;
     private transient QueryItemCmd mQueryItemCmd;
@@ -90,6 +92,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mNavBarcodeConfig = mSvProvider.get(NavBarcodeConfig.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mItemChangeNotifier = mSvProvider.get(ItemChangeNotifier.class);
+        mItemUsageChangeNotifier = mSvProvider.get(ItemUsageChangeNotifier.class);
         mPagedItemCmd = mSvProvider.get(PagedItemCmd.class);
         mPagedItemCmd.refresh();
         mDeleteItemCmd = mSvProvider.get(DeleteItemCmd.class);
@@ -223,6 +226,30 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemRecyclerViewAdapter::notifyItemUpdated));
+        mRxDisposer.add("createView_onItemUsageAdded",
+                mItemUsageChangeNotifier.getAddedItemUsageFlow()
+                        .map(itemUsageState -> mQueryItemCmd
+                                .findItemStateByItemId(itemUsageState.getItemId())
+                                .blockingGet())
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> mItemRecyclerViewAdapter.notifyItemUpdated(itemState)));
+        mRxDisposer.add("createView_onItemUsageUpdated",
+                mItemUsageChangeNotifier.getUpdatedItemUsageFlow()
+                        .map(itemUsageState -> mQueryItemCmd
+                                .findItemStateByItemId(itemUsageState.getItemId())
+                                .blockingGet())
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> mItemRecyclerViewAdapter.notifyItemUpdated(itemState)));
+        mRxDisposer.add("createView_onItemUsageDeleted",
+                mItemUsageChangeNotifier.getDeletedItemUsageFlow()
+                        .map(itemUsageState -> mQueryItemCmd
+                                .findItemStateByItemId(itemUsageState.getItemId())
+                                .blockingGet())
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> mItemRecyclerViewAdapter.notifyItemUpdated(itemState)));
         return rootLayout;
     }
 

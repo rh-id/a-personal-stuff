@@ -20,10 +20,14 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
+import co.rh.id.lib.rx3_utils.subject.SerialOptionalBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
@@ -32,6 +36,8 @@ import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemRemindersPage;
+import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.command.QueryItemUsageCmd;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsagesPage;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -45,9 +51,12 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
+    private transient ExecutorService mExecutorService;
     private transient RxDisposer mRxDisposer;
+    private transient QueryItemUsageCmd mQueryItemUsageCmd;
 
     private final SerialBehaviorSubject<ItemState> mItemState;
+    private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
     private final DateFormat mDateFormat;
 
     private transient OnItemEditClicked mOnItemEditClicked;
@@ -55,13 +64,16 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     public ItemItemSV() {
         mItemState = new SerialBehaviorSubject<>();
+        mUsageCount = new SerialOptionalBehaviorSubject<>();
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
+        mExecutorService = mSvProvider.get(ExecutorService.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
     }
 
     @Override
@@ -78,6 +90,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         deleteButton.setOnClickListener(this);
         Button moreActionButton = rootLayout.findViewById(R.id.button_more_action);
         moreActionButton.setOnClickListener(this);
+        Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
+        usageCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
         mRxDisposer.add("createView_onItemStateChanged",
                 mItemState.getSubject().observeOn(AndroidSchedulers.mainThread())
@@ -144,6 +158,30 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                                 tagDisplayContainer.setVisibility(View.GONE);
                             }
                         }));
+        mRxDisposer.add("createView_onItemStateChanged_updateUsageCount",
+                mItemState.getSubject().observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(itemState -> {
+                            List<ItemUsage> itemUsages = mQueryItemUsageCmd.findItemUsageByItemId(itemState.getItemId()).blockingGet();
+                            if (itemUsages != null && !itemUsages.isEmpty()) {
+                                int count = itemState.getItemAmount();
+                                for (ItemUsage itemUsage : itemUsages) {
+                                    count -= itemUsage.amount;
+                                }
+                                mUsageCount.onNext(count);
+                            } else {
+                                mUsageCount.onNext(null);
+                            }
+                        }));
+        mRxDisposer.add("createView_onUsageCountChanged", mUsageCount.getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(optLong -> {
+                    if (optLong.isPresent()) {
+                        usageCountButton.setText(optLong.get().toString());
+                        usageCountButton.setVisibility(View.VISIBLE);
+                    } else {
+                        usageCountButton.setVisibility(View.GONE);
+                    }
+                }));
         return rootLayout;
     }
 
@@ -172,6 +210,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             popup.getMenuInflater().inflate(R.menu.item_item_more_action, popup.getMenu());
             popup.setOnMenuItemClickListener(this);
             popup.show();
+        } else if (id == R.id.button_usage_count) {
+            Long itemId = mItemState.getValue().getItemId();
+            mNavigator.push(Routes.ITEM_USAGES_PAGE,
+                    ItemUsagesPage.Args.with(itemId));
         }
     }
 

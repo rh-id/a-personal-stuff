@@ -144,5 +144,5 @@ public abstract class ItemUsageDao {
     }
 
     @Query("SELECT * FROM item_usage WHERE item_id = :itemId")
-    protected abstract List<ItemUsage> findItemUsageByItemId(long itemId);
+    public abstract List<ItemUsage> findItemUsageByItemId(long itemId);
 }
