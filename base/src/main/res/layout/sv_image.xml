@@ -72,6 +72,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:minHeight="100dp"
+            android:maxHeight="100dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/button_next_image"
             app:layout_constraintStart_toEndOf="@id/button_prev_image"
