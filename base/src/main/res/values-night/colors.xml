@@ -3,4 +3,5 @@
     <color name="daynight_white_black">@color/black</color>
     <color name="daynight_gray_700_white">@color/white</color>
     <color name="daynight_black_white">@color/white</color>
+    <color name="daynight_light_green_600_green_600">@color/green_600</color>
 </resources>

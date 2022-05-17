@@ -11,4 +11,5 @@
     <color name="daynight_white_black">@color/white</color>
     <color name="daynight_gray_700_white">@color/gray_700</color>
     <color name="daynight_black_white">@color/black</color>
+    <color name="daynight_light_green_600_green_600">@color/light_green_600</color>
 </resources>

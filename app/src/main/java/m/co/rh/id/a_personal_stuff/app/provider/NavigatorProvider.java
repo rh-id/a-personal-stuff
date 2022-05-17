@@ -1,14 +1,18 @@
 package m.co.rh.id.a_personal_stuff.app.provider;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Handler;
+import android.view.LayoutInflater;
 
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.MainActivity;
 import m.co.rh.id.a_personal_stuff.app.ui.page.DonationsPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemDetailPage;
@@ -55,6 +59,7 @@ public class NavigatorProvider implements ProviderDisposable {
         return mActivityNavigatorMap.get(activity.getClass());
     }
 
+    @SuppressLint("InflateParams")
     @SuppressWarnings("unchecked")
     private Navigator setupMainActivityNavigator() {
         Map<String, StatefulViewFactory> navMap = new HashMap<>();
@@ -83,6 +88,9 @@ public class NavigatorProvider implements ProviderDisposable {
         navBuilder.setSaveStateFile(new File(mApplication.getCacheDir(),
                 "anavigator/MainActivity.state"));
         navBuilder.setRequiredComponent(mProvider);
+        navBuilder.setMainHandler(mProvider.get(Handler.class));
+        navBuilder.setLoadingView(LayoutInflater.from(mProvider.getContext())
+                .inflate(R.layout.page_splash, null));
         NavConfiguration<Activity, StatefulView> navConfiguration = navBuilder.build();
         Navigator navigator = new Navigator(MainActivity.class, navConfiguration);
         mActivityNavigatorMap.put(MainActivity.class, navigator);
