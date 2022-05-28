@@ -34,9 +34,4 @@ public class ItemMaintenanceDatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemMaintenanceDao.class, () -> provider.get(ItemMaintenanceDatabase.class)
                 .itemMaintenanceDao());
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

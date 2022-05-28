@@ -15,9 +15,4 @@ public class ItemUsageProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemUsageFileHelper.class, () -> new ItemUsageFileHelper(provider));
         providerRegistry.registerAsync(ItemUsageEventHandler.class, () -> new ItemUsageEventHandler(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

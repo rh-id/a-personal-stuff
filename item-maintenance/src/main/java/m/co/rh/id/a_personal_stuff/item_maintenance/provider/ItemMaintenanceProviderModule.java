@@ -16,9 +16,4 @@ public class ItemMaintenanceProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemMaintenanceFileHelper.class, () -> new ItemMaintenanceFileHelper(provider));
         providerRegistry.registerAsync(ItemMaintenanceEventHandler.class, () -> new ItemMaintenanceEventHandler(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

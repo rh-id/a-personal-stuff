@@ -23,9 +23,4 @@ public class ItemUsageCmdProviderModule implements ProviderModule {
         providerRegistry.registerLazy(QueryItemUsageCmd.class, () -> new QueryItemUsageCmd(provider));
         providerRegistry.registerLazy(DeleteItemUsageImageCmd.class, () -> new DeleteItemUsageImageCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

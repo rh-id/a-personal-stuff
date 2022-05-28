@@ -10,9 +10,4 @@ public class BarcodeProviderModule implements ProviderModule {
     public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerLazy(NavBarcodeConfig.class, () -> new NavBarcodeConfig(provider.getContext()));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

@@ -14,9 +14,4 @@ public class ItemReminderProviderModule implements ProviderModule {
                 () -> new ItemReminderEventHandler(provider));
         providerRegistry.registerLazy(ItemReminderChangeNotifier.class, ItemReminderChangeNotifier::new);
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

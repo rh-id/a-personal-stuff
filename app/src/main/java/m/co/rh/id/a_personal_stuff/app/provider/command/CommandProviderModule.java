@@ -23,9 +23,4 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerModule(new ItemMaintenanceCmdProviderModule());
         providerRegistry.registerModule(new ItemReminderCmdProviderModule());
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // leave blank
-    }
 }

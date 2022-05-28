@@ -10,9 +10,4 @@ public class SettingsProviderModule implements ProviderModule {
     public void provides(ProviderRegistry providerRegistry, Provider provider) {
         providerRegistry.registerAsync(SettingsSharedPreferences.class, () -> new SettingsSharedPreferences(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

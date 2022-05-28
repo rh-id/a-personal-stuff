@@ -17,9 +17,4 @@ public class ItemReminderCmdProviderModule implements ProviderModule {
         providerRegistry.registerLazy(QueryItemReminderCmd.class, () -> new QueryItemReminderCmd(provider));
         providerRegistry.registerLazy(PagedItemReminderCmd.class, () -> new PagedItemReminderCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

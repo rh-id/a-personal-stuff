@@ -34,9 +34,4 @@ public class ItemReminderDatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemReminderDao.class, () -> provider.get(ItemReminderDatabase.class)
                 .itemReminderDao());
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

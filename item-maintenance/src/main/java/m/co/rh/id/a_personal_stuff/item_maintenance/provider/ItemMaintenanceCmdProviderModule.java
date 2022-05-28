@@ -22,9 +22,4 @@ public class ItemMaintenanceCmdProviderModule implements ProviderModule {
         providerRegistry.registerLazy(PagedItemMaintenanceCmd.class, () -> new PagedItemMaintenanceCmd(provider));
         providerRegistry.registerLazy(QueryItemMaintenanceCmd.class, () -> new QueryItemMaintenanceCmd(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

@@ -34,9 +34,4 @@ public class ItemUsageDatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemUsageDao.class, () -> provider.get(ItemUsageDatabase.class)
                 .itemUsageDao());
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        // Leave blank
-    }
 }

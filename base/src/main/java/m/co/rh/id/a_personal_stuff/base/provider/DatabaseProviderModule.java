@@ -44,9 +44,4 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerLazy(AndroidNotificationRepo.class, () ->
                 new AndroidNotificationRepo(provider));
     }
-
-    @Override
-    public void dispose(Provider provider) {
-        mDbName = null;
-    }
 }
