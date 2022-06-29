@@ -42,6 +42,6 @@ public class AppProviderModule implements ProviderModule {
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here
-        providerRegistry.register(NavigatorProvider.class, new NavigatorProvider(mApplication, provider));
+        providerRegistry.register(NavigatorProvider.class, () -> new NavigatorProvider(mApplication, provider));
     }
 }

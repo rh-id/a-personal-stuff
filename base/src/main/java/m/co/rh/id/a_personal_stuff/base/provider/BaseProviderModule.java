@@ -40,9 +40,9 @@ public class BaseProviderModule implements ProviderModule {
     public void provides(ProviderRegistry providerRegistry, Provider provider) {
         Context appContext = provider.getContext().getApplicationContext();
         providerRegistry.registerModule(new DatabaseProviderModule());
-        providerRegistry.register(ExecutorService.class, getExecutorService());
-        providerRegistry.register(ScheduledExecutorService.class, Executors.newSingleThreadScheduledExecutor());
-        providerRegistry.register(Handler.class, new Handler(Looper.getMainLooper()));
+        providerRegistry.register(ExecutorService.class, this::getExecutorService);
+        providerRegistry.register(ScheduledExecutorService.class, Executors::newSingleThreadScheduledExecutor);
+        providerRegistry.register(Handler.class, () -> new Handler(Looper.getMainLooper()));
         providerRegistry.registerAsync(ILogger.class, () -> {
             ILogger defaultLogger = new AndroidLogger(ILogger.ERROR);
             List<ILogger> loggerList = new ArrayList<>();
@@ -71,8 +71,8 @@ public class BaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(WorkManager.class, () -> WorkManager.getInstance(appContext));
         providerRegistry.registerLazy(ItemChangeNotifier.class, ItemChangeNotifier::new);
 
-        providerRegistry.register(NavExtDialogConfig.class, new NavExtDialogConfig(appContext));
-        providerRegistry.register(FileHelper.class, new FileHelper(provider));
+        providerRegistry.register(NavExtDialogConfig.class, () -> new NavExtDialogConfig(appContext));
+        providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));
         providerRegistry.registerAsync(ItemFileHelper.class, () -> new ItemFileHelper(provider));
     }
 
