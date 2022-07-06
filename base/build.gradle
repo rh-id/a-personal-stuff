@@ -61,6 +61,7 @@ dependencies {
 
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.github.rh-id:concurrent-utils:v0.0.1'
+    implementation 'com.squareup.leakcanary:plumber-android:2.9.1'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'junit:junit:4.13.2'
