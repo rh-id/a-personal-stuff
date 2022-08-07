@@ -162,7 +162,7 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
     }
 
     @Override
-    public void onResume(Activity activity) {
+    public void onNavActivityResumed(Activity activity) {
         boolean canAccessCamera = canAccessCamera();
         if (!canAccessCamera && !checkCameraPermission()) {
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.CAMERA},
@@ -174,7 +174,7 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
     }
 
     @Override
-    public void onPause(Activity activity) {
+    public void onNavActivityPaused(Activity activity) {
         mCanAccessCamera.onNext(false);
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
