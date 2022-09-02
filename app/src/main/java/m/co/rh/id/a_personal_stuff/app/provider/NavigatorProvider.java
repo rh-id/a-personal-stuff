@@ -14,6 +14,7 @@ import java.util.Map;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.MainActivity;
 import m.co.rh.id.a_personal_stuff.app.ui.page.DonationsPage;
+import m.co.rh.id.a_personal_stuff.app.ui.page.HomePage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemDetailPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemSelectPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemsPage;
@@ -62,12 +63,8 @@ public class NavigatorProvider implements ProviderDisposable {
     @SuppressWarnings("unchecked")
     private Navigator setupMainActivityNavigator() {
         Map<String, StatefulViewFactory> navMap = new HashMap<>();
-        navMap.put(Routes.HOME_PAGE, (args, activity) -> {
-            if (args instanceof StatefulView) {
-                return (StatefulView) args;
-            }
-            return new SplashPage();
-        });
+        navMap.put(Routes.SPLASH_PAGE, (args, activity) -> new SplashPage(Routes.HOME_PAGE));
+        navMap.put(Routes.HOME_PAGE, (args, activity) -> new HomePage());
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.ITEMS_PAGE, (args, activity) -> new ItemsPage());
@@ -83,7 +80,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.putAll(mNavExtDialogConfig.getNavMap());
         navMap.putAll(mNavBarcodeConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =
-                new NavConfiguration.Builder(Routes.HOME_PAGE, navMap);
+                new NavConfiguration.Builder(Routes.SPLASH_PAGE, navMap);
         navBuilder.setRequiredComponent(mProvider);
         navBuilder.setMainHandler(mProvider.get(Handler.class));
         navBuilder.setLoadingView(LayoutInflater.from(mProvider.getContext())
