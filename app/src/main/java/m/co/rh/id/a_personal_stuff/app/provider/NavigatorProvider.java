@@ -7,7 +7,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.view.LayoutInflater;
 
-import java.util.HashMap;
+import androidx.collection.ArrayMap;
+
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -62,7 +63,7 @@ public class NavigatorProvider implements ProviderDisposable {
     @SuppressLint("InflateParams")
     @SuppressWarnings("unchecked")
     private Navigator setupMainActivityNavigator() {
-        Map<String, StatefulViewFactory> navMap = new HashMap<>();
+        Map<String, StatefulViewFactory> navMap = new ArrayMap<>();
         navMap.put(Routes.SPLASH_PAGE, (args, activity) -> new SplashPage(Routes.HOME_PAGE));
         navMap.put(Routes.HOME_PAGE, (args, activity) -> new HomePage());
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
