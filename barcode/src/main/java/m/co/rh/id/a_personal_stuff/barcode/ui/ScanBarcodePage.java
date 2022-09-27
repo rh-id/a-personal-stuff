@@ -30,13 +30,14 @@ import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavActivity;
 import m.co.rh.id.anavigator.component.NavActivityLifecycle;
 import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
 @SuppressWarnings("deprecation")
-class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator, NavActivityLifecycle<Activity>, NavOnRequestPermissionResult<Activity>, View.OnClickListener {
+class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator, NavActivityLifecycle<Activity>, NavOnRequestPermissionResult<Activity>, NavActivity.RequestOrientation, View.OnClickListener {
     private static final int REQUEST_CODE_PERMISSION_ACCESS_CAMERA = 1;
     private static final String TAG = ScanBarcodePage.class.getName();
 
@@ -53,7 +54,6 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
     @Override
     public void provideNavigator(INavigator navigator) {
         Activity activity = navigator.getActivity();
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
         Provider provider = BaseApplication.of(activity).getProvider();
         mNavigator = navigator;
         mSvProvider = provider.get(IStatefulViewProvider.class);
@@ -123,13 +123,17 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
     }
 
     @Override
+    public int getRequestedOrientation() {
+        return ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+    }
+
+    @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
         if (mScanBarcodePreview != null) {
             mScanBarcodePreview.dispose();
             mScanBarcodePreview = null;
         }
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Override
@@ -168,13 +172,11 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
         } else {
             mCanAccessCamera.onNext(canAccessCamera);
         }
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
     }
 
     @Override
     public void onNavActivityPaused(Activity activity) {
         mCanAccessCamera.onNext(false);
-        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED);
     }
 
     @Override
