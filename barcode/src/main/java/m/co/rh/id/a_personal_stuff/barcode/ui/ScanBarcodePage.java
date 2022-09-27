@@ -5,7 +5,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
-import android.content.res.Configuration;
 import android.hardware.Camera;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,13 +31,12 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavActivityLifecycle;
-import m.co.rh.id.anavigator.component.NavComponentCallback;
 import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 import m.co.rh.id.anavigator.component.RequireNavigator;
 import m.co.rh.id.aprovider.Provider;
 
 @SuppressWarnings("deprecation")
-class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator, NavActivityLifecycle<Activity>, NavOnRequestPermissionResult<Activity>, NavComponentCallback, View.OnClickListener {
+class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator, NavActivityLifecycle<Activity>, NavOnRequestPermissionResult<Activity>, View.OnClickListener {
     private static final int REQUEST_CODE_PERMISSION_ACCESS_CAMERA = 1;
     private static final String TAG = ScanBarcodePage.class.getName();
 
@@ -189,21 +187,6 @@ class ScanBarcodePage extends StatefulView<Activity> implements RequireNavigator
                         R.string.error_permission_denied));
             }
         }
-    }
-
-    @Override
-    public void onTrimMemory(int flag) {
-        // Leave blank
-    }
-
-    @Override
-    public void onConfigurationChanged(Configuration configuration) {
-        mNavigator.getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
-    }
-
-    @Override
-    public void onLowMemory() {
-        // Leave blank
     }
 
     static class Result implements Serializable {
