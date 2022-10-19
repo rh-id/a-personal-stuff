@@ -66,10 +66,8 @@ public class ItemState implements Serializable, Cloneable {
     }
 
     public void setItemPrice(BigDecimal price) {
-        if (price != null) {
-            Item item = getItem();
-            item.price = price;
-        }
+        Item item = getItem();
+        item.price = price;
     }
 
     public void setItemDescription(String s) {
