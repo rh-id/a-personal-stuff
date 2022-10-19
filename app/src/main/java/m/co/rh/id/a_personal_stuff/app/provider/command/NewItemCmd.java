@@ -37,7 +37,6 @@ public class NewItemCmd {
         if (itemState != null) {
             boolean nameValid = false;
             boolean amountValid = false;
-            boolean expiredDateTimeValid = false;
             String itemName = itemState.getItemName();
             int itemAmount = itemState.getItemAmount();
             if (itemName != null && !itemName.isEmpty()) {

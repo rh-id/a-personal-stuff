@@ -282,7 +282,6 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         inputExpiredDateTime.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
         AutoCompleteTextView tagText = rootLayout.findViewById(R.id.input_text_tag);
-        tagText.addTextChangedListener(mNameTextWatcher);
         tagText.setThreshold(1);
         tagText.setAdapter(new SuggestionAdapter
                 (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
