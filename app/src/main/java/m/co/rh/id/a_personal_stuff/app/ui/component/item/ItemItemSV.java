@@ -2,6 +2,7 @@ package m.co.rh.id.a_personal_stuff.app.ui.component.item;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.view.MenuItem;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.chip.Chip;
 
@@ -68,6 +70,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
     private final DateFormat mDateFormat;
     private transient BehaviorSubject<Optional<File>> mImageThumbnailFile;
+    private transient int mDefaultExpiredDateColor;
+    private transient BehaviorSubject<Integer> mExpiredDateColor;
 
     private transient OnItemEditClicked mOnItemEditClicked;
     private transient OnItemDeleteClicked mOnItemDeleteClicked;
@@ -86,6 +90,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
         mImageThumbnailFile = BehaviorSubject.create();
+        mDefaultExpiredDateColor = ContextCompat.getColor(provider.getContext(), m.co.rh.id.a_personal_stuff.base.R.color.light_green_600);
+        mExpiredDateColor = BehaviorSubject.createDefault(mDefaultExpiredDateColor);
     }
 
     @Override
@@ -107,6 +113,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
         usageCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
+        mRxDisposer.add("createView_onExpiredDateColorChanged",
+                mExpiredDateColor.observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(expireDateTimeText::setBackgroundColor)
+        );
         mRxDisposer.add("createView_onImageThumbnailFileChanged",
                 mImageThumbnailFile.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(file -> {
@@ -119,8 +129,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         })
         );
         mRxDisposer.add("createView_onItemStateChanged",
-                mItemState.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(itemState -> {
+                mItemState.getSubject()
+                        .doOnNext(itemState -> {
                             List<ItemImage> itemImages = itemState.getItemImages();
                             if (!itemImages.isEmpty()) {
                                 ItemImage itemImage = itemImages.get(itemImages.size() - 1);
@@ -129,6 +139,29 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                             } else {
                                 mImageThumbnailFile.onNext(Optional.empty());
                             }
+                            Date expiredDateTime = itemState.getItemExpiredDateTime();
+                            if (expiredDateTime != null) {
+                                Instant expiredInstant = expiredDateTime.toInstant();
+                                Instant now = Instant.now();
+                                Duration difference = Duration.between(now, expiredInstant);
+                                long days = difference.toDays();
+                                int colorInt = Color.RED;
+                                if (days > 1) {
+                                    if (days > 14) {
+                                        days = 14;
+                                    }
+                                    float ratio = (255 * ((float) days / 14));
+                                    int red = (int) (255 - ratio);
+                                    int green = Color.green(mDefaultExpiredDateColor);
+                                    int blue = Color.blue(mDefaultExpiredDateColor);
+                                    colorInt = Color.rgb(red, green, blue);
+                                }
+                                mExpiredDateColor.onNext(colorInt);
+                            }
+                        })
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> {
                             Date expiredDateTime = itemState.getItemExpiredDateTime();
                             if (expiredDateTime != null) {
                                 Context context = expireDateTimeText.getContext();
