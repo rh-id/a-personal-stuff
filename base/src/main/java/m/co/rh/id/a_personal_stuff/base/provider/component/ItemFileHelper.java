@@ -112,6 +112,10 @@ public class ItemFileHelper {
         }
     }
 
+    public File getItemImageThumbnail(String fileName) {
+        return new File(mItemImageThumbnailParent, fileName);
+    }
+
     public File getItemImageParent() {
         return mItemImageParent;
     }

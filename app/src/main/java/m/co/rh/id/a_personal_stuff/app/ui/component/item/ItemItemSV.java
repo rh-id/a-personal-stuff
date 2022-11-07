@@ -2,16 +2,19 @@ package m.co.rh.id.a_personal_stuff.app.ui.component.item;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
 
 import com.google.android.material.chip.Chip;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.NumberFormat;
@@ -22,18 +25,23 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import co.rh.id.lib.rx3_utils.subject.SerialOptionalBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
+import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemRemindersPage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
@@ -52,12 +60,14 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     private transient Provider mSvProvider;
     private transient ExecutorService mExecutorService;
+    private transient ItemFileHelper mItemFileHelper;
     private transient RxDisposer mRxDisposer;
     private transient QueryItemUsageCmd mQueryItemUsageCmd;
 
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
     private final DateFormat mDateFormat;
+    private transient BehaviorSubject<Optional<File>> mImageThumbnailFile;
 
     private transient OnItemEditClicked mOnItemEditClicked;
     private transient OnItemDeleteClicked mOnItemDeleteClicked;
@@ -72,13 +82,17 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mExecutorService = mSvProvider.get(ExecutorService.class);
+        mItemFileHelper = mSvProvider.get(ItemFileHelper.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
+        mImageThumbnailFile = BehaviorSubject.create();
     }
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_item, container, false);
+        ImageView imageViewThumbnail = rootLayout.findViewById(R.id.imageView_thumbnail);
+        imageViewThumbnail.setOnClickListener(this);
         TextView expireDateTimeText = rootLayout.findViewById(R.id.text_expired_date_time);
         TextView nameText = rootLayout.findViewById(R.id.text_name);
         TextView amountText = rootLayout.findViewById(R.id.text_amount);
@@ -93,9 +107,28 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
         usageCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
+        mRxDisposer.add("createView_onImageThumbnailFileChanged",
+                mImageThumbnailFile.observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(file -> {
+                            if (file.isPresent()) {
+                                imageViewThumbnail.setImageURI(Uri.fromFile(file.get()));
+                                imageViewThumbnail.setVisibility(View.VISIBLE);
+                            } else {
+                                imageViewThumbnail.setVisibility(View.GONE);
+                            }
+                        })
+        );
         mRxDisposer.add("createView_onItemStateChanged",
                 mItemState.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemState -> {
+                            List<ItemImage> itemImages = itemState.getItemImages();
+                            if (!itemImages.isEmpty()) {
+                                ItemImage itemImage = itemImages.get(itemImages.size() - 1);
+                                File file = mItemFileHelper.getItemImageThumbnail(itemImage.fileName);
+                                mImageThumbnailFile.onNext(Optional.of(file));
+                            } else {
+                                mImageThumbnailFile.onNext(Optional.empty());
+                            }
                             Date expiredDateTime = itemState.getItemExpiredDateTime();
                             if (expiredDateTime != null) {
                                 Context context = expireDateTimeText.getContext();
@@ -197,7 +230,11 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_edit) {
+        if (id == R.id.imageView_thumbnail) {
+            mImageThumbnailFile.getValue().
+                    ifPresent(value -> mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                            ImageViewPage.Args.withFile(value)));
+        } else if (id == R.id.button_edit) {
             if (mOnItemEditClicked != null) {
                 mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());
             }
