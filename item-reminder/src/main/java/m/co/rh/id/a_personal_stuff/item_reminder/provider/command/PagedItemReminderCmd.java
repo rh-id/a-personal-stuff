@@ -74,7 +74,7 @@ public class PagedItemReminderCmd {
     }
 
     private void resetPage() {
-        mLimit = 30;
+        mLimit = 100;
     }
 
     public void setItemId(long itemId) {

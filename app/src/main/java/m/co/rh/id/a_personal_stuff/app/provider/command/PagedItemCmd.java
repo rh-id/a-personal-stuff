@@ -149,7 +149,7 @@ public class PagedItemCmd {
     }
 
     private void resetPage() {
-        mLimit = 30;
+        mLimit = 100;
     }
 
     public void refreshWithItemId(long itemId) {
