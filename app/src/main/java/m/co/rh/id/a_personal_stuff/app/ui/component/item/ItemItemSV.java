@@ -69,7 +69,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
     private final DateFormat mDateFormat;
-    private transient BehaviorSubject<Optional<File>> mImageThumbnailFile;
+    private transient BehaviorSubject<Optional<ItemImage>> mItemImageDisplay;
     private transient int mDefaultExpiredDateColor;
     private transient BehaviorSubject<Integer> mExpiredDateColor;
 
@@ -89,7 +89,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mItemFileHelper = mSvProvider.get(ItemFileHelper.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
-        mImageThumbnailFile = BehaviorSubject.create();
+        mItemImageDisplay = BehaviorSubject.create();
         mDefaultExpiredDateColor = ContextCompat.getColor(provider.getContext(), m.co.rh.id.a_personal_stuff.base.R.color.light_green_600);
         mExpiredDateColor = BehaviorSubject.createDefault(mDefaultExpiredDateColor);
     }
@@ -118,10 +118,12 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         .subscribe(expireDateTimeText::setBackgroundColor)
         );
         mRxDisposer.add("createView_onImageThumbnailFileChanged",
-                mImageThumbnailFile.observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(file -> {
-                            if (file.isPresent()) {
-                                imageViewThumbnail.setImageURI(Uri.fromFile(file.get()));
+                mItemImageDisplay
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemImage -> {
+                            if (itemImage.isPresent()) {
+                                File file = mItemFileHelper.getItemImageThumbnail(itemImage.get().fileName);
+                                imageViewThumbnail.setImageURI(Uri.fromFile(file));
                                 imageViewThumbnail.setVisibility(View.VISIBLE);
                             } else {
                                 imageViewThumbnail.setVisibility(View.GONE);
@@ -134,10 +136,9 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                             List<ItemImage> itemImages = itemState.getItemImages();
                             if (!itemImages.isEmpty()) {
                                 ItemImage itemImage = itemImages.get(itemImages.size() - 1);
-                                File file = mItemFileHelper.getItemImageThumbnail(itemImage.fileName);
-                                mImageThumbnailFile.onNext(Optional.of(file));
+                                mItemImageDisplay.onNext(Optional.of(itemImage));
                             } else {
-                                mImageThumbnailFile.onNext(Optional.empty());
+                                mItemImageDisplay.onNext(Optional.empty());
                             }
                             Date expiredDateTime = itemState.getItemExpiredDateTime();
                             if (expiredDateTime != null) {
@@ -264,9 +265,9 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.imageView_thumbnail) {
-            mImageThumbnailFile.getValue().
+            mItemImageDisplay.getValue().
                     ifPresent(value -> mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                            ImageViewPage.Args.withFile(value)));
+                            ImageViewPage.Args.withFile(mItemFileHelper.getItemImage(value.fileName))));
         } else if (id == R.id.button_edit) {
             if (mOnItemEditClicked != null) {
                 mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());
