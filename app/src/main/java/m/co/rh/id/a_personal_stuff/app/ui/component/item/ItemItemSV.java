@@ -49,6 +49,7 @@ import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemRemindersPage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.command.QueryItemUsageCmd;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsagesPage;
+import m.co.rh.id.anavigator.RouteOptions;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
@@ -122,11 +123,15 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemImage -> {
                             if (itemImage.isPresent()) {
-                                File file = mItemFileHelper.getItemImageThumbnail(itemImage.get().fileName);
+                                String fileName = itemImage.get().fileName;
+                                File file = mItemFileHelper.getItemImageThumbnail(fileName);
                                 imageViewThumbnail.setImageURI(Uri.fromFile(file));
                                 imageViewThumbnail.setVisibility(View.VISIBLE);
+                                Uri actualImageUri = Uri.fromFile(mItemFileHelper.getItemImage(fileName));
+                                imageViewThumbnail.setTransitionName(actualImageUri.toString());
                             } else {
                                 imageViewThumbnail.setVisibility(View.GONE);
+                                imageViewThumbnail.setTransitionName(null);
                             }
                         })
         );
@@ -267,7 +272,11 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         if (id == R.id.imageView_thumbnail) {
             mItemImageDisplay.getValue().
                     ifPresent(value -> mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                            ImageViewPage.Args.withFile(mItemFileHelper.getItemImage(value.fileName))));
+                            ImageViewPage.Args.withFile(mItemFileHelper.getItemImage(value.fileName))
+                            , null,
+                            RouteOptions.withTransition(m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_enter,
+                                    m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_exit)
+                    ));
         } else if (id == R.id.button_edit) {
             if (mOnItemEditClicked != null) {
                 mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());

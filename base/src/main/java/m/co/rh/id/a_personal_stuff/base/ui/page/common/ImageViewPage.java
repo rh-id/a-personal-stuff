@@ -33,7 +33,9 @@ public class ImageViewPage extends StatefulView<Activity> implements View.OnClic
         Button shareButton = rootLayout.findViewById(R.id.button_share);
         shareButton.setOnClickListener(this);
         ImageView imageView = rootLayout.findViewById(R.id.image);
-        imageView.setImageURI(getFileUri());
+        Uri uri = getFileUri();
+        imageView.setImageURI(uri);
+        imageView.setTransitionName(uri.toString());
         return rootLayout;
     }
 

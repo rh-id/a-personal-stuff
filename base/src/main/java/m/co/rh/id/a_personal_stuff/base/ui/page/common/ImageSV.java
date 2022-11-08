@@ -36,6 +36,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.RouteOptions;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
@@ -183,7 +184,9 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
         } else if (id == R.id.imageView) {
             File file = mImageFiles.getValue().get(mImageIdxPos.getValue());
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                    ImageViewPage.Args.withFile(file));
+                    ImageViewPage.Args.withFile(file), null,
+                    RouteOptions.withTransition(R.transition.page_imageview_enter,
+                            R.transition.page_imageview_exit));
         }
     }
 
@@ -254,7 +257,9 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
     private void setImage(ImageView imageView, int index) {
         File file = mImageFiles.getValue().get(index);
         if (file != null) {
-            imageView.setImageURI(Uri.fromFile(file));
+            Uri uri = Uri.fromFile(file);
+            imageView.setImageURI(uri);
+            imageView.setTransitionName(uri.toString());
         } else {
             imageView.setImageURI(null);
         }
