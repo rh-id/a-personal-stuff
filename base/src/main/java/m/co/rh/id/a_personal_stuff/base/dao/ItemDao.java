@@ -107,6 +107,9 @@ public abstract class ItemDao {
             " OR barcode LIKE '%'||:search||'%'")
     public abstract List<Item> searchItem(String search);
 
+    @Query("SELECT * FROM item WHERE barcode LIKE '%'||:search||'%'")
+    public abstract List<Item> searchItemBarcode(String search);
+
     @Query("SELECT * FROM item_tag WHERE tag LIKE '%'||:search||'%'")
     public abstract List<ItemTag> searchItemTag(String search);
 

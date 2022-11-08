@@ -105,7 +105,8 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     private transient TextWatcher mPriceTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
     private transient TextWatcher mBarcodeTextWatcher;
-    private transient Function<String, Collection<String>> mSuggestionQuery;
+    private transient Function<String, Collection<String>> mBarcodeSuggestionQuery;
+    private transient Function<String, Collection<String>> mTagSuggestionQuery;
 
     public ItemDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_item_detail);
@@ -240,7 +241,8 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                 mItemState.setItemBarcode(s);
             }
         };
-        mSuggestionQuery = s -> {
+        mBarcodeSuggestionQuery = s -> mQueryItemCmd.searchItemBarcode(s).blockingGet();
+        mTagSuggestionQuery = s -> {
             Set<String> stringSet = mQueryItemCmd.searchItemTag(s).blockingGet();
             Collection<ItemTag> tagSet = mItemState.getItemTags();
             if (!tagSet.isEmpty()) {
@@ -276,15 +278,18 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         inputPrice.addTextChangedListener(mPriceTextWatcher);
         EditText inputDescription = rootLayout.findViewById(R.id.input_text_description);
         inputDescription.addTextChangedListener(mDescriptionTextWatcher);
-        EditText inputBarcode = rootLayout.findViewById(R.id.input_text_barcode);
+        AutoCompleteTextView inputBarcode = rootLayout.findViewById(R.id.input_text_barcode);
         inputBarcode.addTextChangedListener(mBarcodeTextWatcher);
+        inputBarcode.setThreshold(1);
+        inputBarcode.setAdapter(new SuggestionAdapter
+                (activity, android.R.layout.select_dialog_item, mBarcodeSuggestionQuery));
         EditText inputExpiredDateTime = rootLayout.findViewById(R.id.input_text_expired_date_time);
         inputExpiredDateTime.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
         AutoCompleteTextView tagText = rootLayout.findViewById(R.id.input_text_tag);
         tagText.setThreshold(1);
         tagText.setAdapter(new SuggestionAdapter
-                (activity, android.R.layout.select_dialog_item, mSuggestionQuery));
+                (activity, android.R.layout.select_dialog_item, mTagSuggestionQuery));
         View containerAmount = rootLayout.findViewById(R.id.container_amount);
         Button amountPlus1 = containerAmount.findViewById(R.id.button_plus_1);
         amountPlus1.setOnClickListener(this);
@@ -462,15 +467,14 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
 
     @Override
     public void dispose(Activity activity) {
-        super.dispose(activity);
-        mAppBarSV.dispose(activity);
-        mAppBarSV = null;
-        mImageSV.dispose(activity);
-        mImageSV = null;
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
         }
+        mAppBarSV.dispose(activity);
+        mAppBarSV = null;
+        mImageSV.dispose(activity);
+        mImageSV = null;
         if (mCompositeDisposable != null) {
             mCompositeDisposable.dispose();
             mCompositeDisposable = null;

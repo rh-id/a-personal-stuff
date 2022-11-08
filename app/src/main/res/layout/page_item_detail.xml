@@ -136,10 +136,14 @@
                     android:layout_weight="1"
                     android:hint="@string/form_barcode">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <AutoCompleteTextView
                         android:id="@+id/input_text_barcode"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
+                        android:layout_height="wrap_content"
+                        android:paddingStart="@dimen/text_margin"
+                        android:paddingTop="24sp"
+                        android:paddingEnd="@dimen/text_margin"
+                        android:paddingBottom="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.button.MaterialButton
