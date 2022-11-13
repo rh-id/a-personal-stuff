@@ -46,14 +46,18 @@ public class QueryItemCmd {
         }));
     }
 
-    public Single<LinkedHashSet<String>> searchItemBarcode(String search) {
+    public Single<LinkedHashSet<Item>> searchItemBarcode(String search) {
         return Single.fromFuture(mExecutorService.submit(() ->
         {
-            LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
+            LinkedHashSet<Item> linkedHashSet = new LinkedHashSet<>();
             List<Item> itemBarcodes = mItemDao.searchItemBarcode(search);
             if (!itemBarcodes.isEmpty()) {
+                LinkedHashSet<String> barCodeHashSet = new LinkedHashSet<>();
                 for (Item item : itemBarcodes) {
-                    linkedHashSet.add(item.barcode + "\n(" + item.name + ")");
+                    boolean added = barCodeHashSet.add(item.barcode + "\n(" + item.name + ")");
+                    if (added) {
+                        linkedHashSet.add(item);
+                    }
                 }
             }
             return linkedHashSet;

@@ -15,6 +15,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 
 import com.google.android.material.chip.Chip;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -48,8 +50,10 @@ import m.co.rh.id.a_personal_stuff.app.provider.command.NewItemImageCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.NewItemTagCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.UpdateItemCmd;
+import m.co.rh.id.a_personal_stuff.app.ui.component.adapter.ItemSuggestionAdapter;
 import m.co.rh.id.a_personal_stuff.app.ui.component.adapter.SuggestionAdapter;
 import m.co.rh.id.a_personal_stuff.barcode.ui.NavBarcodeConfig;
+import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
@@ -105,7 +109,7 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     private transient TextWatcher mPriceTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
     private transient TextWatcher mBarcodeTextWatcher;
-    private transient Function<String, Collection<String>> mBarcodeSuggestionQuery;
+    private transient Function<String, Collection<Item>> mBarcodeSuggestionQuery;
     private transient Function<String, Collection<String>> mTagSuggestionQuery;
 
     public ItemDetailPage() {
@@ -241,7 +245,14 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                 mItemState.setItemBarcode(s);
             }
         };
-        mBarcodeSuggestionQuery = s -> mQueryItemCmd.searchItemBarcode(s).blockingGet();
+        mBarcodeSuggestionQuery = s -> {
+            LinkedHashSet<Item> resultList = mQueryItemCmd.searchItemBarcode(s).blockingGet();
+            List<Item> itemList = new ArrayList<>();
+            for (Item item : resultList) {
+                itemList.add(new ModelBarcodeDisplay(item));
+            }
+            return itemList;
+        };
         mTagSuggestionQuery = s -> {
             Set<String> stringSet = mQueryItemCmd.searchItemTag(s).blockingGet();
             Collection<ItemTag> tagSet = mItemState.getItemTags();
@@ -281,8 +292,8 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         AutoCompleteTextView inputBarcode = rootLayout.findViewById(R.id.input_text_barcode);
         inputBarcode.addTextChangedListener(mBarcodeTextWatcher);
         inputBarcode.setThreshold(1);
-        inputBarcode.setAdapter(new SuggestionAdapter
-                (activity, android.R.layout.select_dialog_item, mBarcodeSuggestionQuery));
+        inputBarcode.setAdapter(new ItemSuggestionAdapter
+                (activity, R.layout.adapter_item_barcode, mBarcodeSuggestionQuery));
         EditText inputExpiredDateTime = rootLayout.findViewById(R.id.input_text_expired_date_time);
         inputExpiredDateTime.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
@@ -633,5 +644,25 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         }
 
         private ItemState itemState;
+    }
+
+    private static class ModelBarcodeDisplay extends Item {
+        public ModelBarcodeDisplay(Item item) {
+            id = item.id;
+            name = item.name;
+            amount = item.amount;
+            price = item.price;
+            description = item.description;
+            barcode = item.barcode;
+            expiredDateTime = item.expiredDateTime;
+            createdDateTime = item.createdDateTime;
+            updatedDateTime = item.updatedDateTime;
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return barcode;
+        }
     }
 }
