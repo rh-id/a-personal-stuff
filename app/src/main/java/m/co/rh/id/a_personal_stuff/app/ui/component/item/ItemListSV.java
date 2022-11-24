@@ -70,6 +70,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient RecyclerView.OnScrollListener mItemsOnScrollListener;
 
     private boolean mSelectMode;
+    private SerialBehaviorSubject<String> mSearchEditText;
     private SerialBehaviorSubject<String> mSearchString;
     private SerialBehaviorSubject<Long> mShowItemId;
 
@@ -79,6 +80,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
 
     public ItemListSV(boolean selectMode) {
         mSelectMode = selectMode;
+        mSearchEditText = new SerialBehaviorSubject<>();
         mSearchString = new SerialBehaviorSubject<>();
         mShowItemId = new SerialBehaviorSubject<>();
     }
@@ -145,6 +147,10 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                         .observeOn(Schedulers.from(mExecutorService))
                         .subscribe(itemId -> mPagedItemCmd.refreshWithItemId(itemId))
         );
+        mRxDisposer.add("createView_onSearchEditTextChanged",
+                mSearchEditText.getSubject()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(search -> searchEditText.setText(search)));
         mRxDisposer.add("createView_onSearch",
                 mSearchString.getSubject().debounce(700, TimeUnit.MILLISECONDS)
                         .observeOn(Schedulers.from(mExecutorService))
@@ -331,8 +337,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private void updateScanResult(NavRoute navRoute, View currentView) {
         String barcode = mNavBarcodeConfig.result_scanBarcodePage_barcode(navRoute);
         if (barcode != null) {
-            EditText searchEditText = currentView.findViewById(R.id.edit_text_search);
-            searchEditText.setText(barcode);
+            mSearchEditText.onNext(barcode);
         }
     }
 }
