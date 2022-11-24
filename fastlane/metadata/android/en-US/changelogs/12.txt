@@ -1,0 +1,5 @@
+Release 1.1.2+12
+
+Fixes:
+* App crash when searching barcode using scan
+* App crash occasionally for no reason

@@ -27,8 +27,8 @@ android {
         applicationId "m.co.rh.id.a_personal_stuff"
         minSdk 21
         targetSdk 31
-        versionCode 11
-        versionName "1.1.1"
+        versionCode 12
+        versionName "1.1.2"
         vectorDrawables.useSupportLibrary = true
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
