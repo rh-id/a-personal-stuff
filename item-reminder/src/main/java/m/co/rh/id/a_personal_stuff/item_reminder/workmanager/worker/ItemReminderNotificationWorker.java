@@ -1,8 +1,11 @@
 package m.co.rh.id.a_personal_stuff.item_reminder.workmanager.worker;
 
+import android.Manifest;
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
@@ -28,7 +31,9 @@ public class ItemReminderNotificationWorker extends Worker {
         IItemReminderNotificationHandler notificationHandler = provider.get(IItemReminderNotificationHandler.class);
         ItemReminder itemReminder = itemReminderDao.findItemReminderById(itemReminderId);
         if (itemReminder != null) {
-            notificationHandler.postItemReminderNotification(itemReminder);
+            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                notificationHandler.postItemReminderNotification(itemReminder);
+            }
         }
         return Result.success();
     }

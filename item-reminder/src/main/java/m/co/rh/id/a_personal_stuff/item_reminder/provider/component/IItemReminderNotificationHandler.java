@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.RequiresPermission;
+
 import m.co.rh.id.a_personal_stuff.item_reminder.R;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 
@@ -12,6 +14,7 @@ public interface IItemReminderNotificationHandler {
     String CHANNEL_ID_ITEM_REMINDER = "CHANNEL_ID_ITEM_REMINDER";
     String GROUP_KEY_ITEM_REMINDER = "GROUP_KEY_ITEM_REMINDER";
 
+    @RequiresPermission("android.permission.POST_NOTIFICATIONS")
     void postItemReminderNotification(ItemReminder itemReminder);
 
     default void createItemReminderNotificationChannel(Context context) {
