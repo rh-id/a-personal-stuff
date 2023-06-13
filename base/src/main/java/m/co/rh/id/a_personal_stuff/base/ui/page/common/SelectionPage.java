@@ -35,6 +35,7 @@ public class SelectionPage extends StatefulViewDialog<Activity> {
         rootLayout.setOrientation(LinearLayoutCompat.VERTICAL);
         rootLayout.setLayoutParams(layoutParams);
         rootLayout.setMinimumHeight(400);
+        rootLayout.setPadding(48,48,48,48);
         ScrollView scrollView = new ScrollView(activity);
         LinearLayoutCompat linearLayout = new LinearLayoutCompat(activity);
         linearLayout.setOrientation(LinearLayoutCompat.VERTICAL);
