@@ -15,6 +15,7 @@ public class Routes {
     public static final String ITEM_REMINDERS_PAGE = "/item-reminders";
     public static final String ITEM_REMINDER_DETAIL_PAGE = "/item-reminder/detail";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
+    public static final String COMMON_SELECTION = "/common/selection";
 
     private Routes() {
     }

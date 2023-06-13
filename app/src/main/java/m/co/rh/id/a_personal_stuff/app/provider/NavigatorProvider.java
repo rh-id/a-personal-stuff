@@ -23,6 +23,7 @@ import m.co.rh.id.a_personal_stuff.app.ui.page.SplashPage;
 import m.co.rh.id.a_personal_stuff.barcode.ui.NavBarcodeConfig;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.SelectionPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
@@ -78,6 +79,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.ITEM_REMINDERS_PAGE, (args, activity) -> new ItemRemindersPage());
         navMap.put(Routes.ITEM_REMINDER_DETAIL_PAGE, (args, activity) -> new ItemReminderDetailPage());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
+        navMap.put(Routes.COMMON_SELECTION, (args, activity) -> new SelectionPage());
         navMap.putAll(mNavExtDialogConfig.getNavMap());
         navMap.putAll(mNavBarcodeConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =

@@ -1,7 +1,5 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
-import android.content.Context;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -21,22 +19,19 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedItemCmd {
-    private Context mAppContext;
     private ExecutorService mExecutorService;
     private ItemDao mItemDao;
     private int mLimit;
     private String mSearch;
+    private ItemDao.QueryOrderBy mQueryOrderBy;
     private final BehaviorSubject<ArrayList<ItemState>> mItemStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
-    private final BehaviorSubject<Set<Long>> mSelectedIdsSubject;
 
     public PagedItemCmd(Provider provider) {
-        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mItemDao = provider.get(ItemDao.class);
         mItemStatesSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
-        mSelectedIdsSubject = BehaviorSubject.createDefault(new LinkedHashSet<>());
         resetPage();
     }
 
@@ -81,7 +76,7 @@ public class PagedItemCmd {
                     itemIds.addAll(itemTagSearchResult.get());
                     itemIds.addAll(itemSearchResult.get());
                     List<ItemState> itemStates =
-                            mItemDao.findItemStatesByIds(new ArrayList<>(itemIds));
+                            mItemDao.findItemStatesByIds(new ArrayList<>(itemIds), mQueryOrderBy);
                     mItemStatesSubject.onNext(new ArrayList<>(itemStates));
                 } catch (Throwable throwable) {
                     mItemStatesSubject.onError(throwable);
@@ -133,7 +128,7 @@ public class PagedItemCmd {
     }
 
     private ArrayList<ItemState> loadItems() {
-        return new ArrayList<>(mItemDao.findItemStateWithLimit(mLimit));
+        return new ArrayList<>(mItemDao.findItemStateWithLimit(mLimit, mQueryOrderBy));
     }
 
     public ArrayList<ItemState> getAllItems() {
@@ -154,7 +149,40 @@ public class PagedItemCmd {
 
     public void refreshWithItemId(long itemId) {
         executeLoad(() -> new ArrayList<>(
-                mItemDao.findItemStatesByIds(Collections.singletonList(itemId))
+                mItemDao.findItemStatesByIds(Collections.singletonList(itemId), mQueryOrderBy)
         ));
+    }
+
+    private void orderItem(ItemDao.QueryOrderBy queryOrderBy) {
+        mQueryOrderBy = queryOrderBy;
+        refresh();
+    }
+
+    public void orderItemByExpiredTimeDate() {
+        orderItem(ItemDao.QueryOrderBy.EXPIRED_DATE_TIME_ASC);
+    }
+
+    public void orderItemByExpiredDateTimeDesc() {
+        orderItem(ItemDao.QueryOrderBy.EXPIRED_DATE_TIME_DESC);
+    }
+
+    public void orderItemByUpdatedDateTime() {
+        orderItem(ItemDao.QueryOrderBy.UPDATED_DATE_TIME_ASC);
+    }
+
+    public void orderItemByUpdatedDateTimeDesc() {
+        orderItem(ItemDao.QueryOrderBy.UPDATED_DATE_TIME_DESC);
+    }
+
+    public void orderItemByCreatedDateTime() {
+        orderItem(ItemDao.QueryOrderBy.CREATED_DATE_TIME_ASC);
+    }
+
+    public void orderItemByCreatedDateTimeDesc() {
+        orderItem(ItemDao.QueryOrderBy.CREATED_DATE_TIME_DESC);
+    }
+
+    public void resetOrder() {
+        orderItem(null);
     }
 }

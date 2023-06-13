@@ -8,8 +8,10 @@ import android.view.ViewGroup;
 import androidx.appcompat.widget.Toolbar;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
+import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
@@ -18,14 +20,16 @@ import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.SelectionPage;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavPopCallback;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class ItemsPage extends StatefulView<Activity> implements RequireComponent<Provider>, Toolbar.OnMenuItemClickListener {
+public class ItemsPage extends StatefulView<Activity> implements RequireComponent<Provider>, NavPopCallback<Activity>, Toolbar.OnMenuItemClickListener {
 
     @NavInject
     private transient INavigator mNavigator;
@@ -42,10 +46,12 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
     private AppBarSV mAppBarSV;
     @NavInject
     private ItemListSV mItemListSV;
+    private SerialBehaviorSubject<Integer> mSelectedSort;
 
     public ItemsPage() {
         mAppBarSV = new AppBarSV(R.menu.page_items);
         mItemListSV = new ItemListSV();
+        mSelectedSort = new SerialBehaviorSubject<>(0);
     }
 
     @Override
@@ -54,6 +60,43 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mRxDisposer.add("provideComponent_onSelectedSortChanged",
+                mSelectedSort.getSubject()
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .subscribe(integer -> {
+                            /*
+                                        integers.add(R.string.sort_by_default);
+                                        integers.add(R.string.sort_by_expired_date_time_asc);
+                                        integers.add(R.string.sort_by_expired_date_time_desc);
+                                        integers.add(R.string.sort_by_updated_date_time_asc);
+                                        integers.add(R.string.sort_by_updated_date_time_desc);
+                                        integers.add(R.string.sort_by_created_date_time_asc);
+                                        integers.add(R.string.sort_by_created_date_time_desc);
+                             */
+                            switch (integer) {
+                                case 1:
+                                    mItemListSV.orderItemByExpiredTimeDate();
+                                    break;
+                                case 2:
+                                    mItemListSV.orderItemByExpiredDateTimeDesc();
+                                    break;
+                                case 3:
+                                    mItemListSV.orderItemByUpdatedDateTime();
+                                    break;
+                                case 4:
+                                    mItemListSV.orderItemByUpdatedDateTimeDesc();
+                                    break;
+                                case 5:
+                                    mItemListSV.orderItemByCreatedDateTime();
+                                    break;
+                                case 6:
+                                    mItemListSV.orderItemByCreatedDateTimeDesc();
+                                    break;
+                                default:
+                                    mItemListSV.resetOrderItem();
+                            }
+                        })
+        );
     }
 
     @Override
@@ -98,6 +141,17 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         int id = item.getItemId();
         if (id == R.id.menu_add) {
             mNavigator.push(Routes.ITEM_DETAIL_PAGE);
+        } else if (id == R.id.menu_sort) {
+            ArrayList<Integer> integers = new ArrayList<>();
+            integers.add(R.string.sort_by_default);
+            integers.add(R.string.sort_by_expired_date_time_asc);
+            integers.add(R.string.sort_by_expired_date_time_desc);
+            integers.add(R.string.sort_by_updated_date_time_asc);
+            integers.add(R.string.sort_by_updated_date_time_desc);
+            integers.add(R.string.sort_by_created_date_time_asc);
+            integers.add(R.string.sort_by_created_date_time_desc);
+            mNavigator.push(Routes.COMMON_SELECTION, SelectionPage.Args.with(mSelectedSort.getValue(), integers),
+                    this);
         }
         return false;
     }
@@ -108,6 +162,14 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
             return args.itemId;
         }
         return null;
+    }
+
+    @Override
+    public void onPop(INavigator navigator, NavRoute navRoute, Activity activity, View currentView) {
+        Serializable result = navRoute.getRouteResult();
+        if (result instanceof Integer) {
+            mSelectedSort.onNext((Integer) result);
+        }
     }
 
     public static class Args implements Serializable {

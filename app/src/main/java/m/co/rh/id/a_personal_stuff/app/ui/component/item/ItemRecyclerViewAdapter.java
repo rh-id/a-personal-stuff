@@ -89,7 +89,8 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
         if (mPagedItemCmd == null) {
             return true;
         }
-        return mPagedItemCmd.getAllItems().size() == 0;
+        ArrayList<ItemState> items = mPagedItemCmd.getAllItems();
+        return items == null || items.isEmpty();
     }
 
     @Override

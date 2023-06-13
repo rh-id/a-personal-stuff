@@ -46,4 +46,12 @@
     <string name="_minutes">%d minute(s)</string>
     <string name="expired_">Expired: %s</string>
     <string name="error_please_select_item">Error, please select item</string>
+    <string name="title_sort">Sort</string>
+    <string name="sort_by_default">Default</string>
+    <string name="sort_by_expired_date_time_asc">Expired Date Time Ascending</string>
+    <string name="sort_by_expired_date_time_desc">Expired Date Time Descending</string>
+    <string name="sort_by_updated_date_time_asc">Updated Date Time Ascending</string>
+    <string name="sort_by_updated_date_time_desc">Updated Date Time Descending</string>
+    <string name="sort_by_created_date_time_asc">Created Date Time Ascending</string>
+    <string name="sort_by_created_date_time_desc">Created Date Time Descending</string>
 </resources>

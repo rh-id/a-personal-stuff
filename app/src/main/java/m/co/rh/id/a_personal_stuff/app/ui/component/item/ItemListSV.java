@@ -49,6 +49,12 @@ import m.co.rh.id.aprovider.Provider;
 public class ItemListSV extends StatefulView<Activity> implements RequireComponent<Provider>, ItemItemSV.OnItemEditClicked, ItemItemSV.OnItemDeleteClicked, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
 
     private static final String TAG = ItemListSV.class.getName();
+    private static final int ORDER_BY_EXPIRED_DATE_TIME = 1;
+    private static final int ORDER_BY_EXPIRED_DATE_TIME_DESC = 2;
+    private static final int ORDER_BY_UPDATED_DATE_TIME = 3;
+    private static final int ORDER_BY_UPDATED_DATE_TIME_DESC = 4;
+    private static final int ORDER_BY_CREATED_DATE_TIME = 5;
+    private static final int ORDER_BY_CREATED_DATE_TIME_DESC = 6;
 
     @NavInject
     private transient INavigator mNavigator;
@@ -73,6 +79,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private SerialBehaviorSubject<String> mSearchEditText;
     private SerialBehaviorSubject<String> mSearchString;
     private SerialBehaviorSubject<Long> mShowItemId;
+    private SerialBehaviorSubject<Integer> mOrderByOption;
 
     public ItemListSV() {
         this(false);
@@ -83,6 +90,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mSearchEditText = new SerialBehaviorSubject<>();
         mSearchString = new SerialBehaviorSubject<>();
         mShowItemId = new SerialBehaviorSubject<>();
+        mOrderByOption = new SerialBehaviorSubject<>();
     }
 
     @Override
@@ -128,6 +136,32 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                 }
             }
         };
+        mRxDisposer.add("provideComponent_orderByChanged", mOrderByOption.getSubject()
+                .subscribeOn(Schedulers.from(mExecutorService))
+                .subscribe(integer -> {
+                    switch (integer) {
+                        case ORDER_BY_EXPIRED_DATE_TIME:
+                            mPagedItemCmd.orderItemByExpiredTimeDate();
+                            break;
+                        case ORDER_BY_EXPIRED_DATE_TIME_DESC:
+                            mPagedItemCmd.orderItemByExpiredDateTimeDesc();
+                            break;
+                        case ORDER_BY_UPDATED_DATE_TIME:
+                            mPagedItemCmd.orderItemByUpdatedDateTime();
+                            break;
+                        case ORDER_BY_UPDATED_DATE_TIME_DESC:
+                            mPagedItemCmd.orderItemByUpdatedDateTimeDesc();
+                            break;
+                        case ORDER_BY_CREATED_DATE_TIME:
+                            mPagedItemCmd.orderItemByCreatedDateTime();
+                            break;
+                        case ORDER_BY_CREATED_DATE_TIME_DESC:
+                            mPagedItemCmd.orderItemByCreatedDateTimeDesc();
+                            break;
+                        default:
+                            mPagedItemCmd.resetOrder();
+                    }
+                }));
     }
 
     @Override
@@ -150,7 +184,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer.add("createView_onSearchEditTextChanged",
                 mSearchEditText.getSubject()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(search -> searchEditText.setText(search)));
+                        .subscribe(searchEditText::setText));
         mRxDisposer.add("createView_onSearch",
                 mSearchString.getSubject().debounce(700, TimeUnit.MILLISECONDS)
                         .observeOn(Schedulers.from(mExecutorService))
@@ -339,5 +373,33 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         if (barcode != null) {
             mSearchEditText.onNext(barcode);
         }
+    }
+
+    public void orderItemByExpiredTimeDate() {
+        mOrderByOption.onNext(ORDER_BY_EXPIRED_DATE_TIME);
+    }
+
+    public void orderItemByExpiredDateTimeDesc() {
+        mOrderByOption.onNext(ORDER_BY_EXPIRED_DATE_TIME_DESC);
+    }
+
+    public void orderItemByUpdatedDateTime() {
+        mOrderByOption.onNext(ORDER_BY_UPDATED_DATE_TIME);
+    }
+
+    public void orderItemByUpdatedDateTimeDesc() {
+        mOrderByOption.onNext(ORDER_BY_UPDATED_DATE_TIME_DESC);
+    }
+
+    public void orderItemByCreatedDateTime() {
+        mOrderByOption.onNext(ORDER_BY_CREATED_DATE_TIME);
+    }
+
+    public void orderItemByCreatedDateTimeDesc() {
+        mOrderByOption.onNext(ORDER_BY_CREATED_DATE_TIME_DESC);
+    }
+
+    public void resetOrderItem() {
+        mOrderByOption.onNext(-1);
     }
 }
