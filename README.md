@@ -2,6 +2,7 @@
 
 ![Languages](https://img.shields.io/github/languages/top/rh-id/a-personal-stuff)
 ![Downloads](https://img.shields.io/github/downloads/rh-id/a-personal-stuff/total)
+![GitHub release (by tag)](https://img.shields.io/github/downloads/rh-id/a-personal-stuff/latest/total)
 ![Release](https://img.shields.io/github/v/release/rh-id/a-personal-stuff)
 ![Android CI](https://github.com/rh-id/a-personal-stuff/actions/workflows/gradlew-build.yml/badge.svg)
 ![Release Build](https://github.com/rh-id/a-personal-stuff/actions/workflows/android-release.yml/badge.svg)
