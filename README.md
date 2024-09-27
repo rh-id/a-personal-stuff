@@ -1,4 +1,4 @@
-# a-personal-stuff
+# Personal Stuff
 
 ![Languages](https://img.shields.io/github/languages/top/rh-id/a-personal-stuff)
 ![Downloads](https://img.shields.io/github/downloads/rh-id/a-personal-stuff/total)
@@ -27,6 +27,10 @@ Features of this app:
 
 This project is intended for demo app for [a-navigator](https://github.com/rh-id/a-navigator) and [a-provider](https://github.com/rh-id/a-provider) library usage.
 The app still works as production even though it is demo app.
+
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+     alt="Get it on F-Droid"
+     height="80">](https://f-droid.org/packages/m.co.rh.id.a_personal_stuff/)
 
 ## Project Structure
 
