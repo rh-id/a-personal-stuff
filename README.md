@@ -24,7 +24,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 The application is designed around a central Dashboard (`HomePage`) that provides quick access to all major functions.
 
 1.  **Dashboard**: The entry point where you can navigate to different lists or quickly add new entries.
-2.  **Adding an Item**:
+2.  **Adding an Item**: 
     *   Click "Add Item" on the dashboard.
     *   Fill in details (Name, Image, Tags).
     *   Save to store it in the local database.
@@ -67,19 +67,19 @@ Business logic is encapsulated using the **Command Pattern**. Instead of putting
 graph TD
     User -->|Interacts| MainActivity
     MainActivity -->|Hosts| Navigator
-    Navigator -->|Manages| StatefulView[StatefulView (UI Pages)]
-
+    Navigator -->|Manages| StatefulView["StatefulView (UI Pages)"]
+    
     subgraph "Feature Modules"
-        StatefulView -->|Invokes| Command[Command Pattern (Business Logic)]
-        Command -->|Uses| DAO[Room DAO]
-        DAO -->|Accesses| DB[(Feature-Specific Database)]
+        StatefulView -->|Invokes| Command["Command Pattern (Business Logic)"]
+        Command -->|Uses| DAO["Room DAO"]
+        DAO -->|Accesses| DB[("Feature-Specific Database")]
     end
-
+    
     subgraph "Infrastructure"
-        Provider[a-provider (DI)]
-        RxJava[RxJava3 (Async/Event Bus)]
+        Provider["a-provider (DI)"]
+        RxJava["RxJava3 (Async/Event Bus)"]
     end
-
+    
     StatefulView -.->|Injects| Provider
     Command -.->|Injects| Provider
 ```
@@ -88,7 +88,7 @@ graph TD
 
 ### Startup Sequence
 1.  **MainApplication**: Initializes the global `Provider` (DI container) and registers module configurations.
-2.  **MainActivity**:
+2.  **MainActivity**: 
     *   Creates the Activity-scoped Provider.
     *   Initializes the `Navigator`.
     *   Sets up the `RxDisposer` to handle subscription lifecycles.
