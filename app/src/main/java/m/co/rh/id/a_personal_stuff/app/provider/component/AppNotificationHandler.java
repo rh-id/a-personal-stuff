@@ -1,11 +1,14 @@
 package m.co.rh.id.a_personal_stuff.app.provider.component;
 
+import android.Manifest;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
@@ -86,6 +89,9 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
 
     @Override
     public void postItemReminderNotification(ItemReminder itemReminder) {
+        if (ActivityCompat.checkSelfPermission(mAppContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
         mLock.lock();
         Future<Item> itemFuture = mExecutorService.submit(() -> mItemDao.finditemById(itemReminder.itemId));
         createItemReminderNotificationChannel(mAppContext);
