@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
@@ -22,6 +24,8 @@ public class NewItemCmd {
 
     protected BehaviorSubject<String> mNameValidSubject;
     protected BehaviorSubject<String> mAmountValidSubject;
+    protected Subject<String> mNameValidEmitter;
+    protected Subject<String> mAmountValidEmitter;
 
     public NewItemCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -29,7 +33,9 @@ public class NewItemCmd {
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
         mItemDao = provider.get(ItemDao.class);
         mNameValidSubject = BehaviorSubject.create();
+        mNameValidEmitter = mNameValidSubject.toSerialized();
         mAmountValidSubject = BehaviorSubject.create();
+        mAmountValidEmitter = mAmountValidSubject.toSerialized();
     }
 
     public boolean valid(ItemState itemState) {
@@ -41,15 +47,15 @@ public class NewItemCmd {
             int itemAmount = itemState.getItemAmount();
             if (itemName != null && !itemName.isEmpty()) {
                 nameValid = true;
-                mNameValidSubject.onNext("");
+                mNameValidEmitter.onNext("");
             } else {
-                mNameValidSubject.onNext(mAppContext.getString(R.string.name_is_required));
+                mNameValidEmitter.onNext(mAppContext.getString(R.string.name_is_required));
             }
             if (itemAmount > 0) {
                 amountValid = true;
-                mAmountValidSubject.onNext("");
+                mAmountValidEmitter.onNext("");
             } else {
-                mAmountValidSubject.onNext(mAppContext.getString(R.string.amount_must_be_positive));
+                mAmountValidEmitter.onNext(mAppContext.getString(R.string.amount_must_be_positive));
             }
             isValid = nameValid && amountValid;
         }
@@ -57,12 +63,11 @@ public class NewItemCmd {
     }
 
     public Single<ItemState> execute(ItemState itemState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mItemDao.insertItem(itemState);
                     mItemChangeNotifier.itemAdded(itemState.clone());
                     return itemState;
-                })
-        );
+                }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public String getValidationError() {
@@ -78,10 +83,10 @@ public class NewItemCmd {
     }
 
     public Flowable<String> getNameValidFlow() {
-        return Flowable.fromObservable(mNameValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mNameValidEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<String> getAmountValidFlow() {
-        return Flowable.fromObservable(mAmountValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mAmountValidEmitter, BackpressureStrategy.BUFFER);
     }
 }

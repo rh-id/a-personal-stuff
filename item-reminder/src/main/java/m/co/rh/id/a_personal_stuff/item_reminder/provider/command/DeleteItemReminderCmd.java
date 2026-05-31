@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
@@ -25,11 +26,11 @@ public class DeleteItemReminderCmd {
     }
 
     public Single<ItemReminder> execute(ItemReminder itemReminder) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemReminderDao.delete(Collections.singletonList(itemReminder));
             mWorkManager.cancelUniqueWork(itemReminder.taskId);
             mItemReminderChangeNotifier.deleted(itemReminder.clone());
             return itemReminder;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

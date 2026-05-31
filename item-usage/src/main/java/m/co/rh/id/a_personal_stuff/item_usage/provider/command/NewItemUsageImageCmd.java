@@ -3,6 +3,7 @@ package m.co.rh.id.a_personal_stuff.item_usage.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
@@ -20,10 +21,10 @@ public class NewItemUsageImageCmd {
     }
 
     public Single<ItemUsageImage> execute(ItemUsageImage itemUsageImage) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemUsageDao.insertItemUsageImage(itemUsageImage);
             mItemUsageChangeNotifier.imageAdded(itemUsageImage);
             return itemUsageImage;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

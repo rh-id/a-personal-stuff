@@ -3,22 +3,23 @@ package m.co.rh.id.a_personal_stuff.item_maintenance.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.model.ItemMaintenanceState;
 
 public class ItemMaintenanceChangeNotifier {
-    private PublishSubject<ItemMaintenanceState> mAddedSubject;
-    private PublishSubject<ItemMaintenanceState> mUpdatedSubject;
-    private PublishSubject<ItemMaintenanceState> mDeletedSubject;
-    private PublishSubject<ItemMaintenanceImage> mAddedImageSubject;
-    private PublishSubject<ItemMaintenanceImage> mDeletedImageSubject;
+    private Subject<ItemMaintenanceState> mAddedSubject;
+    private Subject<ItemMaintenanceState> mUpdatedSubject;
+    private Subject<ItemMaintenanceState> mDeletedSubject;
+    private Subject<ItemMaintenanceImage> mAddedImageSubject;
+    private Subject<ItemMaintenanceImage> mDeletedImageSubject;
 
     public ItemMaintenanceChangeNotifier() {
-        mAddedSubject = PublishSubject.create();
-        mUpdatedSubject = PublishSubject.create();
-        mDeletedSubject = PublishSubject.create();
-        mAddedImageSubject = PublishSubject.create();
-        mDeletedImageSubject = PublishSubject.create();
+        mAddedSubject = PublishSubject.<ItemMaintenanceState>create().toSerialized();
+        mUpdatedSubject = PublishSubject.<ItemMaintenanceState>create().toSerialized();
+        mDeletedSubject = PublishSubject.<ItemMaintenanceState>create().toSerialized();
+        mAddedImageSubject = PublishSubject.<ItemMaintenanceImage>create().toSerialized();
+        mDeletedImageSubject = PublishSubject.<ItemMaintenanceImage>create().toSerialized();
     }
 
     public void itemMaintenanceAdded(ItemMaintenanceState itemMaintenanceState) {

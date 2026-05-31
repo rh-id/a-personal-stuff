@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_usage.R;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
@@ -23,6 +25,8 @@ public class NewItemUsageCmd {
 
     protected BehaviorSubject<String> mAmountValidSubject;
     protected BehaviorSubject<String> mDescriptionValidSubject;
+    protected Subject<String> mAmountValidEmitter;
+    protected Subject<String> mDescriptionValidEmitter;
 
     public NewItemUsageCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -30,16 +34,17 @@ public class NewItemUsageCmd {
         mItemUsageChangeNotifier = provider.get(ItemUsageChangeNotifier.class);
         mItemUsageDao = provider.get(ItemUsageDao.class);
         mAmountValidSubject = BehaviorSubject.create();
+        mAmountValidEmitter = mAmountValidSubject.toSerialized();
         mDescriptionValidSubject = BehaviorSubject.create();
+        mDescriptionValidEmitter = mDescriptionValidSubject.toSerialized();
     }
 
     public Single<ItemUsageState> execute(ItemUsageState itemUsageState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mItemUsageDao.insertItemUsage(itemUsageState);
                     mItemUsageChangeNotifier.itemUsageAdded(itemUsageState.clone());
                     return itemUsageState;
-                })
-        );
+                }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public boolean valid(ItemUsageState itemUsageState) {
@@ -50,17 +55,17 @@ public class NewItemUsageCmd {
             ItemUsage itemUsage = itemUsageState.getItemUsage();
             if (itemUsage.amount != 0) {
                 amtValid = true;
-                mAmountValidSubject.onNext("");
+                mAmountValidEmitter.onNext("");
             } else {
                 amtValid = false;
-                mAmountValidSubject.onNext(mAppContext.getString(R.string.amount_cannot_be_0));
+                mAmountValidEmitter.onNext(mAppContext.getString(R.string.amount_cannot_be_0));
             }
             if (itemUsage.description != null && !itemUsage.description.isEmpty()) {
                 descValid = true;
-                mDescriptionValidSubject.onNext("");
+                mDescriptionValidEmitter.onNext("");
             } else {
                 descValid = false;
-                mDescriptionValidSubject.onNext(mAppContext.getString(R.string.description_is_required));
+                mDescriptionValidEmitter.onNext(mAppContext.getString(R.string.description_is_required));
             }
             valid = amtValid && descValid;
         }
@@ -80,10 +85,10 @@ public class NewItemUsageCmd {
     }
 
     public Flowable<String> getAmountValidFlow() {
-        return Flowable.fromObservable(mAmountValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mAmountValidEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<String> getDescriptionValidFlow() {
-        return Flowable.fromObservable(mDescriptionValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mDescriptionValidEmitter, BackpressureStrategy.BUFFER);
     }
 }

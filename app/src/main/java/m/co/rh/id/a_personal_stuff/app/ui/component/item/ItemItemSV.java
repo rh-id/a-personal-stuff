@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.content.ContextCompat;
+import androidx.core.os.ConfigurationCompat;
 
 import com.google.android.material.chip.Chip;
 
@@ -201,7 +202,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                             amountText.setText(activity.getString(R.string.amount_, itemState.getItemAmount()));
                             BigDecimal price = itemState.getItemPrice();
                             if (price != null) {
-                                Locale locale = activity.getResources().getConfiguration().locale;
+                                Locale locale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
                                 priceText.setText(activity.getString(R.string.price_, NumberFormat.getInstance(locale)
                                         .format(price)));
                                 priceText.setVisibility(View.VISIBLE);

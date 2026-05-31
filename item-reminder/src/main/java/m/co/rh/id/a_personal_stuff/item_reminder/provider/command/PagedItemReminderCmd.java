@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.aprovider.Provider;
@@ -20,13 +21,17 @@ public class PagedItemReminderCmd {
     private int mLimit;
     private final BehaviorSubject<ArrayList<ItemReminder>> mItemRemindersSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
+    private final Subject<ArrayList<ItemReminder>> mItemRemindersEmitter;
+    private final Subject<Boolean> mIsLoadingEmitter;
 
     public PagedItemReminderCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mItemRemindersSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mItemRemindersEmitter = mItemRemindersSubject.toSerialized();
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
+        mIsLoadingEmitter = mIsLoadingSubject.toSerialized();
         resetPage();
     }
 
@@ -45,14 +50,14 @@ public class PagedItemReminderCmd {
 
     private void load() {
         mExecutorService.execute(() -> {
-            mIsLoadingSubject.onNext(true);
+            mIsLoadingEmitter.onNext(true);
             try {
-                mItemRemindersSubject.onNext(
+                mItemRemindersEmitter.onNext(
                         loadItems());
             } catch (Throwable throwable) {
-                mItemRemindersSubject.onError(throwable);
+                mItemRemindersEmitter.onNext(mItemRemindersSubject.getValue());
             } finally {
-                mIsLoadingSubject.onNext(false);
+                mIsLoadingEmitter.onNext(false);
             }
         });
     }
@@ -66,11 +71,11 @@ public class PagedItemReminderCmd {
     }
 
     public Flowable<ArrayList<ItemReminder>> getItemRemindersFlow() {
-        return Flowable.fromObservable(mItemRemindersSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mItemRemindersEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<Boolean> getLoadingFlow() {
-        return Flowable.fromObservable(mIsLoadingSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mIsLoadingEmitter, BackpressureStrategy.BUFFER);
     }
 
     private void resetPage() {

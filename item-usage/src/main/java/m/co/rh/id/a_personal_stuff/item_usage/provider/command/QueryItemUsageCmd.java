@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageState;
@@ -19,12 +20,12 @@ public class QueryItemUsageCmd {
     }
 
     public Single<ItemUsageState> findItemUsageStateById(long id) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                mItemUsageDao.findItemUsageStateById(id)));
+        return Single.fromCallable(() ->
+                mItemUsageDao.findItemUsageStateById(id)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<List<ItemUsage>> findItemUsageByItemId(long itemId) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                mItemUsageDao.findItemUsageByItemId(itemId)));
+        return Single.fromCallable(() ->
+                mItemUsageDao.findItemUsageByItemId(itemId)).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

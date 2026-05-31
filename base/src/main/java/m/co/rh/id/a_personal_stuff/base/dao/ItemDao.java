@@ -281,5 +281,5 @@ public abstract class ItemDao {
     }
 
     @Query("SELECT * FROM item WHERE id = :itemId")
-    public abstract Item finditemById(long itemId);
+    public abstract Item findItemById(long itemId);
 }

@@ -12,6 +12,7 @@ import java.util.concurrent.Future;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
@@ -26,12 +27,16 @@ public class PagedItemCmd {
     private ItemDao.QueryOrderBy mQueryOrderBy;
     private final BehaviorSubject<ArrayList<ItemState>> mItemStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
+    private final Subject<ArrayList<ItemState>> mItemStatesEmitter;
+    private final Subject<Boolean> mIsLoadingEmitter;
 
     public PagedItemCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mItemDao = provider.get(ItemDao.class);
         mItemStatesSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mItemStatesEmitter = mItemStatesSubject.toSerialized();
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
+        mIsLoadingEmitter = mIsLoadingSubject.toSerialized();
         resetPage();
     }
 
@@ -45,7 +50,7 @@ public class PagedItemCmd {
             if (!isSearching()) {
                 load();
             } else {
-                mIsLoadingSubject.onNext(true);
+                mIsLoadingEmitter.onNext(true);
                 try {
                     Future<List<Long>> itemTagSearchResult = mExecutorService.submit(
                             () -> {
@@ -77,11 +82,11 @@ public class PagedItemCmd {
                     itemIds.addAll(itemSearchResult.get());
                     List<ItemState> itemStates =
                             mItemDao.findItemStatesByIds(new ArrayList<>(itemIds), mQueryOrderBy);
-                    mItemStatesSubject.onNext(new ArrayList<>(itemStates));
+                    mItemStatesEmitter.onNext(new ArrayList<>(itemStates));
                 } catch (Throwable throwable) {
-                    mItemStatesSubject.onError(throwable);
+                    mItemStatesEmitter.onNext(new ArrayList<>());
                 } finally {
-                    mIsLoadingSubject.onNext(false);
+                    mIsLoadingEmitter.onNext(false);
                 }
             }
         });
@@ -115,14 +120,14 @@ public class PagedItemCmd {
 
     private void executeLoad(Callable<ArrayList<ItemState>> callable) {
         mExecutorService.execute(() -> {
-            mIsLoadingSubject.onNext(true);
+            mIsLoadingEmitter.onNext(true);
             try {
-                mItemStatesSubject.onNext(
+                mItemStatesEmitter.onNext(
                         callable.call());
             } catch (Throwable throwable) {
-                mItemStatesSubject.onError(throwable);
+                mItemStatesEmitter.onNext(mItemStatesSubject.getValue());
             } finally {
-                mIsLoadingSubject.onNext(false);
+                mIsLoadingEmitter.onNext(false);
             }
         });
     }
@@ -136,11 +141,11 @@ public class PagedItemCmd {
     }
 
     public Flowable<ArrayList<ItemState>> getItemsFlow() {
-        return Flowable.fromObservable(mItemStatesSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mItemStatesEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<Boolean> getLoadingFlow() {
-        return Flowable.fromObservable(mIsLoadingSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mIsLoadingEmitter, BackpressureStrategy.BUFFER);
     }
 
     private void resetPage() {

@@ -25,16 +25,20 @@ public class ItemReminderNotificationWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        long itemReminderId = getInputData().getLong(WorkManagerConstants.KEY_LONG_ITEM_REMINDER_ID, -1);
-        Provider provider = BaseApplication.of(getApplicationContext()).getProvider();
-        ItemReminderDao itemReminderDao = provider.get(ItemReminderDao.class);
-        IItemReminderNotificationHandler notificationHandler = provider.get(IItemReminderNotificationHandler.class);
-        ItemReminder itemReminder = itemReminderDao.findItemReminderById(itemReminderId);
-        if (itemReminder != null) {
-            if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notificationHandler.postItemReminderNotification(itemReminder);
+        try {
+            long itemReminderId = getInputData().getLong(WorkManagerConstants.KEY_LONG_ITEM_REMINDER_ID, -1);
+            Provider provider = BaseApplication.of(getApplicationContext()).getProvider();
+            ItemReminderDao itemReminderDao = provider.get(ItemReminderDao.class);
+            IItemReminderNotificationHandler notificationHandler = provider.get(IItemReminderNotificationHandler.class);
+            ItemReminder itemReminder = itemReminderDao.findItemReminderById(itemReminderId);
+            if (itemReminder != null) {
+                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    notificationHandler.postItemReminderNotification(itemReminder);
+                }
             }
+            return Result.success();
+        } catch (Exception e) {
+            return Result.failure();
         }
-        return Result.success();
     }
 }

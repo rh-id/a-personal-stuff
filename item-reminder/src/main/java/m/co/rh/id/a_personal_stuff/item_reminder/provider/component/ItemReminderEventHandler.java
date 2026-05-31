@@ -12,15 +12,19 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderDisposable;
 
 public class ItemReminderEventHandler implements ProviderDisposable {
 
+    private static final String TAG = ItemReminderEventHandler.class.getName();
+
     private ExecutorService mExecutorService;
     private WorkManager mWorkManager;
     private ItemChangeNotifier mItemChangeNotifier;
     private ItemReminderDao mItemReminderDao;
+    private ILogger mLogger;
     private CompositeDisposable mCompositeDisposable;
 
     public ItemReminderEventHandler(Provider provider) {
@@ -28,6 +32,7 @@ public class ItemReminderEventHandler implements ProviderDisposable {
         mWorkManager = provider.get(WorkManager.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
+        mLogger = provider.get(ILogger.class);
         mCompositeDisposable = new CompositeDisposable();
         init();
     }
@@ -35,15 +40,17 @@ public class ItemReminderEventHandler implements ProviderDisposable {
     private void init() {
         mCompositeDisposable.add(mItemChangeNotifier.getDeletedItemFlow()
                 .observeOn(Schedulers.from(mExecutorService))
-                .subscribe(itemState -> {
-                    List<ItemReminder> itemReminderList = mItemReminderDao.findItemReminderByItemId(itemState.getItemId());
-                    if (!itemReminderList.isEmpty()) {
-                        mItemReminderDao.delete(itemReminderList);
-                        for (ItemReminder itemReminder : itemReminderList) {
-                            mWorkManager.cancelUniqueWork(itemReminder.taskId);
-                        }
-                    }
-                })
+                .subscribe(
+                        itemState -> {
+                            List<ItemReminder> itemReminderList = mItemReminderDao.findItemReminderByItemId(itemState.getItemId());
+                            if (!itemReminderList.isEmpty()) {
+                                mItemReminderDao.delete(itemReminderList);
+                                for (ItemReminder itemReminder : itemReminderList) {
+                                    mWorkManager.cancelUniqueWork(itemReminder.taskId);
+                                }
+                            }
+                        },
+                        throwable -> mLogger.e(TAG, throwable.getMessage(), throwable))
         );
     }
 

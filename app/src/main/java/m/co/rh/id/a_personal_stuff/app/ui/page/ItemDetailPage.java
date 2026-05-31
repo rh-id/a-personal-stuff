@@ -17,6 +17,7 @@ import android.widget.EditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.os.ConfigurationCompat;
 
 import com.google.android.material.chip.Chip;
 
@@ -198,7 +199,7 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
             @Override
             public void afterTextChanged(Editable editable) {
                 String s = editable.toString();
-                Locale locale = mNavigator.getActivity().getResources().getConfiguration().locale;
+                Locale locale = ConfigurationCompat.getLocales(mNavigator.getActivity().getResources().getConfiguration()).get(0);
                 BigDecimal price = null;
                 try {
                     Number number = NumberFormat.getInstance(locale).parse(s);
@@ -280,7 +281,7 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_item_detail, container, false);
-        Locale locale = activity.getResources().getConfiguration().locale;
+        Locale locale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
         EditText inputName = rootLayout.findViewById(R.id.input_text_name);
         inputName.addTextChangedListener(mNameTextWatcher);
         EditText inputAmount = rootLayout.findViewById(R.id.input_text_amount);
@@ -525,7 +526,9 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                 if (isUpdate()) {
                     itemTag.itemId = mItemState.getItemId();
                     mCompositeDisposable.add(
-                            mNewItemTagCmd.execute(itemTag).subscribe((itemTag1, throwable) -> {
+                            mNewItemTagCmd.execute(itemTag)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe((itemTag1, throwable) -> {
                                 if (throwable != null) {
                                     Throwable cause = throwable.getCause();
                                     if (cause == null) cause = throwable;

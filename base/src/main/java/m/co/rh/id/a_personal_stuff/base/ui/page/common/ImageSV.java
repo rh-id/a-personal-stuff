@@ -18,9 +18,9 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -60,15 +60,13 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
     private transient ExecutorService mExecutorService;
     private transient RxDisposer mRxDisposer;
 
-    private SerialBehaviorSubject<Integer> mImageIdxPos;
-    private SerialBehaviorSubject<ArrayList<File>> mImageFiles;
+    private SerialBehaviorSubject<ImageState> mImageState;
     private SerialPublishSubject<File> mDeletedFile;
     private SerialPublishSubject<File> mAddFile;
     private File mTempCameraFile;
 
     public ImageSV() {
-        mImageIdxPos = new SerialBehaviorSubject<>(0);
-        mImageFiles = new SerialBehaviorSubject<>(new ArrayList<>());
+        mImageState = new SerialBehaviorSubject<>(new ImageState(new ArrayList<>(), 0));
         mDeletedFile = new SerialPublishSubject<>();
         mAddFile = new SerialPublishSubject<>();
     }
@@ -104,27 +102,12 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
         ImageView imageView = rootLayout.findViewById(R.id.imageView);
         imageView.setOnClickListener(this);
         ViewGroup imageViewContainer = rootLayout.findViewById(R.id.container_image_view);
-        mRxDisposer.add("createView_onImageFilesChanged",
-                mImageFiles.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(imageFiles -> {
-                            if (!imageFiles.isEmpty()) {
-                                Integer currentImageIdx = mImageIdxPos.getValue();
-                                int currentPos = currentImageIdx + 1;
-                                imagePositionText.setText(currentPos + "/" + imageFiles.size());
-                                setImage(imageView, mImageIdxPos.getValue());
-                                imageViewContainer.setVisibility(View.VISIBLE);
-                            } else {
-                                imageViewContainer.setVisibility(View.GONE);
-                            }
-                        }));
-        mRxDisposer.add("createView_onImageIdxChanged",
-                mImageIdxPos.getSubject().observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(integer -> {
-                            List<File> imageFiles = mImageFiles.getValue();
-                            if (!imageFiles.isEmpty()) {
-                                setImage(imageView, integer);
-                                int currentPos = integer + 1;
-                                imagePositionText.setText(currentPos + "/" + imageFiles.size());
+        mRxDisposer.add("createView_onImageStateChanged",
+                mImageState.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(imageState -> {
+                            if (!imageState.files.isEmpty()) {
+                                imagePositionText.setText((imageState.currentIndex + 1) + "/" + imageState.files.size());
+                                setImage(imageView, imageState.files.get(imageState.currentIndex));
                                 imageViewContainer.setVisibility(View.VISIBLE);
                             } else {
                                 imageViewContainer.setVisibility(View.GONE);
@@ -159,30 +142,33 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
                         REQUEST_CODE_PERMISSION_ACCESS_CAMERA);
             }
         } else if (id == R.id.button_prev_image) {
-            Integer idx = mImageIdxPos.getValue();
-            int prevIdx = idx - 1;
+            ImageState current = mImageState.getValue();
+            int prevIdx = current.currentIndex - 1;
             if (prevIdx < 0) {
-                prevIdx = mImageFiles.getValue().size() - 1;
+                prevIdx = current.files.size() - 1;
             }
-            mImageIdxPos.onNext(prevIdx);
+            mImageState.onNext(new ImageState(current.files, prevIdx));
         } else if (id == R.id.button_next_image) {
-            Integer idx = mImageIdxPos.getValue();
-            int nextIdx = idx + 1;
-            if (nextIdx >= mImageFiles.getValue().size()) {
+            ImageState current = mImageState.getValue();
+            int nextIdx = current.currentIndex + 1;
+            if (nextIdx >= current.files.size()) {
                 nextIdx = 0;
             }
-            mImageIdxPos.onNext(nextIdx);
+            mImageState.onNext(new ImageState(current.files, nextIdx));
         } else if (id == R.id.button_delete_image) {
-            int index = mImageIdxPos.getValue();
-            File file = mImageFiles.getValue().remove(index);
+            ImageState current = mImageState.getValue();
+            int index = current.currentIndex;
+            ArrayList<File> files = new ArrayList<>(current.files);
+            File file = files.remove(index);
             int position = index - 1;
             if (position < 0) {
                 position = 0;
             }
-            mImageIdxPos.onNext(position);
+            mImageState.onNext(new ImageState(files, position));
             mDeletedFile.onNext(file);
         } else if (id == R.id.imageView) {
-            File file = mImageFiles.getValue().get(mImageIdxPos.getValue());
+            ImageState current = mImageState.getValue();
+            File file = current.files.get(current.currentIndex);
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
                     ImageViewPage.Args.withFile(file), null,
                     RouteOptions.withTransition(R.transition.page_imageview_enter,
@@ -216,9 +202,8 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
 
     private void imageRequestResult(Uri fullPhotoUri) {
         mRxDisposer.add("imageRequestResult",
-                Single.fromFuture(mExecutorService.submit(() -> mFileHelper
-                                .createImageTempFile(fullPhotoUri))
-                        ).subscribeOn(Schedulers.from(mExecutorService))
+                Single.fromCallable(() -> mFileHelper.createImageTempFile(fullPhotoUri))
+                        .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe((imageFile, throwable) -> {
                             if (throwable != null) {
@@ -233,11 +218,11 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
     }
 
     public void setImageFiles(Collection<File> files) {
-        if (files != null && !files.isEmpty()) {
-            mImageFiles.onNext(new ArrayList<>(files));
-        } else {
-            mImageFiles.onNext(new ArrayList<>());
-        }
+        ArrayList<File> fileList = (files != null && !files.isEmpty())
+                ? new ArrayList<>(files) : new ArrayList<>();
+        ImageState current = mImageState.getValue();
+        int index = Math.min(current.currentIndex, Math.max(0, fileList.size() - 1));
+        mImageState.onNext(new ImageState(fileList, index));
     }
 
     public Subject<File> getDeletedFileSubject() {
@@ -249,13 +234,13 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
     }
 
     public void addImage(File file) {
-        List<File> images = mImageFiles.getValue();
-        images.add(file);
-        mImageIdxPos.onNext(images.size() - 1);
+        ImageState current = mImageState.getValue();
+        ArrayList<File> files = new ArrayList<>(current.files);
+        files.add(file);
+        mImageState.onNext(new ImageState(files, files.size() - 1));
     }
 
-    private void setImage(ImageView imageView, int index) {
-        File file = mImageFiles.getValue().get(index);
+    private void setImage(ImageView imageView, File file) {
         if (file != null) {
             Uri uri = Uri.fromFile(file);
             imageView.setImageURI(uri);
@@ -283,5 +268,15 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
         Context context = mSvProvider.getContext();
         return ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED;
+    }
+
+    private static class ImageState implements Serializable {
+        final ArrayList<File> files;
+        final int currentIndex;
+
+        ImageState(ArrayList<File> files, int currentIndex) {
+            this.files = files;
+            this.currentIndex = currentIndex;
+        }
     }
 }

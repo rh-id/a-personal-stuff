@@ -93,7 +93,7 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
             return;
         }
         mLock.lock();
-        Future<Item> itemFuture = mExecutorService.submit(() -> mItemDao.finditemById(itemReminder.itemId));
+        Future<Item> itemFuture = mExecutorService.submit(() -> mItemDao.findItemById(itemReminder.itemId));
         createItemReminderNotificationChannel(mAppContext);
         AndroidNotification androidNotification = new AndroidNotification();
         androidNotification.groupKey = GROUP_KEY_ITEM_REMINDER;

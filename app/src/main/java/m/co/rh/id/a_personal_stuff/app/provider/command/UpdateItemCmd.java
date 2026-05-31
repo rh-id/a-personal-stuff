@@ -1,6 +1,7 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.aprovider.Provider;
 
@@ -10,10 +11,10 @@ public class UpdateItemCmd extends NewItemCmd {
     }
 
     public Single<ItemState> execute(ItemState itemState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemDao.updateItem(itemState);
             mItemChangeNotifier.itemUpdated(itemState.clone());
             return itemState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

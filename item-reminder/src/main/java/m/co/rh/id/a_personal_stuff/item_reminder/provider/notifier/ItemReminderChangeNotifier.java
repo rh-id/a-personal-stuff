@@ -3,15 +3,16 @@ package m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 
 public class ItemReminderChangeNotifier {
-    private PublishSubject<ItemReminder> mAddedSubject;
-    private PublishSubject<ItemReminder> mDeletedSubject;
+    private Subject<ItemReminder> mAddedSubject;
+    private Subject<ItemReminder> mDeletedSubject;
 
     public ItemReminderChangeNotifier() {
-        mAddedSubject = PublishSubject.create();
-        mDeletedSubject = PublishSubject.create();
+        mAddedSubject = PublishSubject.<ItemReminder>create().toSerialized();
+        mDeletedSubject = PublishSubject.<ItemReminder>create().toSerialized();
     }
 
     public void added(ItemReminder itemReminder) {

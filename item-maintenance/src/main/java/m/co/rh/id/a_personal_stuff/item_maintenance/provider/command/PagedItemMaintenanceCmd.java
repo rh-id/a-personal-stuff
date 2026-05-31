@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.model.ItemMaintenanceState;
 import m.co.rh.id.aprovider.Provider;
@@ -21,13 +22,17 @@ public class PagedItemMaintenanceCmd {
     private String mSearch;
     private final BehaviorSubject<ArrayList<ItemMaintenanceState>> mItemMaintenanceStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
+    private final Subject<ArrayList<ItemMaintenanceState>> mItemMaintenanceStatesEmitter;
+    private final Subject<Boolean> mIsLoadingEmitter;
 
     public PagedItemMaintenanceCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
         mItemMaintenanceStatesSubject = BehaviorSubject.createDefault(new ArrayList<>());
+        mItemMaintenanceStatesEmitter = mItemMaintenanceStatesSubject.toSerialized();
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
+        mIsLoadingEmitter = mIsLoadingSubject.toSerialized();
         resetPage();
     }
 
@@ -41,15 +46,15 @@ public class PagedItemMaintenanceCmd {
             if (!isSearching()) {
                 load();
             } else {
-                mIsLoadingSubject.onNext(true);
+                mIsLoadingEmitter.onNext(true);
                 try {
-                    mItemMaintenanceStatesSubject.onNext(new ArrayList<>(
+                    mItemMaintenanceStatesEmitter.onNext(new ArrayList<>(
                             mItemMaintenanceDao.searchItemMaintenanceStateByItemId(mItemId, search))
                     );
                 } catch (Throwable throwable) {
-                    mItemMaintenanceStatesSubject.onError(throwable);
+                    mItemMaintenanceStatesEmitter.onNext(new ArrayList<>());
                 } finally {
-                    mIsLoadingSubject.onNext(false);
+                    mIsLoadingEmitter.onNext(false);
                 }
             }
         });
@@ -79,14 +84,14 @@ public class PagedItemMaintenanceCmd {
 
     private void load() {
         mExecutorService.execute(() -> {
-            mIsLoadingSubject.onNext(true);
+            mIsLoadingEmitter.onNext(true);
             try {
-                mItemMaintenanceStatesSubject.onNext(
+                mItemMaintenanceStatesEmitter.onNext(
                         loadItems());
             } catch (Throwable throwable) {
-                mItemMaintenanceStatesSubject.onError(throwable);
+                mItemMaintenanceStatesEmitter.onNext(mItemMaintenanceStatesSubject.getValue());
             } finally {
-                mIsLoadingSubject.onNext(false);
+                mIsLoadingEmitter.onNext(false);
             }
         });
     }
@@ -100,11 +105,11 @@ public class PagedItemMaintenanceCmd {
     }
 
     public Flowable<ArrayList<ItemMaintenanceState>> getItemMaintenanceStatesFlow() {
-        return Flowable.fromObservable(mItemMaintenanceStatesSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mItemMaintenanceStatesEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<Boolean> getLoadingFlow() {
-        return Flowable.fromObservable(mIsLoadingSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mIsLoadingEmitter, BackpressureStrategy.BUFFER);
     }
 
     private void resetPage() {

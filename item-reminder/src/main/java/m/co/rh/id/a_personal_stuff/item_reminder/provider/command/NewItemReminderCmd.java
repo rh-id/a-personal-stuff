@@ -14,7 +14,9 @@ import java.util.concurrent.TimeUnit;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_reminder.R;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
@@ -32,6 +34,8 @@ public class NewItemReminderCmd {
 
     protected BehaviorSubject<String> mReminderDateTimeValidSubject;
     protected BehaviorSubject<String> mMessageValidSubject;
+    protected Subject<String> mReminderDateTimeValidEmitter;
+    protected Subject<String> mMessageValidEmitter;
 
     public NewItemReminderCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -40,19 +44,19 @@ public class NewItemReminderCmd {
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mItemReminderChangeNotifier = provider.get(ItemReminderChangeNotifier.class);
         mReminderDateTimeValidSubject = BehaviorSubject.create();
+        mReminderDateTimeValidEmitter = mReminderDateTimeValidSubject.toSerialized();
         mMessageValidSubject = BehaviorSubject.create();
+        mMessageValidEmitter = mMessageValidSubject.toSerialized();
     }
 
     public Single<ItemReminder> execute(ItemReminder itemReminder) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemReminderDao.insertItemReminder(itemReminder);
             ItemReminder clone = itemReminder.clone();
-            mExecutorService.execute(() -> {
-                setupWork(clone);
-                mItemReminderChangeNotifier.added(clone);
-            });
+            setupWork(clone);
+            mItemReminderChangeNotifier.added(clone);
             return itemReminder;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     private void setupWork(ItemReminder itemReminder) {
@@ -75,17 +79,17 @@ public class NewItemReminderCmd {
             boolean messageValid;
             if (itemReminder.reminderDateTime != null) {
                 reminderDateTimeValid = true;
-                mReminderDateTimeValidSubject.onNext("");
+                mReminderDateTimeValidEmitter.onNext("");
             } else {
                 reminderDateTimeValid = false;
-                mReminderDateTimeValidSubject.onNext(mAppContext.getString(R.string.reminder_date_time_is_required));
+                mReminderDateTimeValidEmitter.onNext(mAppContext.getString(R.string.reminder_date_time_is_required));
             }
             if (itemReminder.message != null && !itemReminder.message.isEmpty()) {
                 messageValid = true;
-                mMessageValidSubject.onNext("");
+                mMessageValidEmitter.onNext("");
             } else {
                 messageValid = false;
-                mMessageValidSubject.onNext(mAppContext.getString(R.string.message_is_required));
+                mMessageValidEmitter.onNext(mAppContext.getString(R.string.message_is_required));
             }
             valid = reminderDateTimeValid && messageValid;
         }
@@ -93,11 +97,11 @@ public class NewItemReminderCmd {
     }
 
     public Flowable<String> getRemiderDateTimeValidFlow() {
-        return Flowable.fromObservable(mReminderDateTimeValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mReminderDateTimeValidEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<String> getMessageValidFlow() {
-        return Flowable.fromObservable(mMessageValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mMessageValidEmitter, BackpressureStrategy.BUFFER);
     }
 
     public String getValidationError() {

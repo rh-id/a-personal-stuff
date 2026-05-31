@@ -7,7 +7,9 @@ import java.util.concurrent.ExecutorService;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_maintenance.R;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
@@ -23,6 +25,8 @@ public class NewItemMaintenanceCmd {
 
     protected BehaviorSubject<String> mMaintenanceDateTimeValidSubject;
     protected BehaviorSubject<String> mDescriptionValidSubject;
+    protected Subject<String> mMaintenanceDateTimeValidEmitter;
+    protected Subject<String> mDescriptionValidEmitter;
 
     public NewItemMaintenanceCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -30,16 +34,17 @@ public class NewItemMaintenanceCmd {
         mItemMaintenanceChangeNotifier = provider.get(ItemMaintenanceChangeNotifier.class);
         mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
         mMaintenanceDateTimeValidSubject = BehaviorSubject.create();
+        mMaintenanceDateTimeValidEmitter = mMaintenanceDateTimeValidSubject.toSerialized();
         mDescriptionValidSubject = BehaviorSubject.create();
+        mDescriptionValidEmitter = mDescriptionValidSubject.toSerialized();
     }
 
     public Single<ItemMaintenanceState> execute(ItemMaintenanceState itemMaintenanceState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
                     mItemMaintenanceDao.insertItemMaintenance(itemMaintenanceState);
                     mItemMaintenanceChangeNotifier.itemMaintenanceAdded(itemMaintenanceState.clone());
                     return itemMaintenanceState;
-                })
-        );
+                }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public boolean valid(ItemMaintenanceState itemMaintenanceState) {
@@ -50,17 +55,17 @@ public class NewItemMaintenanceCmd {
             ItemMaintenance itemMaintenance = itemMaintenanceState.getItemMaintenance();
             if (itemMaintenance.maintenanceDateTime != null) {
                 maintenanceDateTimeValid = true;
-                mMaintenanceDateTimeValidSubject.onNext("");
+                mMaintenanceDateTimeValidEmitter.onNext("");
             } else {
                 maintenanceDateTimeValid = false;
-                mMaintenanceDateTimeValidSubject.onNext(mAppContext.getString(R.string.maintenance_date_time_is_required));
+                mMaintenanceDateTimeValidEmitter.onNext(mAppContext.getString(R.string.maintenance_date_time_is_required));
             }
             if (itemMaintenance.description != null && !itemMaintenance.description.isEmpty()) {
                 descValid = true;
-                mDescriptionValidSubject.onNext("");
+                mDescriptionValidEmitter.onNext("");
             } else {
                 descValid = false;
-                mDescriptionValidSubject.onNext(mAppContext.getString(R.string.description_is_required));
+                mDescriptionValidEmitter.onNext(mAppContext.getString(R.string.description_is_required));
             }
             valid = maintenanceDateTimeValid && descValid;
         }
@@ -80,10 +85,10 @@ public class NewItemMaintenanceCmd {
     }
 
     public Flowable<String> getMaintenanceDateTimeValidFlow() {
-        return Flowable.fromObservable(mMaintenanceDateTimeValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mMaintenanceDateTimeValidEmitter, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<String> getDescriptionValidFlow() {
-        return Flowable.fromObservable(mDescriptionValidSubject, BackpressureStrategy.BUFFER);
+        return Flowable.fromObservable(mDescriptionValidEmitter, BackpressureStrategy.BUFFER);
     }
 }

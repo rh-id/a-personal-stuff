@@ -16,10 +16,11 @@ import m.co.rh.id.aprovider.Provider;
 
 public abstract class BaseApplication extends Application implements Configuration.Provider {
     public static BaseApplication of(Context context) {
-        if (context.getApplicationContext() instanceof BaseApplication) {
-            return (BaseApplication) context.getApplicationContext();
+        Application app = (Application) context.getApplicationContext();
+        if (app instanceof BaseApplication) {
+            return (BaseApplication) app;
         }
-        return null;
+        throw new IllegalStateException("Application is not BaseApplication");
     }
 
     public abstract Provider getProvider();

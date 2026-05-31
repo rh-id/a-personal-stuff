@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
 import m.co.rh.id.a_personal_stuff.item_maintenance.model.ItemMaintenanceState;
@@ -20,12 +21,12 @@ public class QueryItemMaintenanceCmd {
     }
 
     public Single<ItemMaintenanceState> findItemMaintenanceStateById(long id) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                mItemMaintenanceDao.findItemMaintenanceStateById(id)));
+        return Single.fromCallable(() ->
+                mItemMaintenanceDao.findItemMaintenanceStateById(id)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchItemMaintenanceDescription(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<ItemMaintenance> itemMaintenances = mItemMaintenanceDao.searchItemMaintenanceDescription(search);
@@ -35,6 +36,6 @@ public class QueryItemMaintenanceCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

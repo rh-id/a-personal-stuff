@@ -3,6 +3,7 @@ package m.co.rh.id.a_personal_stuff.item_usage.provider.command;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageState;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
@@ -20,10 +21,10 @@ public class DeleteItemUsageCmd {
     }
 
     public Single<ItemUsageState> execute(ItemUsageState itemUsageState) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemUsageDao.deleteItemUsage(itemUsageState);
             mItemUsageChangeNotifier.itemUsageDeleted(itemUsageState.clone());
             return itemUsageState;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

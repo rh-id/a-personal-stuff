@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
@@ -22,18 +23,17 @@ public class QueryItemCmd {
     }
 
     public Single<List<ItemState>> findItemStateByItemIds(List<Long> itemIds) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                mItemDao.findItemStatesByIds(itemIds)));
+        return Single.fromCallable(() ->
+                mItemDao.findItemStatesByIds(itemIds)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<ItemState> findItemStateByItemId(long itemId) {
-        return Single.fromFuture(mExecutorService.submit(() ->
-                findItemStateByItemIds(Collections.singletonList(itemId)).blockingGet()
-                        .get(0)));
+        return Single.fromCallable(() ->
+                mItemDao.findItemStatesByIds(Collections.singletonList(itemId)).get(0)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<String>> searchItemTag(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<String> linkedHashSet = new LinkedHashSet<>();
             List<ItemTag> itemTags = mItemDao.searchItemTag(search);
@@ -43,11 +43,11 @@ public class QueryItemCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public Single<LinkedHashSet<Item>> searchItemBarcode(String search) {
-        return Single.fromFuture(mExecutorService.submit(() ->
+        return Single.fromCallable(() ->
         {
             LinkedHashSet<Item> linkedHashSet = new LinkedHashSet<>();
             List<Item> itemBarcodes = mItemDao.searchItemBarcode(search);
@@ -61,6 +61,6 @@ public class QueryItemCmd {
                 }
             }
             return linkedHashSet;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }

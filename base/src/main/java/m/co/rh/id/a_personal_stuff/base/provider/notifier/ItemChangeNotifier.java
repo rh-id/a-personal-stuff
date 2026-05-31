@@ -5,27 +5,28 @@ import java.util.List;
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 
 public class ItemChangeNotifier {
-    private PublishSubject<ItemState> mAddedSubject;
-    private PublishSubject<ItemState> mUpdatedSubject;
-    private PublishSubject<ItemState> mDeletedSubject;
-    private PublishSubject<List<ItemImage>> mDeletedItemImagesSubject;
-    private PublishSubject<ItemImage> mAddedItemImageSubject;
-    private PublishSubject<ItemTag> mDeletedItemTagSubject;
-    private PublishSubject<ItemTag> mAddedItemTagSubject;
+    private Subject<ItemState> mAddedSubject;
+    private Subject<ItemState> mUpdatedSubject;
+    private Subject<ItemState> mDeletedSubject;
+    private Subject<List<ItemImage>> mDeletedItemImagesSubject;
+    private Subject<ItemImage> mAddedItemImageSubject;
+    private Subject<ItemTag> mDeletedItemTagSubject;
+    private Subject<ItemTag> mAddedItemTagSubject;
 
     public ItemChangeNotifier() {
-        mAddedSubject = PublishSubject.create();
-        mUpdatedSubject = PublishSubject.create();
-        mDeletedSubject = PublishSubject.create();
-        mDeletedItemImagesSubject = PublishSubject.create();
-        mAddedItemImageSubject = PublishSubject.create();
-        mDeletedItemTagSubject = PublishSubject.create();
-        mAddedItemTagSubject = PublishSubject.create();
+        mAddedSubject = PublishSubject.<ItemState>create().toSerialized();
+        mUpdatedSubject = PublishSubject.<ItemState>create().toSerialized();
+        mDeletedSubject = PublishSubject.<ItemState>create().toSerialized();
+        mDeletedItemImagesSubject = PublishSubject.<List<ItemImage>>create().toSerialized();
+        mAddedItemImageSubject = PublishSubject.<ItemImage>create().toSerialized();
+        mDeletedItemTagSubject = PublishSubject.<ItemTag>create().toSerialized();
+        mAddedItemTagSubject = PublishSubject.<ItemTag>create().toSerialized();
     }
 
     public void itemAdded(ItemState itemState) {

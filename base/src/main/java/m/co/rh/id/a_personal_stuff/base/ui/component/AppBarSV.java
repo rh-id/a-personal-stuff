@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import androidx.appcompat.widget.Toolbar;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_personal_stuff.base.BaseApplication;
 import m.co.rh.id.a_personal_stuff.base.R;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -64,7 +65,8 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
         }
         toolbar.setOnMenuItemClickListener(this);
         mRxDisposer.add("createView_updateTitle",
-                mUpdateTitle.getSubject().subscribe(toolbar::setTitle));
+                mUpdateTitle.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(toolbar::setTitle));
         return view;
     }
 

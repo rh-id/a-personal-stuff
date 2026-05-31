@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
@@ -21,10 +22,10 @@ public class DeleteItemImageCmd {
     }
 
     public Single<List<ItemImage>> execute(List<ItemImage> itemImages) {
-        return Single.fromFuture(mExecutorService.submit(() -> {
+        return Single.fromCallable(() -> {
             mItemDao.deleteItemImages(itemImages);
             mItemChangeNotifier.itemImageDeleted(itemImages);
             return itemImages;
-        }));
+        }).subscribeOn(Schedulers.from(mExecutorService));
     }
 }
