@@ -54,4 +54,16 @@
     <string name="sort_by_updated_date_time_desc">Updated Date Time Descending</string>
     <string name="sort_by_created_date_time_asc">Created Date Time Ascending</string>
     <string name="sort_by_created_date_time_desc">Created Date Time Descending</string>
+    <string name="export_data">Export Data</string>
+    <string name="import_data">Import Data</string>
+    <string name="share_backup_file">Share backup file</string>
+    <string name="export_failed">Export failed</string>
+    <string name="import_success">Import complete, %d items imported</string>
+    <string name="import_failed">Import failed</string>
+    <string name="export_progress_gathering">Gathering data…</string>
+    <string name="export_progress_writing">Writing backup…</string>
+    <string name="export_progress_images">Packaging images (%d/6)…</string>
+    <string name="import_progress_extracting">Extracting backup…</string>
+    <string name="import_progress_reading">Reading backup…</string>
+    <string name="import_progress_importing">Importing item %d/%d…</string>
 </resources>

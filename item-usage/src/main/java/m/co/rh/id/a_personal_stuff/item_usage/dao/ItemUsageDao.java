@@ -145,4 +145,10 @@ public abstract class ItemUsageDao {
 
     @Query("SELECT * FROM item_usage WHERE item_id = :itemId")
     public abstract List<ItemUsage> findItemUsageByItemId(long itemId);
+
+    @Query("SELECT * FROM item_usage")
+    public abstract List<ItemUsage> findAllItemUsages();
+
+    @Query("SELECT * FROM item_usage_image")
+    public abstract List<ItemUsageImage> findAllItemUsageImages();
 }

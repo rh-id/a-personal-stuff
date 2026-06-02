@@ -34,4 +34,7 @@ public abstract class ItemReminderDao {
 
     @Query("SELECT * FROM item_reminder WHERE item_id = :itemId LIMIT :limit")
     public abstract List<ItemReminder> findItemReminderByItemIdWithLimit(long itemId, int limit);
+
+    @Query("SELECT * FROM item_reminder")
+    public abstract List<ItemReminder> findAllItemReminders();
 }

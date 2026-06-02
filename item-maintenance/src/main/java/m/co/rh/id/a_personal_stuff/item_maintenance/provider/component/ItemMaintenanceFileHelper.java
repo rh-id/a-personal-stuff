@@ -124,4 +124,8 @@ public class ItemMaintenanceFileHelper {
     public File getItemMaintenanceImageParent() {
         return mItemMaintenanceImageParent;
     }
+
+    public File getItemMaintenanceImageThumbnailParent() {
+        return mItemMaintenanceImageThumbnailParent;
+    }
 }

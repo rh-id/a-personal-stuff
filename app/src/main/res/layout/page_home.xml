@@ -63,7 +63,38 @@
                 android:gravity="center"
                 android:text="@string/title_add_item_reminder"
                 app:icon="@drawable/ic_add_alert_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_export"
+                style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:gravity="center"
+                android:text="@string/export_data"
+                app:icon="@drawable/ic_file_upload_black" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_import"
+                style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:gravity="center"
+                android:text="@string/import_data"
+                app:icon="@drawable/ic_file_download_black" />
         </GridLayout>
+        <TextView
+            android:id="@+id/text_backup_progress"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="8dp"
+            android:textColor="?attr/colorOnSurface"
+            android:visibility="gone"
+            android:text="" />
     </LinearLayout>
 
     <androidx.appcompat.widget.LinearLayoutCompat

@@ -39,10 +39,15 @@ public class FileHelper {
         mAppContext = provider.getContext().getApplicationContext();
         mLogger = provider.lazyGet(ILogger.class);
         File cacheDir = mAppContext.getCacheDir();
-        File fileDir = mAppContext.getFilesDir();
         mLogFile = new File(cacheDir, "alogger/app.log");
         mTempFileRoot = new File(cacheDir, "/tmp");
         mTempFileRoot.mkdirs();
+    }
+
+    public File createTempDir() {
+        File dir = new File(mTempFileRoot, UUID.randomUUID().toString());
+        dir.mkdirs();
+        return dir;
     }
 
     public File createTempFile(String fileName) throws IOException {
@@ -101,6 +106,10 @@ public class FileHelper {
 
     public File getLogFile() {
         return mLogFile;
+    }
+
+    public String generateImageFileName() {
+        return UUID.randomUUID().toString() + ".jpg";
     }
 
     public File createImageTempFile() throws IOException {

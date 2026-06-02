@@ -152,4 +152,10 @@ public abstract class ItemMaintenanceDao {
 
     @Query("SELECT * FROM item_maintenance WHERE description LIKE '%'||:search||'%'")
     public abstract List<ItemMaintenance> searchItemMaintenanceDescription(String search);
+
+    @Query("SELECT * FROM item_maintenance")
+    public abstract List<ItemMaintenance> findAllItemMaintenances();
+
+    @Query("SELECT * FROM item_maintenance_image")
+    public abstract List<ItemMaintenanceImage> findAllItemMaintenanceImages();
 }

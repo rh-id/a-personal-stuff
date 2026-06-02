@@ -117,6 +117,10 @@ public class ItemUsageFileHelper {
         return mItemUsageImageParent;
     }
 
+    public File getItemUsageImageThumbnailParent() {
+        return mItemUsageImageThumbnailParent;
+    }
+
     public void deleteItemUsageImage(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             File file = new File(mItemUsageImageParent, fileName);

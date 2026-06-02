@@ -120,6 +120,10 @@ public class ItemFileHelper {
         return mItemImageParent;
     }
 
+    public File getItemImageThumbnailParent() {
+        return mItemImageThumbnailParent;
+    }
+
     public void deleteItemImage(String fileName) {
         if (fileName != null && !fileName.isEmpty()) {
             File file = new File(mItemImageParent, fileName);

@@ -1,9 +1,12 @@
 package m.co.rh.id.a_personal_stuff.app.ui.page;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -11,15 +14,21 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
+import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_personal_stuff.app.provider.command.ExportCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.command.ImportCmd;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
+import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsageDetailPage;
@@ -28,33 +37,42 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
-public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
+public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, NavOnActivityResult<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
     private static final String TAG = HomePage.class.getName();
+    private static final int REQUEST_CODE_IMPORT = 1001;
 
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
-    private AppBarSV mAppBarSV;
+    private transient AppBarSV mAppBarSV;
     private boolean mIsDrawerOpen;
     private transient long mLastBackPressMilis;
 
-    // component
     private transient Provider mSvProvider;
     private transient ExecutorService mExecutorService;
     private transient AppNotificationHandler mAppNotificationHandler;
     private transient RxDisposer mRxDisposer;
     private transient QueryItemCmd mQueryItemCmd;
+    private transient ExportCmd mExportCmd;
+    private transient ImportCmd mImportCmd;
+    private transient FileHelper mFileHelper;
+    private transient ILogger mLogger;
+    private transient CompositeDisposable mCompositeDisposable;
 
-    // View related
     private transient DrawerLayout mDrawerLayout;
     private transient View.OnClickListener mOnNavigationClicked;
+    private transient Button mButtonExport;
+    private transient Button mButtonImport;
+    private transient TextView mTextBackupProgress;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
+        mCompositeDisposable = new CompositeDisposable();
     }
 
     @Override
@@ -64,6 +82,10 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
+        mExportCmd = mSvProvider.get(ExportCmd.class);
+        mImportCmd = mSvProvider.get(ImportCmd.class);
+        mFileHelper = mSvProvider.get(FileHelper.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
@@ -95,6 +117,15 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addItemMaintenanceButton.setOnClickListener(this);
         Button addItemReminderButton = rootLayout.findViewById(R.id.button_add_item_reminder);
         addItemReminderButton.setOnClickListener(this);
+        mButtonExport = rootLayout.findViewById(R.id.button_export);
+        mButtonImport = rootLayout.findViewById(R.id.button_import);
+        if (mButtonExport != null) {
+            mButtonExport.setOnClickListener(this);
+        }
+        if (mButtonImport != null) {
+            mButtonImport.setOnClickListener(this);
+        }
+        mTextBackupProgress = rootLayout.findViewById(R.id.text_backup_progress);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
         mRxDisposer.add("createView_onNotificationEvent",
@@ -122,12 +153,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         super.dispose(activity);
         mAppBarSV.dispose(activity);
         mAppBarSV = null;
+        if (mCompositeDisposable != null) {
+            mCompositeDisposable.dispose();
+            mCompositeDisposable = null;
+        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
         }
         mDrawerLayout = null;
         mOnNavigationClicked = null;
+        mButtonExport = null;
+        mButtonImport = null;
+        mTextBackupProgress = null;
     }
 
     @Override
@@ -147,8 +185,17 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     }
 
     @Override
+    public void onActivityResult(View currentView, Activity activity, INavigator navigator, int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE_IMPORT && resultCode == Activity.RESULT_OK && data != null) {
+            Uri uri = data.getData();
+            if (uri != null) {
+                performImport(activity, uri);
+            }
+        }
+    }
+
+    @Override
     public void onDrawerSlide(@NonNull View drawerView, float slideOffset) {
-        // Leave blank
     }
 
     @Override
@@ -163,7 +210,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     @Override
     public void onDrawerStateChanged(int newState) {
-        // Leave blank
     }
 
     @Override
@@ -186,6 +232,99 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_add_item_reminder) {
             mNavigator.push(Routes.ITEM_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> itemSelectedForReminder(navRoute));
+        } else if (id == R.id.button_export) {
+            doExport((Activity) view.getContext());
+        } else if (id == R.id.button_import) {
+            doImport((Activity) view.getContext());
+        }
+    }
+
+    private void doExport(Activity activity) {
+        setLoading(true);
+        mCompositeDisposable.add(
+                mExportCmd.getProgressFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                progress -> {
+                                    if (mTextBackupProgress != null) {
+                                        mTextBackupProgress.setText(progress);
+                                    }
+                                },
+                                throwable -> {
+                                }
+                        )
+        );
+        mCompositeDisposable.add(
+                mExportCmd.execute()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                zipFile -> {
+                                    setLoading(false);
+                                    UiUtils.shareFile(activity, zipFile,
+                                            activity.getString(R.string.share_backup_file));
+                                },
+                                throwable -> {
+                                    setLoading(false);
+                                    mLogger.e(TAG, activity.getString(R.string.export_failed), throwable);
+                                }
+                        )
+        );
+    }
+
+    private void doImport(Activity activity) {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        activity.startActivityForResult(intent, REQUEST_CODE_IMPORT);
+    }
+
+    private void performImport(Activity activity, Uri uri) {
+        setLoading(true);
+        mCompositeDisposable.add(
+                mImportCmd.getProgressFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                progress -> {
+                                    if (mTextBackupProgress != null) {
+                                        mTextBackupProgress.setText(progress);
+                                    }
+                                },
+                                throwable -> {
+                                }
+                        )
+        );
+        mCompositeDisposable.add(
+                Single.fromCallable(() -> mFileHelper.createTempFile("backup_import.aps_backup", uri))
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .flatMap(tempFile -> mImportCmd.execute(tempFile))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                count -> {
+                                    setLoading(false);
+                                    mLogger.i(TAG, activity.getString(R.string.import_success, count));
+                                },
+                                throwable -> {
+                                    setLoading(false);
+                                    mLogger.e(TAG, activity.getString(R.string.import_failed), throwable);
+                                }
+                        )
+        );
+    }
+
+    private void setLoading(boolean loading) {
+        if (mButtonExport != null) {
+            mButtonExport.setEnabled(!loading);
+        }
+        if (mButtonImport != null) {
+            mButtonImport.setEnabled(!loading);
+        }
+        if (mTextBackupProgress != null) {
+            if (loading) {
+                mTextBackupProgress.setVisibility(View.VISIBLE);
+                mTextBackupProgress.setText("");
+            } else {
+                mTextBackupProgress.setVisibility(View.GONE);
+            }
         }
     }
 
