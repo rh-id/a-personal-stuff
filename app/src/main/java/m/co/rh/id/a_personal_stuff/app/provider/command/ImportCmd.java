@@ -1,5 +1,6 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
+import android.content.Context;
 import androidx.work.Data;
 import androidx.work.ExistingWorkPolicy;
 import androidx.work.OneTimeWorkRequest;
@@ -31,6 +32,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
+import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
@@ -67,6 +69,7 @@ public class ImportCmd {
     private static final int BUFFER_SIZE = 2048;
 
     private final ExecutorService mExecutorService;
+    private final Context mAppContext;
     private final ILogger mLogger;
     private final FileHelper mFileHelper;
     private final ItemDao mItemDao;
@@ -84,6 +87,7 @@ public class ImportCmd {
     private final Subject<String> mProgressSubject = PublishSubject.create();
 
     public ImportCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mLogger = provider.get(ILogger.class);
         mFileHelper = provider.get(FileHelper.class);
@@ -107,11 +111,11 @@ public class ImportCmd {
 
     public Single<Integer> execute(File backupFile) {
         return Single.fromCallable(() -> {
-            mProgressSubject.onNext("Extracting backup...");
+            mProgressSubject.onNext(mAppContext.getString(R.string.import_progress_extracting));
             File tempDir = mFileHelper.createTempDir();
             try {
                 extractZip(backupFile, tempDir);
-                mProgressSubject.onNext("Reading backup...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.import_progress_reading));
                 File jsonFile = new File(tempDir, BACKUP_JSON_ENTRY);
                 BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(jsonFile), StandardCharsets.UTF_8));
                 StringBuilder sb = new StringBuilder();
@@ -212,7 +216,7 @@ public class ImportCmd {
             }
             mItemChangeNotifier.itemAdded(itemState.clone());
             count++;
-            mProgressSubject.onNext("Importing item " + count + "/" + data.items.size() + "...");
+            mProgressSubject.onNext(mAppContext.getString(R.string.import_progress_importing, count, data.items.size()));
         }
         for (ItemMaintenance e : data.itemMaintenances) {
             Long newItemId = oldToNewItemId.get(e.itemId);

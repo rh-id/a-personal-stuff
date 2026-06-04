@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Gjenstandpåminning</string>
+    <string name="notification_description_item_reminder">Varslingskanal for gjenstandpåminning</string>
+    <string name="save">Lagre</string>
+    <string name="form_reminder_date_time">Påminningsdato og -tid</string>
+    <string name="form_message">Melding</string>
+    <string name="reminder_date_time_is_required">Påminningsdato og -tid er påkravd</string>
+    <string name="message_is_required">Melding er påkravd</string>
+    <string name="title_add_item_reminder">Legg til gjenstandpåminning</string>
+    <string name="success_add_item_reminder">Gjenstandpåminning lagt til</string>
+    <string name="title_reminders">Påminningar</string>
+    <string name="title_add">Legg til</string>
+    <string name="title_confirm_delete">Stadfest sletting</string>
+    <string name="confirm_delete_">Slett %s ?</string>
+    <string name="success_delete_item_reminder">Gjenstandpåminning sletta</string>
+</resources>

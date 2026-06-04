@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Promemoria dals objects</string>
+    <string name="notification_description_item_reminder">Canal da notificaziun per promemorias dals objects</string>
+    <string name="save">Memorisar</string>
+    <string name="form_reminder_date_time">Data dal promemoria</string>
+    <string name="form_message">Messadi</string>
+    <string name="reminder_date_time_is_required">La data dal promemoria è necessaria</string>
+    <string name="message_is_required">Il messadi è necessari</string>
+    <string name="title_add_item_reminder">Agiuntar promemoria dals objects</string>
+    <string name="success_add_item_reminder">Promemoria dals objects agiuntà</string>
+    <string name="title_reminders">Promemorias</string>
+    <string name="title_add">Agiuntar</string>
+    <string name="title_confirm_delete">Confermar la stiraziun</string>
+    <string name="confirm_delete_">Stizzar %s?</string>
+    <string name="success_delete_item_reminder">Promemoria dals objects stizzà</string>
+</resources>

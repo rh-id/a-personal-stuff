@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Eseme meeldetuletus</string>
+    <string name="notification_description_item_reminder">Eseme meeldetuletuse teavituse kanal</string>
+    <string name="save">Salvesta</string>
+    <string name="form_reminder_date_time">Meeldetuletuse kuupäev</string>
+    <string name="form_message">Sõnum</string>
+    <string name="reminder_date_time_is_required">Meeldetuletuse kuupäev on kohustuslik</string>
+    <string name="message_is_required">Sõnum on kohustuslik</string>
+    <string name="title_add_item_reminder">Lisa eseme meeldetuletus</string>
+    <string name="success_add_item_reminder">Eseme meeldetuletus lisatud</string>
+    <string name="title_reminders">Meeldetuletused</string>
+    <string name="title_add">Lisa</string>
+    <string name="title_confirm_delete">Kinnita kustutamine</string>
+    <string name="confirm_delete_">Kustutada %s?</string>
+    <string name="success_delete_item_reminder">Eseme meeldetuletus kustutatud</string>
+</resources>

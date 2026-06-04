@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_file">Annállskrá</string>
+    <string name="share_log_file">Deila annállskrá</string>
+    <string name="error_sharing_log_file">Villa við deilingu annállskrár</string>
+    <string name="clear_log_file">Hreinsa annállskrá</string>
+    <string name="log_file_deleted">Annállskrá eytt</string>
+    <string name="version_">Útgáfa:</string>
+    <string name="licenses">Leyfi</string>
+    <string name="theme_setting">Þemastilling</string>
+    <string name="follow_system">Fylgja kerfi</string>
+    <string name="light_mode">Ljóshamur</string>
+    <string name="dark_mode">Dökkt hamur</string>
+    <string name="settings">Stillingar</string>
+</resources>

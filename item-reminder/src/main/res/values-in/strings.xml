@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Pengingat item</string>
+    <string name="notification_description_item_reminder">Saluran notifikasi pengingat item</string>
+    <string name="save">Simpan</string>
+    <string name="form_reminder_date_time">Tanggal dan waktu pengingat</string>
+    <string name="form_message">Pesan</string>
+    <string name="reminder_date_time_is_required">Tanggal dan waktu pengingat wajib diisi</string>
+    <string name="message_is_required">Pesan wajib diisi</string>
+    <string name="title_add_item_reminder">Tambah Pengingat Item</string>
+    <string name="success_add_item_reminder">Pengingat item ditambahkan</string>
+    <string name="title_reminders">Pengingat</string>
+    <string name="title_add">Tambah</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Hapus %s ?</string>
+    <string name="success_delete_item_reminder">Pengingat item dihapus</string>
+</resources>

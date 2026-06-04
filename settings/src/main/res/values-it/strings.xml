@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_file">File di log</string>
+    <string name="share_log_file">Condividi file di log</string>
+    <string name="error_sharing_log_file">Errore nella condivisione del file di log</string>
+    <string name="clear_log_file">Cancella file di log</string>
+    <string name="log_file_deleted">File di log eliminato</string>
+    <string name="version_">Versione:</string>
+    <string name="licenses">Licenze</string>
+    <string name="theme_setting">Impostazione tema</string>
+    <string name="follow_system">Segui sistema</string>
+    <string name="light_mode">Modalità chiara</string>
+    <string name="dark_mode">Modalità scura</string>
+    <string name="settings">Impostazioni</string>
+</resources>

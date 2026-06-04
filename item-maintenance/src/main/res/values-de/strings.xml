@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="maintenance_date_time_is_required">Wartungsdatum und -uhrzeit erforderlich</string>
+    <string name="description_is_required">Beschreibung erforderlich</string>
+    <string name="title_add_item_maintenance">Artikelwartung hinzufügen</string>
+    <string name="success_add_item_maintenance">Artikelwartung hinzugefügt</string>
+    <string name="save">Speichern</string>
+    <string name="form_maintenance_date_time">Wartungsdatum und -uhrzeit</string>
+    <string name="form_cost">Kosten</string>
+    <string name="form_description">Beschreibung</string>
+    <string name="title_add">Hinzufügen</string>
+    <string name="title_maintenances">Wartungen</string>
+    <string name="success_delete_item_maintenance_image">Wartungsbild gelöscht</string>
+    <string name="success_add_item_maintenance_image">Wartungsbild hinzugefügt</string>
+    <string name="cost_">Kosten: %s</string>
+    <string name="description_">Beschreibung: %s</string>
+    <string name="title_confirm_delete">Löschen bestätigen</string>
+    <string name="confirm_delete_">\'%s\' löschen?</string>
+    <string name="success_delete_item_maintenance">Artikelwartung gelöscht</string>
+    <string name="hint_type_to_search">Zum Suchen tippen</string>
+    <string name="title_update_item_maintenance">Artikelwartung aktualisieren</string>
+</resources>

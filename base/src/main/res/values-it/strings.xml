@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permission_denied">Errore permesso negato</string>
+    <string name="share_image">Condividi immagine</string>
+    <string name="add_image">Aggiungi immagine</string>
+    <string name="add_photo">Aggiungi foto</string>
+    <string name="title_no_record">Nessun record</string>
+</resources>

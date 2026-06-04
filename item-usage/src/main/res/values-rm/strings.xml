@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">La quantità na po betg esser 0</string>
+    <string name="description_is_required">La descripziun è necessaria</string>
+    <string name="amount_">Quantità: %d</string>
+    <string name="description_">Descripziun: %s</string>
+    <string name="title_confirm_delete">Confermar la stiraziun</string>
+    <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
+    <string name="success_delete_item_usage">Utilisaziun dals objects stizzada</string>
+    <string name="title_usages">Utilisaziuns</string>
+    <string name="title_update_item_usage">Actualisar l\'utilisaziun dals objects</string>
+    <string name="title_add_item_usage">Agiuntar utilisaziun dals objects</string>
+    <string name="success_add_item_usage_image">Maletg da l\'utilisaziun dals objects agiuntà</string>
+    <string name="success_delete_item_usage_image">maletg da l\'utilisaziun dals objects stizzà</string>
+    <string name="success_add_item_usage">Utilisaziun dals objects agiuntada</string>
+    <string name="title_add">Agiuntar</string>
+    <string name="save">Memorisar</string>
+    <string name="hint_type_to_search">Tipisar per tschertgar</string>
+    <string name="form_amount">Quantità</string>
+    <string name="form_description">Descripziun</string>
+</resources>

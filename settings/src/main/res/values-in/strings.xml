@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_file">File Log</string>
+    <string name="share_log_file">Bagikan file log</string>
+    <string name="error_sharing_log_file">Error berbagi file log</string>
+    <string name="clear_log_file">Hapus file log</string>
+    <string name="log_file_deleted">File log dihapus</string>
+    <string name="version_">Versi:</string>
+    <string name="licenses">Lisensi</string>
+    <string name="theme_setting">Pengaturan Tema</string>
+    <string name="follow_system">Ikuti Sistem</string>
+    <string name="light_mode">Mode Terang</string>
+    <string name="dark_mode">Mode Gelap</string>
+    <string name="settings">Pengaturan</string>
+</resources>

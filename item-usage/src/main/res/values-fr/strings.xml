@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">La quantité ne peut pas être 0</string>
+    <string name="description_is_required">La description est requise</string>
+    <string name="amount_">Quantité: %d</string>
+    <string name="description_">Description: %s</string>
+    <string name="title_confirm_delete">Confirmer la suppression</string>
+    <string name="confirm_delete_">Voulez-vous vraiment supprimer %s ?</string>
+    <string name="success_delete_item_usage">Utilisation supprimée</string>
+    <string name="title_usages">Utilisations</string>
+    <string name="title_update_item_usage">Mettre à jour l\'utilisation</string>
+    <string name="title_add_item_usage">Ajouter une utilisation</string>
+    <string name="success_add_item_usage_image">Image d\'utilisation ajoutée</string>
+    <string name="success_delete_item_usage_image">Image d\'utilisation supprimée</string>
+    <string name="success_add_item_usage">Utilisation ajoutée</string>
+    <string name="title_add">Ajouter</string>
+    <string name="save">Enregistrer</string>
+    <string name="hint_type_to_search">Tapez pour rechercher</string>
+    <string name="form_amount">Quantité</string>
+    <string name="form_description">Description</string>
+</resources>

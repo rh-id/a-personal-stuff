@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">Jumlah tidak boleh 0</string>
+    <string name="description_is_required">Deskripsi wajib diisi</string>
+    <string name="amount_">Jumlah: %d</string>
+    <string name="description_">Deskripsi: %s</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
+    <string name="success_delete_item_usage">Penggunaan item dihapus</string>
+    <string name="title_usages">Penggunaan</string>
+    <string name="title_update_item_usage">Perbarui Penggunaan Item</string>
+    <string name="title_add_item_usage">Tambah Penggunaan Item</string>
+    <string name="success_add_item_usage_image">Gambar penggunaan item ditambahkan</string>
+    <string name="success_delete_item_usage_image">gambar penggunaan item dihapus</string>
+    <string name="success_add_item_usage">Penggunaan item ditambahkan</string>
+    <string name="title_add">Tambah</string>
+    <string name="save">Simpan</string>
+    <string name="hint_type_to_search">Ketik untuk mencari</string>
+    <string name="form_amount">Jumlah</string>
+    <string name="form_description">Deskripsi</string>
+</resources>

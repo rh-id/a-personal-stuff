@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permission_denied">Feil tilgang nektet</string>
+    <string name="share_image">Del bilde</string>
+    <string name="add_image">Legg til bilde</string>
+    <string name="add_photo">Legg til bilde</string>
+    <string name="title_no_record">Ingen poster</string>
+</resources>

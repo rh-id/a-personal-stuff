@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="maintenance_date_time_is_required">Viðhaldstími er nauðsynlegur</string>
+    <string name="description_is_required">Lýsing er nauðsynleg</string>
+    <string name="title_add_item_maintenance">Bæta við viðhaldi hluta</string>
+    <string name="success_add_item_maintenance">Viðhald hluta bætt við</string>
+    <string name="save">Vista</string>
+    <string name="form_maintenance_date_time">Viðhaldstími</string>
+    <string name="form_cost">Kostnaður</string>
+    <string name="form_description">Lýsing</string>
+    <string name="title_add">Bæta við</string>
+    <string name="title_maintenances">Viðhald</string>
+    <string name="success_delete_item_maintenance_image">Mynd viðhalds hluta eytt</string>
+    <string name="success_add_item_maintenance_image">Mynd viðhalds hluta bætt við</string>
+    <string name="cost_">Kostnaður: %s</string>
+    <string name="description_">Lýsing: %s</string>
+    <string name="title_confirm_delete">Staðfesta eyðingu</string>
+    <string name="confirm_delete_">Eyða \'%s\'?</string>
+    <string name="success_delete_item_maintenance">Viðhald hluta eytt</string>
+    <string name="hint_type_to_search">Skrifaðu til að leita</string>
+    <string name="title_update_item_maintenance">Uppfæra viðhald hluta</string>
+</resources>

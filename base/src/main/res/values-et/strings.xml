@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permission_denied">Viga, õigus tagasi lükatud</string>
+    <string name="share_image">Jaga pilti</string>
+    <string name="add_image">Lisa pilt</string>
+    <string name="add_photo">Lisa foto</string>
+    <string name="title_no_record">Kirjet pole</string>
+</resources>

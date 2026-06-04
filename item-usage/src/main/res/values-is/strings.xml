@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">Magn getur ekki verið 0</string>
+    <string name="description_is_required">Lýsing er nauðsynleg</string>
+    <string name="amount_">Magn: %d</string>
+    <string name="description_">Lýsing: %s</string>
+    <string name="title_confirm_delete">Staðfesta eyðingu</string>
+    <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
+    <string name="success_delete_item_usage">Notkun hluta eytt</string>
+    <string name="title_usages">Notkun</string>
+    <string name="title_update_item_usage">Uppfæra notkun hluta</string>
+    <string name="title_add_item_usage">Bæta við notkun hluta</string>
+    <string name="success_add_item_usage_image">Mynd notkunar hluta bætt við</string>
+    <string name="success_delete_item_usage_image">mynd notkunar hluta eytt</string>
+    <string name="success_add_item_usage">Notkun hluta bætt við</string>
+    <string name="title_add">Bæta við</string>
+    <string name="save">Vista</string>
+    <string name="hint_type_to_search">Skrifaðu til að leita</string>
+    <string name="form_amount">Magn</string>
+    <string name="form_description">Lýsing</string>
+</resources>

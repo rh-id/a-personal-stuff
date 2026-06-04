@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="maintenance_date_time_is_required">Vedlikeholds-dato og -tid er påkrevd</string>
+    <string name="description_is_required">Beskrivelse er påkrevd</string>
+    <string name="title_add_item_maintenance">Legg til gjenstandvedlikehold</string>
+    <string name="success_add_item_maintenance">Gjenstandvedlikehold lagt til</string>
+    <string name="save">Lagre</string>
+    <string name="form_maintenance_date_time">Vedlikeholds-dato og -tid</string>
+    <string name="form_cost">Kostnad</string>
+    <string name="form_description">Beskrivelse</string>
+    <string name="title_add">Legg til</string>
+    <string name="title_maintenances">Vedlikehold</string>
+    <string name="success_delete_item_maintenance_image">Gjenstandvedlikeholdbilde slettet</string>
+    <string name="success_add_item_maintenance_image">Gjenstandvedlikeholdbilde lagt til</string>
+    <string name="cost_">Kostnad: %s</string>
+    <string name="description_">Beskrivelse: %s</string>
+    <string name="title_confirm_delete">Bekreft sletting</string>
+    <string name="confirm_delete_">Slett \'%s\' ?</string>
+    <string name="success_delete_item_maintenance">Gjenstandvedlikehold slettet</string>
+    <string name="hint_type_to_search">Skriv for å søke</string>
+    <string name="title_update_item_maintenance">Oppdater gjenstandvedlikehold</string>
+</resources>

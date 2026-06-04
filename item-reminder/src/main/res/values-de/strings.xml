@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Artikel-Erinnerung</string>
+    <string name="notification_description_item_reminder">Artikel-Erinnerungsbenachrichtigungskanal</string>
+    <string name="save">Speichern</string>
+    <string name="form_reminder_date_time">Erinnerungsdatum und -uhrzeit</string>
+    <string name="form_message">Nachricht</string>
+    <string name="reminder_date_time_is_required">Erinnerungsdatum und -uhrzeit erforderlich</string>
+    <string name="message_is_required">Nachricht erforderlich</string>
+    <string name="title_add_item_reminder">Artikel-Erinnerung hinzufügen</string>
+    <string name="success_add_item_reminder">Artikel-Erinnerung hinzugefügt</string>
+    <string name="title_reminders">Erinnerungen</string>
+    <string name="title_add">Hinzufügen</string>
+    <string name="title_confirm_delete">Löschen bestätigen</string>
+    <string name="confirm_delete_">%s löschen?</string>
+    <string name="success_delete_item_reminder">Artikel-Erinnerung gelöscht</string>
+</resources>

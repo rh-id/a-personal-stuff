@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="maintenance_date_time_is_required">Hoolduskuupäev on kohustuslik</string>
+    <string name="description_is_required">Kirjeldus on kohustuslik</string>
+    <string name="title_add_item_maintenance">Lisa eseme hooldus</string>
+    <string name="success_add_item_maintenance">Eseme hooldus lisatud</string>
+    <string name="save">Salvesta</string>
+    <string name="form_maintenance_date_time">Hoolduskuupäev</string>
+    <string name="form_cost">Kulu</string>
+    <string name="form_description">Kirjeldus</string>
+    <string name="title_add">Lisa</string>
+    <string name="title_maintenances">Hooldused</string>
+    <string name="success_delete_item_maintenance_image">Eseme hoolduse pilt kustutatud</string>
+    <string name="success_add_item_maintenance_image">Eseme hoolduse pilt lisatud</string>
+    <string name="cost_">Kulu: %s</string>
+    <string name="description_">Kirjeldus: %s</string>
+    <string name="title_confirm_delete">Kinnita kustutamine</string>
+    <string name="confirm_delete_">Kustutada \'%s\'?</string>
+    <string name="success_delete_item_maintenance">Eseme hooldus kustutatud</string>
+    <string name="hint_type_to_search">Tippida otsinguks</string>
+    <string name="title_update_item_maintenance">Uuenda eseme hooldus</string>
+</resources>

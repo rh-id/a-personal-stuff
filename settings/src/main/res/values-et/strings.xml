@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_file">Logifail</string>
+    <string name="share_log_file">Jaga logifaili</string>
+    <string name="error_sharing_log_file">Viga logifaili jagamisel</string>
+    <string name="clear_log_file">Tühjenda logifail</string>
+    <string name="log_file_deleted">Logifail kustutatud</string>
+    <string name="version_">Versioon:</string>
+    <string name="licenses">Litsentsid</string>
+    <string name="theme_setting">Teema seadistus</string>
+    <string name="follow_system">Järgi süsteemi</string>
+    <string name="light_mode">Hele režiim</string>
+    <string name="dark_mode">Tume režiim</string>
+    <string name="settings">Seaded</string>
+</resources>

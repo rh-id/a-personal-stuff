@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Rappel d\'élément</string>
+    <string name="notification_description_item_reminder">Canal de notification de rappel d\'élément</string>
+    <string name="save">Enregistrer</string>
+    <string name="form_reminder_date_time">Date et heure du rappel</string>
+    <string name="form_message">Message</string>
+    <string name="reminder_date_time_is_required">La date et l\'heure du rappel sont requises</string>
+    <string name="message_is_required">Le message est requis</string>
+    <string name="title_add_item_reminder">Ajouter un rappel</string>
+    <string name="success_add_item_reminder">Rappel ajouté</string>
+    <string name="title_reminders">Rappels</string>
+    <string name="title_add">Ajouter</string>
+    <string name="title_confirm_delete">Confirmer la suppression</string>
+    <string name="confirm_delete_">Supprimer %s ?</string>
+    <string name="success_delete_item_reminder">Rappel supprimé</string>
+</resources>

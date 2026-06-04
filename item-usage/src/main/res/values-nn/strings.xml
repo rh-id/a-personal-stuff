@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">Mengde kan ikkje vere 0</string>
+    <string name="description_is_required">Skildring er påkravd</string>
+    <string name="amount_">Mengde: %d</string>
+    <string name="description_">Skildring: %s</string>
+    <string name="title_confirm_delete">Stadfest sletting</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="success_delete_item_usage">Gjenstandbruk sletta</string>
+    <string name="title_usages">Bruk</string>
+    <string name="title_update_item_usage">Oppdater gjenstandbruk</string>
+    <string name="title_add_item_usage">Legg til gjenstandbruk</string>
+    <string name="success_add_item_usage_image">Gjenstandbrukbilete lagt til</string>
+    <string name="success_delete_item_usage_image">gjenstandbrukbilete sletta</string>
+    <string name="success_add_item_usage">Gjenstandbruk lagt til</string>
+    <string name="title_add">Legg til</string>
+    <string name="save">Lagre</string>
+    <string name="hint_type_to_search">Skriv for å søkje</string>
+    <string name="form_amount">Mengde</string>
+    <string name="form_description">Skildring</string>
+</resources>

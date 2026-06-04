@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">Promemoria elemento</string>
+    <string name="notification_description_item_reminder">Canale notifica promemoria elemento</string>
+    <string name="save">Salva</string>
+    <string name="form_reminder_date_time">Data e ora promemoria</string>
+    <string name="form_message">Messaggio</string>
+    <string name="reminder_date_time_is_required">Data e ora promemoria richieste</string>
+    <string name="message_is_required">Messaggio obbligatorio</string>
+    <string name="title_add_item_reminder">Aggiungi promemoria</string>
+    <string name="success_add_item_reminder">Promemoria aggiunto</string>
+    <string name="title_reminders">Promemoria</string>
+    <string name="title_add">Aggiungi</string>
+    <string name="title_confirm_delete">Conferma eliminazione</string>
+    <string name="confirm_delete_">Eliminare %s?</string>
+    <string name="success_delete_item_reminder">Promemoria eliminato</string>
+</resources>

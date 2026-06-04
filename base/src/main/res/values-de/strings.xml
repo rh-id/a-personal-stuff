@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permission_denied">Fehler Berechtigung verweigert</string>
+    <string name="share_image">Bild teilen</string>
+    <string name="add_image">Bild hinzufügen</string>
+    <string name="add_photo">Foto hinzufügen</string>
+    <string name="title_no_record">Kein Eintrag</string>
+</resources>

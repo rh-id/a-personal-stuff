@@ -1,5 +1,7 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
+import android.content.Context;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -18,6 +20,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
+import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
@@ -38,6 +41,7 @@ public class ExportCmd {
     private static final String BACKUP_JSON_ENTRY = "backup.json";
     private static final int BUFFER_SIZE = 2048;
 
+    private final Context mAppContext;
     private final ExecutorService mExecutorService;
     private final FileHelper mFileHelper;
     private final Subject<String> mProgressSubject = PublishSubject.create();
@@ -50,6 +54,7 @@ public class ExportCmd {
     private final ItemUsageFileHelper mItemUsageFileHelper;
 
     public ExportCmd(Provider provider) {
+        mAppContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
         mFileHelper = provider.get(FileHelper.class);
         mItemDao = provider.get(ItemDao.class);
@@ -67,9 +72,9 @@ public class ExportCmd {
 
     public Single<File> execute() {
         return Single.fromCallable(() -> {
-            mProgressSubject.onNext("Gathering data...");
+            mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_gathering));
             BackupData backupData = gatherData();
-            mProgressSubject.onNext("Writing backup...");
+            mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_writing));
             String json = backupData.toJson().toString();
             File zipFile = mFileHelper.createTempFile("backup.aps_backup");
             ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
@@ -90,17 +95,17 @@ public class ExportCmd {
                 for (ItemUsageImage itemUsageImage : backupData.itemUsageImages) {
                     if (itemUsageImage.fileName != null) usageImageFileNames.add(itemUsageImage.fileName);
                 }
-                mProgressSubject.onNext("Packaging images (1/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 1));
                 addImageDirToZip(zos, mItemFileHelper.getItemImageParent(), Constants.FILE_DIR_ITEM_IMAGE, itemImageFileNames);
-                mProgressSubject.onNext("Packaging images (2/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 2));
                 addImageDirToZip(zos, mItemMaintenanceFileHelper.getItemMaintenanceImageParent(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE, maintImageFileNames);
-                mProgressSubject.onNext("Packaging images (3/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 3));
                 addImageDirToZip(zos, mItemUsageFileHelper.getItemUsageImageParent(), Constants.FILE_DIR_ITEM_USAGE_IMAGE, usageImageFileNames);
-                mProgressSubject.onNext("Packaging images (4/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 4));
                 addImageDirToZip(zos, mItemFileHelper.getItemImageThumbnailParent(), Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL, itemImageFileNames);
-                mProgressSubject.onNext("Packaging images (5/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 5));
                 addImageDirToZip(zos, mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnailParent(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL, maintImageFileNames);
-                mProgressSubject.onNext("Packaging images (6/6)...");
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 6));
                 addImageDirToZip(zos, mItemUsageFileHelper.getItemUsageImageThumbnailParent(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL, usageImageFileNames);
             } finally {
                 zos.close();
