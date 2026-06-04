@@ -1,0 +1,6 @@
+Release 1.0.8+9
+
+Fixes:
+* Item name value incorrect when tag field was edited
+* Adjust Item layout from item list
+* Item price not set when price is blank

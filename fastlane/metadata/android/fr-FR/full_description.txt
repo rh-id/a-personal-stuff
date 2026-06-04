@@ -1,0 +1,16 @@
+Application pour suivre, gérer et vous rappeler vos affaires personnelles.
+Parfois, nous oublions où nous avons mis quelque chose ou quand quelque chose va expirer.
+Il pourrait s'agir de votre nourriture cuite qui a une courte durée de conservation ou peut-être de la viande crue ou du poulet que les gens ont oublié de cuisiner ou même de jeter du réfrigérateur, ou cela pourrait être n'importe quoi avec une date d'expiration ou nécessitant une action que vous avez stocké quelque part et oublié.
+Ajouter des événements calendrier pour tout cela ne résout pas vraiment les problèmes, car cela peut être beaucoup de choses à ajouter et vous ne voulez pas mélanger des événements importants avec vos événements d'expiration de viande crue.
+Les applications de liste de tâches ou de notes ne sont pas non plus très utiles car elles sont destinées à être aussi génériques que possible.
+Similaire à un système logistique d'entrepôt mais plus personnel.
+
+Fonctionnalités de cette application :
+<ul>
+  <li>Permet à l'utilisateur de gérer facilement les articles</li>
+  <li>Configurer les notifications pour vous rappeler quelque chose</li>
+  <li>Permet à l'utilisateur de gérer la quantité et les rappels des articles pour suivre l'article</li>
+  <li>Prend en charge le scan de codes-barres comme saisie et recherche</li>
+  <li>Sauvegarde et restauration des données de l'application au format ZIP, y compris les images et les vignettes</li>
+  <li>Disponible en 9 langues (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

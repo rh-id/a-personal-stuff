@@ -1,0 +1,16 @@
+Rakendus oma asjade jälgimiseks, haldamiseks ja meeldetuletamiseks.
+Mõnikord unustame, mille panime kuhugi või mille aegumisaeg on lähenemas.
+See võib olla teie küpsetatud toit, millel on lühike aegumisaeg, või võib-olla toorest liha või kana, mida inimesed on unustanud küpsetada või isegi külmapiid eemaldada, või võib olla mis tahes muu aegumise või tegevusega asi, mille olete kuhugi hoiustanud ja unustanud.
+Kalendrisündmuste lisamine kõigile neile ei lahenda tegelikult probleeme, sest see võib olla paljusid asju, mida lisada, ja te ei soovi olulisi sündmusi segada toorest liha aegumissündmustega.
+Todo-loendi rakendused või märkmed ei ole ka eriti kasulikud, kuna need on mõeldud olema võimalikult üldised.
+Sarnane laologistilisele süsteemile, kuid rohkem isiklikuks.
+
+Rakenduse funktsioonid:
+<ul>
+  <li>Võimaldab kasutajal hõlpsasti esemeid hallata</li>
+  <li>Märguannete seadistamine, et teid millelegi meeldetuletada</li>
+  <li>Võimaldab kasutajal hallata esemete kogust ja meeldetuletusi, et esemet jälgida</li>
+  <li>Toetab triipkoodi skannimist sisendina ja otsinguna</li>
+  <li>Rakenduse andmete varundamine ja taastamine ZIP-vormingus, sealhulgas pildid ja pisipildid</li>
+  <li>Saadaval 9 keeles (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

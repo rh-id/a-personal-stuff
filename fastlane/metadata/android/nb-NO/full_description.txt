@@ -1,0 +1,16 @@
+App for å spore, administrere og minne deg på dine egne ting.
+Noen ganger glemmer vi hvor vi har lagt noe, eller glemmer når noe utløper.
+Det kan være tilberedt mat som har kort holdbarhet, eller kanskje rå kjøtt eller kylling som folk glemmer å lage mat av eller til og med kaste fra kjøleskapet, eller det kan være alt med utløpsdato eller som krever handling som du har lagret et sted og glemt.
+Å ha kalenderhendelser for alt dette løser egentlig ikke problemene, fordi det kan være mye å legge inn, og du vil ikke blande viktige hendelser med dine rå kjøtt-utløpshendelser.
+Å ha en gjøremålsliste-app eller notater er heller ikke så nyttig, siden det er ment å være så generelt som mulig.
+likt et lagerlogistikksystem, men mer personlig.
+
+Funksjoner i denne appen:
+<ul>
+  <li>Tillat brukere å administrere gjenstander enkelt</li>
+  <li>Konfigurer varsling for å minne deg på noe</li>
+  <li>Tillat brukere å administrere mengden og påminnelsen for gjenstandene for å holde oversikt over gjenstanden.</li>
+  <li>Støtte strekkodeskanning som inndata og søk</li>
+  <li>Sikkerhetskopier og gjenopprett app-data med ZIP-format inkludert bilder og miniatyrbilder</li>
+  <li>Tilgjengelig på 9 språk (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

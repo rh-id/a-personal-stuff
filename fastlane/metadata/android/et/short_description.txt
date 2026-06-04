@@ -1,0 +1,1 @@
+Rakendus oma asjade jälgimiseks, haldamiseks ja meeldetuletamiseks.

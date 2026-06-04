@@ -1,0 +1,6 @@
+Release 1.1.0+10
+
+Features:
+* Show latest added image for an item at item listing
+* Show more red colors on expired label when items reaching expiry date
+* Add auto complete selection for barcode

@@ -1,0 +1,16 @@
+App per tracciare, gestire e ricordare le tue cose personali.
+A volte dimentichiamo dove abbiamo messo qualcosa o quando qualcosa sta per scadere.
+Potrebbe essere il cibo cotto che ha una breve scadenza o forse carne cruda o pollo che le persone dimenticano di cucinare o addirittura di eliminare dal frigorifero, o potrebbe essere qualsiasi cosa con scadenza o che richiede azione che hai conservato da qualche parte e di cui hai dimenticato.
+Avere eventi del calendario per tutti questi non risolve davvero i problemi, perché potrebbero essere molte cose da inserire e non vuoi mescolare eventi importanti con gli eventi di scadenza della tua carne cruda.
+Avere un'app di lista di cose da fare o note non è molto utile anche perché era pensata per essere il più generica possibile.
+simile al sistema logistico di magazzino ma più personale.
+
+Caratteristiche di questa app:
+<ul>
+  <li>Consente all'utente di gestire facilmente gli elementi</li>
+  <li>Configura le notifiche per ricordarti qualcosa</li>
+  <li>Consente all'utente di gestire la quantità e i promemoria degli elementi per tenere traccia dell'elemento.</li>
+  <li>Supporta la scansione dei codici a barre come input e ricerca</li>
+  <li>Backup e ripristino dei dati dell'app in formato ZIP incluse immagini e miniature</li>
+  <li>Disponibile in 9 lingue (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

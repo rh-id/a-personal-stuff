@@ -18,6 +18,8 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Usage Tracking**: Log when and how much of an item is used.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan barcodes for quick input and searching.
+*   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
+*   **Multilingual Support**: Available in 9 languages (German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh).
 
 ## User Workflow
 
@@ -529,26 +531,6 @@ When an item is deleted:
 - `ItemFileHelper`: Manages item-related files (images, etc.)
 - `ItemMaintenanceFileHelper`: Manages maintenance-related files
 - File deletion cascades through event handlers
-
-### Technology Stack
-| Layer | Technology |
-|-------|-----------|
-| **Language** | Java 17 |
-| **Build System** | Gradle 8.14.3 (Android Gradle Plugin 8.13.2) |
-| **Min SDK** | 21 (Android 5.0 Lollipop) |
-| **Target SDK** | 33 (Android 13) |
-| **DI Framework** | [a-provider](https://github.com/rh-id/a-provider) v0.0.23 |
-| **Navigation** | [a-navigator](https://github.com/rh-id/a-navigator) v0.0.66 |
-| **Database** | Room 2.5.1 |
-| **Async** | RxJava 3.1.4, RxAndroid 3.0.0 |
-| **Logging** | [a-logger](https://github.com/rh-id/a-logger) v0.0.3 |
-| **UI** | AndroidX, Material Design |
-| **Background Tasks** | WorkManager 2.8.1 |
-| **Image Viewer** | PhotoView 2.3.0 |
-| **Barcode** | Camera2 API |
-| **Concurrency** | concurrent-utils v0.0.3 (WeightedThreadPool) |
-| **Memory Leaks** | LeakCanary Plumber 2.9.1 |
-| **Desugaring** | Android Desugar Libs 2.0.4 |
 
 ## Automation & CI/CD
 

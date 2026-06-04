@@ -1,0 +1,16 @@
+App per fastizar, administrar e regurdar las atgnas chaussas.
+A maina essem o nu hau ed nuaque chaussa è vegnida, u nuaque ella scriva eir.
+Pôdan estar pasts cotschints che han scadenza curta, u forsa carn crida u giaglina che la glieud haa caudì da cuschinar u schizunt a sparter dal frigorifer, u pôdan esser tuttas las chaussas cun scadenza u che bazan acziun che ti has salvà in bel e te è da inqualada.
+A avair eveniments da chalender per tut quei na resolva betg ils problems, pertgei che po esser bleras chaussas da metter our e ti na vuls betg mesclar eveniments impurtants cun tes eveniments da scadenza da la carn crida.
+A avair ina app da glista da far u notas es era betg uschè utilisabel, pertgei ch'ella era destinada ad esser sco generica sco pussaivel.
+sumegliant a in sistem da logistica da magasin ma pli personal.
+
+Funcziuns da questa app:
+<ul>
+  <li>Permettar als utilisaders d'administrar chaussas plaunsieuvelmain</li>
+  <li>Configurar notificaziun per ti regurdar da quaj</li>
+  <li>Permettar als utilisaders d'administrar la quantitad e la regorda da las chaussas per tegnair tracta da la chaussa.</li>
+  <li>Supportar la scan da codice da barras sco input e tschertga</li>
+  <li>Far ina copia da segirezza e restaurar ils datas da l'app cun format ZIP inclusi maletgs e miniaturen</li>
+  <li>Disponibel en 9 linguas (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

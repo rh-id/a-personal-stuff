@@ -1,0 +1,4 @@
+Release 1.2.0+13
+
+Features:
+* Upgrade dependencies and target SDK

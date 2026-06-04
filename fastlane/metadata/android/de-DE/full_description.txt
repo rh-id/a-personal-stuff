@@ -1,0 +1,16 @@
+App zur Verwaltung und Erinnerung Ihrer persönlichen Sachen.
+Manchmal vergessen wir, wo wir etwas hingelegt haben oder wann etwas abläuft.
+Es könnte sich um gekochtes Essen handeln, das nur kurz haltbar ist, oder um rohes Fleisch oder Hühnchen, das man vergessen hat zu kochen oder sogar aus dem Kühlschrank zu entsorgen, oder um alles andere mit Ablaufdatum oder Handlungsbedarf, das Sie irgendwo aufbewahrt und vergessen haben.
+Kalenderereignisse für all diese Dinge lösen das Problem nicht wirklich, weil es viele Dinge sein können, die man eintragen muss, und Sie möchten wichtige Ereignisse nicht mit Rohfleisch-Ablaufereignissen vermischen.
+Auch Todo-Listen-Apps oder Notizen sind nicht besonders hilfreich, da sie so allgemein wie möglich konzipiert sind.
+Ähnlich wie ein Lagerlogistiksystem, aber eher für den persönlichen Gebrauch.
+
+Funktionen dieser App:
+<ul>
+  <li>Ermöglicht dem Benutzer, Artikel einfach zu verwalten</li>
+  <li>Einrichten von Benachrichtigungen, um Sie an etwas zu erinnern</li>
+  <li>Ermöglicht dem Benutzer, die Menge und Erinnerungen der Artikel zu verwalten, um den Artikel im Auge zu behalten</li>
+  <li>Unterstützt Strichcodescan als Eingabe und Suche</li>
+  <li>Backup und Wiederherstellung von App-Daten im ZIP-Format einschließlich Bilder und Thumbnails</li>
+  <li>Verfügbar in 9 Sprachen (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

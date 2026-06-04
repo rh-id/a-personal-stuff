@@ -1,0 +1,16 @@
+Aplikasi untuk melacak, mengelola, dan mengingatkan barang-barang pribadi Anda.
+Terkadang kita lupa di mana kita meletakkan sesuatu atau lupa kapan sesuatu akan kedaluwarsa.
+Ini bisa berupa makanan yang sudah dimasak yang memiliki masa kedaluwarsa pendek atau mungkin d mentah atau ayam yang orang lupa masak atau bahkan membuangnya dari kulkas, atau bisa berupa apa saja yang memiliki masa kedaluwarsa atau perlu tindakan yang Anda simpan di suatu tempat dan lupa tentang hal itu.
+Menambahkan acara kalender untuk semua ini tidak benar-benar memecahkan masalah, karena bisa banyak hal yang dimasukkan dan Anda tidak ingin mencampurkan acara penting dengan acara kedaluwarsa d mentah Anda.
+Menggunakan aplikasi daftar tugas atau catatan juga tidak terlalu membantu karena dimaksudkan untuk menjadi yang umum mungkin.
+mirip dengan sistem logistik gudang tetapi lebih untuk pribadi.
+
+Fitur aplikasi ini:
+<ul>
+  <li>Mengizinkan pengguna mengelola item dengan mudah</li>
+  <li>Siapkan notifikasi untuk mengingatkan Anda tentang sesuatu</li>
+  <li>Mengizinkan pengguna mengelola jumlah dan pengingat item untuk melacak item tersebut.</li>
+  <li>Mendukung pemindaian barcode sebagai input & pencarian</li>
+  <li>Backup dan restore data aplikasi dengan format ZIP termasuk gambar dan thumbnail</li>
+  <li>Tersedia dalam 9 bahasa (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

@@ -1,0 +1,16 @@
+Forrit til að fylgjast með, stjórna og minna á eigur þínar.
+Stundum gleymum við hvar settum eitthvað eða gleymum þegar eitthvað er að renna út.
+Það gæti verið eldaður maturinn sem hefur stuttan gildistíma eða kannski hrátt kjöt eða kjúklingur sem fólk gleymdi að elda eða jafnvel henda úr kæliskapnum, eða gæti verið hvað sem er með gildistíma eða þarf aðgerð sem þú geymir einhvers staðar og gleymir því.
+Að henda dagataliðburði fyrir allt þetta leysir ekki raunverulega vandamálin, því það getur verið mikið að setja inn og þú vilt ekki blanda saman mikilvægu atviki við atburði um gildistíma hrátt kjötsins þíns.
+Að hafa forrit fyrir verklista eða minnispunkta er ekki heldur mjög hjálplegt þar sem það var ætlað að vera eins og almennt og hægt er.
+svipað og stórsöluvöru-kerfi en frekar fyrir einkanotkun.
+
+Eiginleikar þessa forrits:
+<ul>
+  <li>Leyfir notanda að stjórna hlutum auðveldlega</li>
+  <li>Setja upp tilkynningar til að minna þig á eitthvað</li>
+  <li>Leyfir notanda að stjórna magninu og áminningum af hlutunum til að fylgst með hlutnum.</li>
+  <li>Styður strikamerkjan lestur sem inntak og leit</li>
+  <li>Öryggisafrit og endurheimta forritsgögn með ZIP-sniði þar á meðal myndir og smámyndir</li>
+  <li>Fáanlegt í 9 tungumálum (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+</ul>

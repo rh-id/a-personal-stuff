@@ -1,0 +1,5 @@
+Release 1.1.1+11
+
+Fixes:
+* Navigation drawer not closing
+* Barcode auto complete to return barcode only
