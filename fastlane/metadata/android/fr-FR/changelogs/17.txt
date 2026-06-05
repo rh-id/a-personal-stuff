@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Nouvelles fonctionnalités :
+* Ajout de la prise en charge de 9 langues (allemand, estonien, français, indonésien, islandais, italien, norvégien bokmål, norvégien nynorsk, romanche)
+
+Corrections :
+* Crash lors de la restauration de AppBarSV depuis l'état sauvegardé
+* Mauvais contraste de la barre de notification en mode sombre
+* Les icônes export/import ne correspondent pas au style des autres icônes de la page d'accueil

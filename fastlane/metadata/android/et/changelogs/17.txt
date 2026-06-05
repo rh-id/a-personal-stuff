@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Uued funktsioonid:
+* Lisatud rahvusvaheline tugi 9 keelele (saksa, eesti, prantsuse, indoneesia, islandi, itaalia, norra bokmål, norra nynorsk, romanši)
+
+Veaparandused:
+* AppBarSV taastamise krahh salvestatud olekust
+* Halb kontrast teavitusribal tumedas režiimis
+* Ekspordi/importi ikoonid ei sobi kokku teiste avalehe ikoonide stiiliga

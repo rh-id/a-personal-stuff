@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Nye funksjoner:
+* Lagt til internasjonal støtte for 9 språk (tysk, estisk, fransk, indonesisk, islandsk, italiensk, norsk bokmål, norsk nynorsk, retoromansk)
+
+Feilrettinger:
+* Krasj ved gjenoppretting av AppBarSV fra lagret tilstand
+* Dårlig kontrast for varsellinjen i mørk modus
+* Eksport-/importikoner samsvarer ikke med stilen til andre ikoner på startsiden

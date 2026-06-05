@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Novas funcziuns:
+* Agiuntà sustegn internaziunal per 9 linguas (tudestg, eston, franzos, indonais, islandais, talian, norvegiais bokmål, norvegiais nynorsk, rumantsch)
+
+Corecziuns:
+* Crash en restaurar AppBarSV dal stadi memorisà
+* Nausch contrast per la trav da notificaziun en modus stgir
+* Iconas d'export/import na correspundan betg al stil dad autras iconas da la pagina da partenza

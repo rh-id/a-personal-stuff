@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Features:
+* Add internationalization support for 9 languages (German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)
+
+Fixes:
+* Crash when restoring AppBarSV from saved state
+* Bad contrast for notification bar in dark mode
+* Export/import icons not matching other home page icons style

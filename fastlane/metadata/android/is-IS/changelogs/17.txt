@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Nýir eiginleikar:
+* Bætt við alþjóðlegri stuðningi fyrir 9 tungumál (þýska, eistneska, franska, indónesíska, íslenska, ítalska, norska bokmål, norska nynorsk, rómanska)
+
+Villuleiðréttingar:
+* Hrun við endurheimtingu AppBarSV úr vistaðri stöðu
+* Slæmur birtuskil tilkynningastiku í myrkri ham
+* Flytja út/flytja inn táknmyndir samsvara ekki stíl annarra heimasíðu táknmynda

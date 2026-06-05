@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Fitur Baru:
+* Menambahkan dukungan internasionalisasi untuk 9 bahasa (Jerman, Estonia, Prancis, Indonesia, Islandia, Italia, Norwegia Bokmål, Norwegia Nynorsk, Romansh)
+
+Perbaikan:
+* Crash saat memulihkan AppBarSV dari keadaan tersimpan
+* Kontras buruk pada bilah notifikasi dalam mode gelap
+* Ikon ekspor/impor tidak sesuai dengan gaya ikon halaman beranda lainnya

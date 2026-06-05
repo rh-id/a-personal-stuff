@@ -1,0 +1,9 @@
+Release 1.4.1+17
+
+Neue Funktionen:
+* Internationalisierung für 9 Sprachen hinzugefügt (Deutsch, Estnisch, Französisch, Indonesisch, Isländisch, Italienisch, Norwegisch Bokmål, Norwegisch Nynorsk, Rätoromanisch)
+
+Fehlerbehebungen:
+* Absturz beim Wiederherstellen der AppBarSV aus dem gespeicherten Zustand
+* Schlechter Kontrast der Benachrichtigungsleiste im Dunkelmodus
+* Export-/Import-Symbole passen nicht zum Stil der anderen Startseitensymbole
