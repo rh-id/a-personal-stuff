@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.core.content.ContextCompat;
 
 import java.util.concurrent.TimeUnit;
 
@@ -49,6 +50,7 @@ public class MainActivity extends AppCompatActivity {
                                 // Switching to night mode didn't update window background for some reason?
                                 // seemed to occur on android 8 and below
                                 getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.daynight_status_bar_color));
                             }
                         })
                 );

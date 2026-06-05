@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.core.content.ContextCompat;
 
 import java.io.Serializable;
 import java.util.concurrent.ExecutorService;
@@ -125,7 +126,7 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_ITEM_REMINDER)
                 .setSmallIcon(m.co.rh.id.a_personal_stuff.base.R.drawable.ic_notification_launcher)
                 .setColorized(true)
-                .setColor(mAppContext.getResources().getColor(m.co.rh.id.a_personal_stuff.base.R.color.light_green_600))
+                .setColor(ContextCompat.getColor(mAppContext, m.co.rh.id.a_personal_stuff.base.R.color.daynight_light_green_600_green_600))
                 .setContentTitle(title)
                 .setContentText(content)
                 .setStyle(new NotificationCompat.BigTextStyle()
