@@ -37,6 +37,7 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
 
     public AppBarSV(Integer menuResId) {
         mMenuResId = menuResId;
+        mUpdateTitle = new SerialBehaviorSubject<>();
     }
 
     @Override
@@ -45,9 +46,6 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
         mSvProvider = BaseApplication.of(navigator.getActivity()).getProvider()
                 .get(IStatefulViewProvider.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        if (mUpdateTitle == null) {
-            mUpdateTitle = new SerialBehaviorSubject<>();
-        }
     }
 
     @Override

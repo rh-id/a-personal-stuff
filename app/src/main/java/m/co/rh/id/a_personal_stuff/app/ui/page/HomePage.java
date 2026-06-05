@@ -49,7 +49,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     @NavInject
     private transient INavigator mNavigator;
     @NavInject
-    private transient AppBarSV mAppBarSV;
+    private AppBarSV mAppBarSV;
     private boolean mIsDrawerOpen;
     private transient long mLastBackPressMilis;
 
