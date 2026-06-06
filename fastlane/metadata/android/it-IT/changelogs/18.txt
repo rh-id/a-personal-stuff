@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Correzioni:
+* Blocco della pagina dei log durante la visualizzazione di testi di log di grandi dimensioni
+* Copia di file corrotta a causa della scrittura dell'intero buffer invece dei byte letti

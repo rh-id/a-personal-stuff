@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Veaparandused:
+* Logi lehe külmumine suure logiteksti kuvamisel
+* Vigane failikoopia tõttu kogu puhvri kirjutamisele lugemata baitide asemel

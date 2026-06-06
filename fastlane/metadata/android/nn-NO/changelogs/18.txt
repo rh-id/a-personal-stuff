@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Feilrettingar:
+* Loggside frys ved vising av stor loggtekst
+* Korrupt filkopi på grunn av skriving av heile bufferet i stedet for bytes som vart lest

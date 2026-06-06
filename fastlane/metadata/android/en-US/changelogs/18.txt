@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Fixes:
+* Log page freeze when displaying large log text
+* Corrupted file copy due to writing entire buffer instead of bytes read

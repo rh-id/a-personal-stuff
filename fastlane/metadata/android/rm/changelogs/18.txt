@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Corecziuns:
+* Bloccada da la pagina da log cun mussar gronds texts da log
+* Copi da datoteca corrumpida tras scriver l'entir buffer enstag dals bytes legids

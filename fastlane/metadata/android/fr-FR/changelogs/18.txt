@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Corrections :
+* Gel de la page des journaux lors de l'affichage de textes volumineux
+* Copie de fichier corrompue en raison de l'écriture du tampon complet au lieu des octets lus

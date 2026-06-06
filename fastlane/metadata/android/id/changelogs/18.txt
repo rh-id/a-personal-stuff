@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Perbaikan:
+* Halaman log membeku saat menampilkan teks log besar
+* Salinan file rusak karena menulis seluruh buffer alih-alih byte yang dibaca

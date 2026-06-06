@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Fehlerbehebungen:
+* Einfrieren der Protokollseite bei Anzeige großer Protokolltexte
+* Korrupte Dateikopie durch Schreiben des gesamten Puffers statt der gelesenen Bytes

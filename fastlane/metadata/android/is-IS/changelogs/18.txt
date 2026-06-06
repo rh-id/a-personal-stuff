@@ -1,0 +1,5 @@
+Release 1.4.2+18
+
+Villuleiðréttingar:
+* Frysting annalsíðu við birtingu stórs annalstexta
+* Skemmd afritun skráa vegna þess að skrifuð var allt biðminni í stað lesinna bæta
