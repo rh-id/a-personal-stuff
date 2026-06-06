@@ -5,14 +5,16 @@ import android.os.Handler;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ProgressBar;
-import android.widget.ScrollView;
-import android.widget.TextView;
+
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -23,6 +25,7 @@ import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.settings.R;
+import m.co.rh.id.a_personal_stuff.settings.ui.component.LogLineAdapter;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -71,8 +74,9 @@ public class LogPage extends StatefulView<Activity> implements RequireComponent<
         containerAppBar.addView(mAppBarSV.buildView(activity, rootLayout));
         ProgressBar progressBar = view.findViewById(R.id.progress_circular);
         View noRecord = view.findViewById(R.id.no_record);
-        ScrollView scrollView = view.findViewById(R.id.scroll_view);
-        TextView textView = view.findViewById(R.id.text_content);
+        RecyclerView recyclerView = view.findViewById(R.id.recycler_view);
+        LogLineAdapter adapter = new LogLineAdapter();
+        recyclerView.setAdapter(adapter);
         FloatingActionButton fabClear = view.findViewById(R.id.fab_clear);
         FloatingActionButton fabShare = view.findViewById(R.id.fab_share);
         fabShare.setOnClickListener(v -> {
@@ -93,29 +97,30 @@ public class LogPage extends StatefulView<Activity> implements RequireComponent<
                 mLogFile.getSubject().
                         observeOn(Schedulers.from(mExecutorService))
                         .subscribe(file -> {
-                            StringBuilder stringBuilder = new StringBuilder();
+                            List<String> logLines = new ArrayList<>();
                             if (file.exists()) {
-                                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-                                char[] buff = new char[2048];
-                                int b = bufferedReader.read(buff);
-                                while (b != -1) {
-                                    stringBuilder.append(buff);
-                                    b = bufferedReader.read(buff);
+                                try (BufferedReader bufferedReader =
+                                             new BufferedReader(new FileReader(file))) {
+                                    String line;
+                                    while ((line = bufferedReader.readLine()) != null) {
+                                        logLines.add(line);
+                                    }
                                 }
                             }
-                            String result = stringBuilder.toString();
                             mHandler.post(() -> {
                                 progressBar.setVisibility(View.GONE);
-                                textView.setText(result);
-                                if (result.isEmpty()) {
+                                adapter.setLogLines(logLines);
+                                if (logLines.isEmpty()) {
                                     noRecord.setVisibility(View.VISIBLE);
-                                    scrollView.setVisibility(View.GONE);
+                                    recyclerView.setVisibility(View.GONE);
                                     fabShare.setVisibility(View.GONE);
                                     fabClear.setVisibility(View.GONE);
                                 } else {
                                     noRecord.setVisibility(View.GONE);
-                                    scrollView.setVisibility(View.VISIBLE);
-                                    scrollView.post(() -> scrollView.fullScroll(View.FOCUS_DOWN));
+                                    recyclerView.setVisibility(View.VISIBLE);
+                                    recyclerView.post(() ->
+                                            recyclerView.scrollToPosition(
+                                                    adapter.getItemCount() - 1));
                                     fabShare.setVisibility(View.VISIBLE);
                                     fabClear.setVisibility(View.VISIBLE);
                                 }
