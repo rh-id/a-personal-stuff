@@ -55,24 +55,24 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
     }
 
     public void removeNotification(Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
-        if (serializable instanceof Integer) {
+        Integer requestId = getRequestId(intent);
+        if (requestId != null) {
             mExecutorService.execute(() ->
             {
                 mLock.lock();
-                mAndroidNotificationRepo.deleteNotificationByRequestId((int) serializable);
+                mAndroidNotificationRepo.deleteNotificationByRequestId(requestId);
                 mLock.unlock();
             });
         }
     }
 
     public void processNotification(@NonNull Intent intent) {
-        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
-        if (serializable instanceof Integer) {
+        Integer requestId = getRequestId(intent);
+        if (requestId != null) {
             mExecutorService.execute(() -> {
                 mLock.lock();
                 AndroidNotification androidNotification =
-                        mAndroidNotificationRepo.findByRequestId((int) serializable);
+                        mAndroidNotificationRepo.findByRequestId(requestId);
                 if (androidNotification != null) {
                     if (androidNotification.groupKey.equals(GROUP_KEY_ITEM_REMINDER)) {
                         ItemReminder itemReminder = mItemReminderDao.findItemReminderById(androidNotification.refId);
@@ -86,6 +86,17 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
                 mLock.unlock();
             });
         }
+    }
+
+    private Integer getRequestId(Intent intent) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return intent.getSerializableExtra(KEY_INT_REQUEST_ID, Integer.class);
+        }
+        Serializable serializable = intent.getSerializableExtra(KEY_INT_REQUEST_ID);
+        if (serializable instanceof Integer) {
+            return (Integer) serializable;
+        }
+        return null;
     }
 
     @Override

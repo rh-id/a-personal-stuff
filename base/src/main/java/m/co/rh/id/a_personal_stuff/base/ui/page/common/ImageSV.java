@@ -258,6 +258,8 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
                     Constants.FILE_PROVIDER_AUTHORITY,
                     mTempCameraFile);
             cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
+            cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
             activity.startActivityForResult(cameraIntent, REQUEST_CODE_TAKE_PHOTO);
         } catch (Exception e) {
             mLogger.e(TAG, e.getMessage(), e);

@@ -37,7 +37,8 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
         </provider>
-        <receiver android:name=".app.receiver.NotificationDeleteReceiver" />
+        <receiver android:name=".app.receiver.NotificationDeleteReceiver"
+            android:exported="false" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
