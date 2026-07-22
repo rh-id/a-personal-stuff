@@ -27,6 +27,7 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
     private SerialBehaviorSubject<ItemReminder> mItemReminder;
     private DateFormat mDateFormat;
 
+    private transient OnItemReminderEditClicked mOnItemReminderEditClicked;
     private transient OnItemReminderDeleteClicked mOnItemReminderDeleteClicked;
 
     public ItemReminderItemSV() {
@@ -43,8 +44,11 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_reminder_item, container, false);
+        rootLayout.setOnClickListener(this);
         TextView reminderDateTimeText = rootLayout.findViewById(R.id.text_reminder_date_time);
         TextView messageText = rootLayout.findViewById(R.id.text_message);
+        Button editButton = rootLayout.findViewById(R.id.button_edit);
+        editButton.setOnClickListener(this);
         Button deleteButton = rootLayout.findViewById(R.id.button_delete);
         deleteButton.setOnClickListener(this);
         mRxDisposer.add("createView_onItemReminderChanged",
@@ -68,12 +72,21 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_delete) {
+        if (id == R.id.card_root || id == R.id.button_edit) {
+            if (mOnItemReminderEditClicked != null) {
+                mOnItemReminderEditClicked
+                        .itemReminderItemSV_onItemReminderEditClicked(mItemReminder.getValue());
+            }
+        } else if (id == R.id.button_delete) {
             if (mOnItemReminderDeleteClicked != null) {
                 mOnItemReminderDeleteClicked
                         .itemReminderItemSV_onItemReminderDeleteClicked(mItemReminder.getValue());
             }
         }
+    }
+
+    public void setOnItemReminderEditClicked(OnItemReminderEditClicked onItemReminderEditClicked) {
+        mOnItemReminderEditClicked = onItemReminderEditClicked;
     }
 
     public void setOnItemReminderDeleteClicked(OnItemReminderDeleteClicked onItemReminderDeleteClicked) {
@@ -86,6 +99,10 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
 
     public ItemReminder getItemReminder() {
         return mItemReminder.getValue();
+    }
+
+    public interface OnItemReminderEditClicked {
+        void itemReminderItemSV_onItemReminderEditClicked(ItemReminder itemReminder);
     }
 
     public interface OnItemReminderDeleteClicked {

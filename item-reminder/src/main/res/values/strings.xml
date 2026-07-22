@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Reminder date time is required</string>
     <string name="message_is_required">Message is required</string>
     <string name="title_add_item_reminder">Add Item Reminder</string>
+    <string name="title_update_item_reminder">Update Item Reminder</string>
     <string name="success_add_item_reminder">Item reminder added</string>
+    <string name="success_update_item_reminder">Item reminder updated</string>
     <string name="title_reminders">Reminders</string>
     <string name="title_add">Add</string>
     <string name="title_confirm_delete">Confirm Delete</string>

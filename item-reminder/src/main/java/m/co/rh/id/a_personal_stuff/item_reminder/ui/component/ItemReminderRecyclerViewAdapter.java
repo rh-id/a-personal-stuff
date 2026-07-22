@@ -21,16 +21,19 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
     public static final int VIEW_TYPE_EMPTY_TEXT = 1;
 
     private PagedItemReminderCmd mPagedItemReminderCmd;
+    private ItemReminderItemSV.OnItemReminderEditClicked mOnItemReminderEditClicked;
     private ItemReminderItemSV.OnItemReminderDeleteClicked mOnItemReminderDeleteClicked;
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
 
     public ItemReminderRecyclerViewAdapter(PagedItemReminderCmd pagedItemReminderCmd,
+                                           ItemReminderItemSV.OnItemReminderEditClicked onItemReminderEditClicked,
                                            ItemReminderItemSV.OnItemReminderDeleteClicked onItemReminderDeleteClicked,
                                            INavigator navigator, StatefulView parentStatefulView
     ) {
         mPagedItemReminderCmd = pagedItemReminderCmd;
+        mOnItemReminderEditClicked = onItemReminderEditClicked;
         mOnItemReminderDeleteClicked = onItemReminderDeleteClicked;
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
@@ -47,6 +50,7 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
             return new EmptyViewHolder(view);
         } else {
             ItemReminderItemSV itemSV = new ItemReminderItemSV();
+            itemSV.setOnItemReminderEditClicked(mOnItemReminderEditClicked);
             itemSV.setOnItemReminderDeleteClicked(mOnItemReminderDeleteClicked);
             mNavigator.injectRequired(mParentStatefulView, itemSV);
             View view = itemSV.buildView(activity, parent);

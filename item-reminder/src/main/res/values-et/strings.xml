@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Meeldetuletuse kuupäev on kohustuslik</string>
     <string name="message_is_required">Sõnum on kohustuslik</string>
     <string name="title_add_item_reminder">Lisa eseme meeldetuletus</string>
+    <string name="title_update_item_reminder">Uuenda eseme meeldetuletus</string>
     <string name="success_add_item_reminder">Eseme meeldetuletus lisatud</string>
+    <string name="success_update_item_reminder">Eseme meeldetuletus uuendatud</string>
     <string name="title_reminders">Meeldetuletused</string>
     <string name="title_add">Lisa</string>
     <string name="title_confirm_delete">Kinnita kustutamine</string>

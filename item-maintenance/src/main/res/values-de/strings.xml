@@ -4,6 +4,7 @@
     <string name="description_is_required">Beschreibung erforderlich</string>
     <string name="title_add_item_maintenance">Artikelwartung hinzufügen</string>
     <string name="success_add_item_maintenance">Artikelwartung hinzugefügt</string>
+    <string name="success_update_item_maintenance">Artikelwartung aktualisiert</string>
     <string name="save">Speichern</string>
     <string name="form_maintenance_date_time">Wartungsdatum und -uhrzeit</string>
     <string name="form_cost">Kosten</string>

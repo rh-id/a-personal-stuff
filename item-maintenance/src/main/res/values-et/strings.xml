@@ -4,6 +4,7 @@
     <string name="description_is_required">Kirjeldus on kohustuslik</string>
     <string name="title_add_item_maintenance">Lisa eseme hooldus</string>
     <string name="success_add_item_maintenance">Eseme hooldus lisatud</string>
+    <string name="success_update_item_maintenance">Eseme hooldus uuendatud</string>
     <string name="save">Salvesta</string>
     <string name="form_maintenance_date_time">Hoolduskuupäev</string>
     <string name="form_cost">Kulu</string>

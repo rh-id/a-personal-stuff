@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Erinnerungsdatum und -uhrzeit erforderlich</string>
     <string name="message_is_required">Nachricht erforderlich</string>
     <string name="title_add_item_reminder">Artikel-Erinnerung hinzufügen</string>
+    <string name="title_update_item_reminder">Artikel-Erinnerung aktualisieren</string>
     <string name="success_add_item_reminder">Artikel-Erinnerung hinzugefügt</string>
+    <string name="success_update_item_reminder">Artikel-Erinnerung aktualisiert</string>
     <string name="title_reminders">Erinnerungen</string>
     <string name="title_add">Hinzufügen</string>
     <string name="title_confirm_delete">Löschen bestätigen</string>

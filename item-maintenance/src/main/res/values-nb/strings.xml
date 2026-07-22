@@ -4,6 +4,7 @@
     <string name="description_is_required">Beskrivelse er påkrevd</string>
     <string name="title_add_item_maintenance">Legg til gjenstandvedlikehold</string>
     <string name="success_add_item_maintenance">Gjenstandvedlikehold lagt til</string>
+    <string name="success_update_item_maintenance">Gjenstandvedlikehold oppdatert</string>
     <string name="save">Lagre</string>
     <string name="form_maintenance_date_time">Vedlikeholds-dato og -tid</string>
     <string name="form_cost">Kostnad</string>

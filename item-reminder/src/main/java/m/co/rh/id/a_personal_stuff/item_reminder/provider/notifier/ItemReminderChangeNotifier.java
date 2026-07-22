@@ -8,15 +8,21 @@ import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 
 public class ItemReminderChangeNotifier {
     private Subject<ItemReminder> mAddedSubject;
+    private Subject<ItemReminder> mUpdatedSubject;
     private Subject<ItemReminder> mDeletedSubject;
 
     public ItemReminderChangeNotifier() {
         mAddedSubject = PublishSubject.<ItemReminder>create().toSerialized();
+        mUpdatedSubject = PublishSubject.<ItemReminder>create().toSerialized();
         mDeletedSubject = PublishSubject.<ItemReminder>create().toSerialized();
     }
 
     public void added(ItemReminder itemReminder) {
         mAddedSubject.onNext(itemReminder);
+    }
+
+    public void updated(ItemReminder itemReminder) {
+        mUpdatedSubject.onNext(itemReminder);
     }
 
     public void deleted(ItemReminder itemReminder) {
@@ -25,6 +31,10 @@ public class ItemReminderChangeNotifier {
 
     public Flowable<ItemReminder> getAddedFlow() {
         return Flowable.fromObservable(mAddedSubject, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<ItemReminder> getUpdatedFlow() {
+        return Flowable.fromObservable(mUpdatedSubject, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<ItemReminder> getDeletedFlow() {

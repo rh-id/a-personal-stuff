@@ -45,6 +45,7 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_usage_item, container, false);
+        rootLayout.setOnClickListener(this);
         TextView createdDateTimeText = rootLayout.findViewById(R.id.text_created_date_time);
         TextView amountText = rootLayout.findViewById(R.id.text_amount);
         TextView descriptionText = rootLayout.findViewById(R.id.text_description);
@@ -79,7 +80,7 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_edit) {
+        if (id == R.id.card_root || id == R.id.button_edit) {
             if (mOnItemUsageEditClicked != null) {
                 mOnItemUsageEditClicked.itemUsageItemSV_onItemUsageEditClicked(mItemUsageState.getValue());
             }

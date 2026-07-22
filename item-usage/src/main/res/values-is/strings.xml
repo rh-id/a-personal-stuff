@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Mynd notkunar hluta bætt við</string>
     <string name="success_delete_item_usage_image">mynd notkunar hluta eytt</string>
     <string name="success_add_item_usage">Notkun hluta bætt við</string>
+    <string name="success_update_item_usage">Notkun hluta uppfærð</string>
     <string name="title_add">Bæta við</string>
     <string name="save">Vista</string>
     <string name="hint_type_to_search">Skrifaðu til að leita</string>

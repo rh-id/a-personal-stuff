@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Image d\'utilisation ajoutée</string>
     <string name="success_delete_item_usage_image">Image d\'utilisation supprimée</string>
     <string name="success_add_item_usage">Utilisation ajoutée</string>
+    <string name="success_update_item_usage">Utilisation mise à jour</string>
     <string name="title_add">Ajouter</string>
     <string name="save">Enregistrer</string>
     <string name="hint_type_to_search">Tapez pour rechercher</string>

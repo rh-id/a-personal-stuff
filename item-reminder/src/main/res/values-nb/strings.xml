@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Påminnelsesdato og -tid er påkrevd</string>
     <string name="message_is_required">Melding er påkrevd</string>
     <string name="title_add_item_reminder">Legg til gjenstandpåminnelse</string>
+    <string name="title_update_item_reminder">Oppdater gjenstandpåminnelse</string>
     <string name="success_add_item_reminder">Gjenstandpåminnelse lagt til</string>
+    <string name="success_update_item_reminder">Gjenstandpåminnelse oppdatert</string>
     <string name="title_reminders">Påminnelser</string>
     <string name="title_add">Legg til</string>
     <string name="title_confirm_delete">Bekreft sletting</string>

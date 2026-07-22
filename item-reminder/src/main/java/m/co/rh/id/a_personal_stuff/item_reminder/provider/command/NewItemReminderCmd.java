@@ -59,7 +59,7 @@ public class NewItemReminderCmd {
         }).subscribeOn(Schedulers.from(mExecutorService));
     }
 
-    private void setupWork(ItemReminder itemReminder) {
+    protected void setupWork(ItemReminder itemReminder) {
         long currentMilis = new Date().getTime();
         long reminderMilis = itemReminder.reminderDateTime.getTime();
         OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(ItemReminderNotificationWorker.class)
@@ -70,6 +70,21 @@ public class NewItemReminderCmd {
                 .build();
         mWorkManager.enqueueUniqueWork(itemReminder.taskId, ExistingWorkPolicy.KEEP,
                 oneTimeWorkRequest);
+    }
+
+    /**
+     * Builds the notification work request for the given reminder. Extracted so the
+     * update command can re-enqueue with {@link ExistingWorkPolicy#REPLACE}.
+     */
+    protected OneTimeWorkRequest buildWorkRequest(ItemReminder itemReminder) {
+        long currentMilis = new Date().getTime();
+        long reminderMilis = itemReminder.reminderDateTime.getTime();
+        return new OneTimeWorkRequest.Builder(ItemReminderNotificationWorker.class)
+                .setInputData(new Data.Builder()
+                        .putLong(WorkManagerConstants.KEY_LONG_ITEM_REMINDER_ID, itemReminder.id)
+                        .build())
+                .setInitialDelay(reminderMilis - currentMilis, TimeUnit.MILLISECONDS)
+                .build();
     }
 
     public boolean valid(ItemReminder itemReminder) {

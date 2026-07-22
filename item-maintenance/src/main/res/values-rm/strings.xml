@@ -4,6 +4,7 @@
     <string name="description_is_required">La descripziun è necessaria</string>
     <string name="title_add_item_maintenance">Agiuntar manutenziun dals objects</string>
     <string name="success_add_item_maintenance">Manutenziun dals objects agiuntada</string>
+    <string name="success_update_item_maintenance">Manutenziun dals objects actualisada</string>
     <string name="save">Memorisar</string>
     <string name="form_maintenance_date_time">Data da manutenziun</string>
     <string name="form_cost">Costs</string>

@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Áminningartími er nauðsynlegur</string>
     <string name="message_is_required">Skilaboð eru nauðsynleg</string>
     <string name="title_add_item_reminder">Bæta við áminningu hluta</string>
+    <string name="title_update_item_reminder">Uppfæra áminningu hluta</string>
     <string name="success_add_item_reminder">Áminning hluta bætt við</string>
+    <string name="success_update_item_reminder">Áminning hluta uppfærð</string>
     <string name="title_reminders">Áminningar</string>
     <string name="title_add">Bæta við</string>
     <string name="title_confirm_delete">Staðfesta eyðingu</string>

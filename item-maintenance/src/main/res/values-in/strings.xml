@@ -4,6 +4,7 @@
     <string name="description_is_required">Deskripsi wajib diisi</string>
     <string name="title_add_item_maintenance">Tambah Pemeliharaan Item</string>
     <string name="success_add_item_maintenance">Pemeliharaan item ditambahkan</string>
+    <string name="success_update_item_maintenance">Pemeliharaan item diperbarui</string>
     <string name="save">Simpan</string>
     <string name="form_maintenance_date_time">Tanggal dan waktu pemeliharaan</string>
     <string name="form_cost">Biaya</string>

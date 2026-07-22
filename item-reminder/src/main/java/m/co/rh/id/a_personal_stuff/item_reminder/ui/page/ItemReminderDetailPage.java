@@ -28,6 +28,7 @@ import m.co.rh.id.a_personal_stuff.item_reminder.R;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.NewItemReminderCmd;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.QueryItemReminderCmd;
+import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.UpdateItemReminderCmd;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -71,7 +72,11 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
         mLogger = mSvProvider.get(ILogger.class);
         mNavExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
-        mNewItemReminderCmd = mSvProvider.get(NewItemReminderCmd.class);
+        if (isUpdate()) {
+            mNewItemReminderCmd = mSvProvider.get(UpdateItemReminderCmd.class);
+        } else {
+            mNewItemReminderCmd = mSvProvider.get(NewItemReminderCmd.class);
+        }
         mQueryItemReminderCmd = mSvProvider.get(QueryItemReminderCmd.class);
         mReminderDateTimeTextWatcher = new TextWatcher() {
             @Override
@@ -108,9 +113,14 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
             }
         };
         if (mItemReminder == null) {
-            ItemReminder itemReminder = new ItemReminder();
-            itemReminder.itemId = getItemId();
-            mItemReminder = new SerialBehaviorSubject<>(itemReminder);
+            if (isUpdate()) {
+                ItemReminder itemReminder = getItemReminderArgs();
+                mItemReminder = new SerialBehaviorSubject<>(itemReminder);
+            } else {
+                ItemReminder itemReminder = new ItemReminder();
+                itemReminder.itemId = getItemId();
+                mItemReminder = new SerialBehaviorSubject<>(itemReminder);
+            }
         }
         mSuggestionMessageQuery = (s) -> mQueryItemReminderCmd.searchItemMaintenanceDescription(s)
                 .blockingGet();
@@ -127,7 +137,11 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
         inputMessage.setAdapter(new SuggestionAdapter
                 (activity, mSuggestionMessageQuery));
         inputMessage.addTextChangedListener(mMessageTextWatcher);
-        mAppBarSV.setTitle(activity.getString(R.string.title_add_item_reminder));
+        if (isUpdate()) {
+            mAppBarSV.setTitle(activity.getString(R.string.title_update_item_reminder));
+        } else {
+            mAppBarSV.setTitle(activity.getString(R.string.title_add_item_reminder));
+        }
         mAppBarSV.setMenuItemClick(this);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, containerAppBar));
@@ -198,8 +212,11 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
                                         if (cause == null) cause = throwable;
                                         mLogger.e(TAG, cause.getMessage(), cause);
                                     } else {
+                                        int successRes = isUpdate()
+                                                ? R.string.success_update_item_reminder
+                                                : R.string.success_add_item_reminder;
                                         mLogger.i(TAG, mSvProvider.getContext()
-                                                .getString(R.string.success_add_item_reminder));
+                                                .getString(successRes));
                                         mNavigator.pop();
                                     }
                                 }));
@@ -227,10 +244,28 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
         return null;
     }
 
+    private boolean isUpdate() {
+        return getItemReminderArgs() != null;
+    }
+
+    private ItemReminder getItemReminderArgs() {
+        Args args = Args.of(mNavRoute);
+        if (args != null) {
+            return args.itemReminder;
+        }
+        return null;
+    }
+
     public static class Args implements Serializable {
         public static Args with(long itemId) {
             Args args = new Args();
             args.itemId = itemId;
+            return args;
+        }
+
+        public static Args with(ItemReminder itemReminder) {
+            Args args = new Args();
+            args.itemReminder = itemReminder;
             return args;
         }
 
@@ -245,5 +280,6 @@ public class ItemReminderDetailPage extends StatefulView<Activity> implements Re
         }
 
         private Long itemId;
+        private ItemReminder itemReminder;
     }
 }

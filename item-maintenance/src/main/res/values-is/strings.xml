@@ -4,6 +4,7 @@
     <string name="description_is_required">Lýsing er nauðsynleg</string>
     <string name="title_add_item_maintenance">Bæta við viðhaldi hluta</string>
     <string name="success_add_item_maintenance">Viðhald hluta bætt við</string>
+    <string name="success_update_item_maintenance">Viðhald hluta uppfært</string>
     <string name="save">Vista</string>
     <string name="form_maintenance_date_time">Viðhaldstími</string>
     <string name="form_cost">Kostnaður</string>

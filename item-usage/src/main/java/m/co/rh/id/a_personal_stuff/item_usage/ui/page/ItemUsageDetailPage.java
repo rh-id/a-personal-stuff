@@ -321,8 +321,11 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
                                         if (cause == null) cause = throwable;
                                         mLogger.e(TAG, cause.getMessage(), cause);
                                     } else {
+                                        int successRes = isUpdate()
+                                                ? R.string.success_update_item_usage
+                                                : R.string.success_add_item_usage;
                                         mLogger.i(TAG, mSvProvider.getContext()
-                                                .getString(R.string.success_add_item_usage));
+                                                .getString(successRes));
                                         mNavigator.pop();
                                     }
                                 }));

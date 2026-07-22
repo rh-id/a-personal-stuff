@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Verwendungsbild hinzugefügt</string>
     <string name="success_delete_item_usage_image">Verwendungsbild gelöscht</string>
     <string name="success_add_item_usage">Verwendung hinzugefügt</string>
+    <string name="success_update_item_usage">Verwendung aktualisiert</string>
     <string name="title_add">Hinzufügen</string>
     <string name="save">Speichern</string>
     <string name="hint_type_to_search">Zum Suchen tippen</string>

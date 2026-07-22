@@ -361,8 +361,11 @@ public class ItemMaintenanceDetailPage extends StatefulView<Activity> implements
                                         if (cause == null) cause = throwable;
                                         mLogger.e(TAG, cause.getMessage(), cause);
                                     } else {
+                                        int successRes = isUpdate()
+                                                ? R.string.success_update_item_maintenance
+                                                : R.string.success_add_item_maintenance;
                                         mLogger.i(TAG, mSvProvider.getContext()
-                                                .getString(R.string.success_add_item_maintenance));
+                                                .getString(successRes));
                                         mNavigator.pop();
                                     }
                                 }));

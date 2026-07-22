@@ -4,6 +4,7 @@
     <string name="description_is_required">Skildring er påkravd</string>
     <string name="title_add_item_maintenance">Legg til gjenstandvedlikehald</string>
     <string name="success_add_item_maintenance">Gjenstandvedlikehald lagt til</string>
+    <string name="success_update_item_maintenance">Gjenstandvedlikehald oppdatert</string>
     <string name="save">Lagre</string>
     <string name="form_maintenance_date_time">Vedlikehalds-dato og -tid</string>
     <string name="form_cost">Kostnad</string>

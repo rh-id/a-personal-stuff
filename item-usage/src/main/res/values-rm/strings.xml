@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Maletg da l\'utilisaziun dals objects agiuntà</string>
     <string name="success_delete_item_usage_image">maletg da l\'utilisaziun dals objects stizzà</string>
     <string name="success_add_item_usage">Utilisaziun dals objects agiuntada</string>
+    <string name="success_update_item_usage">Utilisaziun dals objects actualisada</string>
     <string name="title_add">Agiuntar</string>
     <string name="save">Memorisar</string>
     <string name="hint_type_to_search">Tipisar per tschertgar</string>

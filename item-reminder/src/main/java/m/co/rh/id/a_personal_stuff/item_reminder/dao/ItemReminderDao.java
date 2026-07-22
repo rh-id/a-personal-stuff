@@ -5,6 +5,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -18,9 +19,17 @@ public abstract class ItemReminderDao {
     @Delete
     public abstract void delete(List<ItemReminder> itemReminder);
 
+    @Update
+    protected abstract void update(ItemReminder itemReminder);
+
     @Transaction
     public void insertItemReminder(ItemReminder itemReminder) {
         itemReminder.id = insert(itemReminder);
+    }
+
+    @Transaction
+    public void updateItemReminder(ItemReminder itemReminder) {
+        update(itemReminder);
     }
 
     @Query("SELECT * FROM item_reminder WHERE item_id = :itemId")

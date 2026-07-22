@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">Tanggal dan waktu pengingat wajib diisi</string>
     <string name="message_is_required">Pesan wajib diisi</string>
     <string name="title_add_item_reminder">Tambah Pengingat Item</string>
+    <string name="title_update_item_reminder">Perbarui Pengingat Item</string>
     <string name="success_add_item_reminder">Pengingat item ditambahkan</string>
+    <string name="success_update_item_reminder">Pengingat item diperbarui</string>
     <string name="title_reminders">Pengingat</string>
     <string name="title_add">Tambah</string>
     <string name="title_confirm_delete">Konfirmasi Hapus</string>

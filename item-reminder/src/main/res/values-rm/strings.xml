@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">La data dal promemoria è necessaria</string>
     <string name="message_is_required">Il messadi è necessari</string>
     <string name="title_add_item_reminder">Agiuntar promemoria dals objects</string>
+    <string name="title_update_item_reminder">Actualisar promemoria dals objects</string>
     <string name="success_add_item_reminder">Promemoria dals objects agiuntà</string>
+    <string name="success_update_item_reminder">Promemoria dals objects actualisà</string>
     <string name="title_reminders">Promemorias</string>
     <string name="title_add">Agiuntar</string>
     <string name="title_confirm_delete">Confermar la stiraziun</string>

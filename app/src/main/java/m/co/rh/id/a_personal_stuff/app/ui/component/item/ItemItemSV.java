@@ -102,6 +102,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_item, container, false);
+        rootLayout.setOnClickListener(this);
         ImageView imageViewThumbnail = rootLayout.findViewById(R.id.imageView_thumbnail);
         imageViewThumbnail.setOnClickListener(this);
         TextView expireDateTimeText = rootLayout.findViewById(R.id.text_expired_date_time);
@@ -273,7 +274,11 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.imageView_thumbnail) {
+        if (id == R.id.card_root || id == R.id.button_edit) {
+            if (mOnItemEditClicked != null) {
+                mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());
+            }
+        } else if (id == R.id.imageView_thumbnail) {
             mItemImageDisplay.getValue().
                     ifPresent(value -> mNavigator.push(Routes.COMMON_IMAGEVIEW,
                             ImageViewPage.Args.withFile(mItemFileHelper.getItemImage(value.fileName))
@@ -281,10 +286,6 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                             RouteOptions.withTransition(m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_enter,
                                     m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_exit)
                     ));
-        } else if (id == R.id.button_edit) {
-            if (mOnItemEditClicked != null) {
-                mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());
-            }
         } else if (id == R.id.button_delete) {
             if (mOnItemDeleteClicked != null) {
                 mOnItemDeleteClicked.itemItemSv_onItemDeleteClicked(mItemState.getValue());

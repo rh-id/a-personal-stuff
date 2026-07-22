@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Gambar penggunaan item ditambahkan</string>
     <string name="success_delete_item_usage_image">gambar penggunaan item dihapus</string>
     <string name="success_add_item_usage">Penggunaan item ditambahkan</string>
+    <string name="success_update_item_usage">Penggunaan item diperbarui</string>
     <string name="title_add">Tambah</string>
     <string name="save">Simpan</string>
     <string name="hint_type_to_search">Ketik untuk mencari</string>

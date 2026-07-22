@@ -8,7 +8,9 @@
     <string name="reminder_date_time_is_required">La date et l\'heure du rappel sont requises</string>
     <string name="message_is_required">Le message est requis</string>
     <string name="title_add_item_reminder">Ajouter un rappel</string>
+    <string name="title_update_item_reminder">Mettre à jour le rappel</string>
     <string name="success_add_item_reminder">Rappel ajouté</string>
+    <string name="success_update_item_reminder">Rappel mis à jour</string>
     <string name="title_reminders">Rappels</string>
     <string name="title_add">Ajouter</string>
     <string name="title_confirm_delete">Confirmer la suppression</string>

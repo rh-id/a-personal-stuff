@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Gjenstandbrukbilete lagt til</string>
     <string name="success_delete_item_usage_image">gjenstandbrukbilete sletta</string>
     <string name="success_add_item_usage">Gjenstandbruk lagt til</string>
+    <string name="success_update_item_usage">Gjenstandbruk oppdatert</string>
     <string name="title_add">Legg til</string>
     <string name="save">Lagre</string>
     <string name="hint_type_to_search">Skriv for å søkje</string>

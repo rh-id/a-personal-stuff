@@ -15,6 +15,7 @@ import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_reminder.R;
@@ -23,6 +24,7 @@ import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.DeleteItemRemi
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.PagedItemReminderCmd;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.command.QueryItemReminderCmd;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -32,7 +34,7 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class ItemReminderListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, ItemReminderItemSV.OnItemReminderDeleteClicked {
+public class ItemReminderListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, ItemReminderItemSV.OnItemReminderEditClicked, ItemReminderItemSV.OnItemReminderDeleteClicked {
     private static final String TAG = ItemReminderListSV.class.getName();
 
     @NavInject
@@ -88,7 +90,7 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
                 mSearchString.onNext(editable.toString());
             }
         };
-        mItemReminderRecyclerViewAdapter = new ItemReminderRecyclerViewAdapter(mPagedItemReminderCmd, this, mNavigator, this);
+        mItemReminderRecyclerViewAdapter = new ItemReminderRecyclerViewAdapter(mPagedItemReminderCmd, this, this, mNavigator, this);
         mItemsOnScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
@@ -116,6 +118,9 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
         mRxDisposer.add("createView_onItemReminderAdded",
                 mItemReminderChangeNotifier.getAddedFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemReminderRecyclerViewAdapter::notifyItemAdded));
+        mRxDisposer.add("createView_onItemReminderUpdated",
+                mItemReminderChangeNotifier.getUpdatedFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(mItemReminderRecyclerViewAdapter::notifyItemUpdated));
         mRxDisposer.add("createView_onItemReminderDeleted",
                 mItemReminderChangeNotifier.getDeletedFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemReminderRecyclerViewAdapter::notifyItemDeleted));
@@ -138,6 +143,12 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
     @Override
     public void onRefresh() {
         mPagedItemReminderCmd.refresh();
+    }
+
+    @Override
+    public void itemReminderItemSV_onItemReminderEditClicked(ItemReminder itemReminder) {
+        mNavigator.push(Routes.ITEM_REMINDER_DETAIL_PAGE,
+                ItemReminderDetailPage.Args.with(itemReminder.clone()));
     }
 
     @Override

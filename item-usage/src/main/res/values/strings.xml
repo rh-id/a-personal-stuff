@@ -13,6 +13,7 @@
     <string name="success_add_item_usage_image">Item usage image added</string>
     <string name="success_delete_item_usage_image">item usage image deleted</string>
     <string name="success_add_item_usage">Item usage added</string>
+    <string name="success_update_item_usage">Item usage updated</string>
     <string name="title_add">Add</string>
     <string name="save">Save</string>
     <string name="hint_type_to_search">Type to search</string>

@@ -4,6 +4,7 @@
     <string name="description_is_required">Description is required</string>
     <string name="title_add_item_maintenance">Add Item Maintenance</string>
     <string name="success_add_item_maintenance">Item maintenance added</string>
+    <string name="success_update_item_maintenance">Item maintenance updated</string>
     <string name="save">Save</string>
     <string name="form_maintenance_date_time">Maintenance date time</string>
     <string name="form_cost">Cost</string>

@@ -2,9 +2,13 @@
 <androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_root"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?android:attr/selectableItemBackground"
     app:cardCornerRadius="10dp"
     app:cardElevation="5dp">
 
@@ -39,6 +43,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/text_message">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_edit"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_edit_black"
+                app:iconTint="@color/daynight_black_white" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_delete"

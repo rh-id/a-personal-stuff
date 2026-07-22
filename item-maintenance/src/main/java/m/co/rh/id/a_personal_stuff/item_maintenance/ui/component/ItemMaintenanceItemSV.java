@@ -45,6 +45,7 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_maintenance_item, container, false);
+        rootLayout.setOnClickListener(this);
         TextView maintenanceDateTimeText = rootLayout.findViewById(R.id.text_maintenance_date_time);
         TextView costText = rootLayout.findViewById(R.id.text_cost);
         TextView descriptionText = rootLayout.findViewById(R.id.text_description);
@@ -79,7 +80,7 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_edit) {
+        if (id == R.id.card_root || id == R.id.button_edit) {
             if (mOnItemMaintenanceEditClicked != null) {
                 mOnItemMaintenanceEditClicked.itemMaintenanceItemSV_onItemMaintenanceEditClicked(mItemMaintenanceState.getValue());
             }
