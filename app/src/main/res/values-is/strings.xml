@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Staðfesta eyðingu</string>
     <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
     <string name="success_delete_item_">Hlutur eytt: %s</string>
+    <string name="title_duplicate">Afrita</string>
+    <string name="success_duplicate_">Hlutur afritaður: %s</string>
+    <string name="progress_duplicate">Afritar…</string>
     <string name="title_items">Hlutir</string>
     <string name="title_add">Bæta við</string>
     <string name="success_update_item_">Hlutur uppfærður: %s</string>

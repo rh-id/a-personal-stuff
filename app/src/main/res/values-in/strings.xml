@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Konfirmasi Hapus</string>
     <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
     <string name="success_delete_item_">Item dihapus: %s</string>
+    <string name="title_duplicate">Duplikat</string>
+    <string name="success_duplicate_">Item diduplikasi: %s</string>
+    <string name="progress_duplicate">Menduplikasi…</string>
     <string name="title_items">Item</string>
     <string name="title_add">Tambah</string>
     <string name="success_update_item_">Item diperbarui: %s</string>

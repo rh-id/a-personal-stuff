@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Bekreft sletting</string>
     <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
     <string name="success_delete_item_">Gjenstand slettet: %s</string>
+    <string name="title_duplicate">Dupliser</string>
+    <string name="success_duplicate_">Gjenstand duplisert: %s</string>
+    <string name="progress_duplicate">Dupliserer…</string>
     <string name="title_items">Gjenstander</string>
     <string name="title_add">Legg til</string>
     <string name="success_update_item_">Gjenstand oppdatert: %s</string>

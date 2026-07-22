@@ -11,7 +11,7 @@ import java.util.Date;
 import m.co.rh.id.a_personal_stuff.base.room.converter.Converter;
 
 @Entity(tableName = "item_image")
-public class ItemImage implements Serializable {
+public class ItemImage implements Serializable, Cloneable {
     @PrimaryKey(autoGenerate = true)
     public Long id;
 
@@ -30,5 +30,14 @@ public class ItemImage implements Serializable {
 
     public ItemImage() {
         createdDateTime = new Date();
+    }
+
+    @Override
+    public ItemImage clone() {
+        try {
+            return (ItemImage) super.clone();
+        } catch (CloneNotSupportedException exception) {
+            return null;
+        }
     }
 }

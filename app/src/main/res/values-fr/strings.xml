@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Confirmer la suppression</string>
     <string name="confirm_delete_">Voulez-vous vraiment supprimer %s ?</string>
     <string name="success_delete_item_">Élément supprimé: %s</string>
+    <string name="title_duplicate">Dupliquer</string>
+    <string name="success_duplicate_">Élément dupliqué: %s</string>
+    <string name="progress_duplicate">Duplication…</string>
     <string name="title_items">Éléments</string>
     <string name="title_add">Ajouter</string>
     <string name="success_update_item_">Élément mis à jour: %s</string>

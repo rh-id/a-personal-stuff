@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Kinnita kustutamine</string>
     <string name="confirm_delete_">Kas oled kindel, et soovid kustutada %s?</string>
     <string name="success_delete_item_">Ese kustutatud: %s</string>
+    <string name="title_duplicate">Dubleeri</string>
+    <string name="success_duplicate_">Ese dubleeritud: %s</string>
+    <string name="progress_duplicate">Dubleerimine…</string>
     <string name="title_items">Esemed</string>
     <string name="title_add">Lisa</string>
     <string name="success_update_item_">Ese uuendatud: %s</string>

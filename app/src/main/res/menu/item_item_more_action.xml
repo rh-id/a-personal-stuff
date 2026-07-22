@@ -17,5 +17,9 @@
             android:id="@+id/menu_item_reminder_list"
             android:title="@string/title_reminders"
             app:showAsAction="ifRoom|withText" />
+        <item
+            android:id="@+id/menu_item_duplicate"
+            android:title="@string/title_duplicate"
+            app:showAsAction="ifRoom|withText" />
     </group>
 </menu>

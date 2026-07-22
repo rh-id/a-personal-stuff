@@ -100,6 +100,53 @@ public class ItemState implements Serializable, Cloneable {
         return clone;
     }
 
+    /**
+     * Clone this state to be used as the basis for a new (duplicated) item.
+     * Unlike {@link #clone()}, this clears every primary key / foreign key
+     * (item id, image id/itemId, tag id/itemId) so that re-inserting produces
+     * brand-new rows instead of colliding with the source rows (Room's
+     * autoGenerate inserts a provided id as-is). The created/updated timestamps
+     * are reset to now as well, so the new item is distinguishable from the
+     * source in lists that key on createdDateTime. Field values such as
+     * barcode, name, amount, price, description and expiredDateTime are copied
+     * as-is for the user to review and edit before saving.
+     */
+    public ItemState cloneForDuplicate() {
+        ItemState clone = new ItemState();
+        Item item = mItem.getValue();
+        if (item != null) {
+            Item clonedItem = item.clone();
+            Date now = new Date();
+            clonedItem.id = null;
+            clonedItem.createdDateTime = now;
+            clonedItem.updatedDateTime = now;
+            clone.updateItem(clonedItem);
+        }
+        ArrayList<ItemImage> itemImages = mItemImages.getValue();
+        if (!itemImages.isEmpty()) {
+            ArrayList<ItemImage> clonedImages = new ArrayList<>();
+            for (ItemImage itemImage : itemImages) {
+                ItemImage clonedImage = itemImage.clone();
+                clonedImage.id = null;
+                clonedImage.itemId = null;
+                clonedImages.add(clonedImage);
+            }
+            clone.updateItemImages(clonedImages);
+        }
+        TreeSet<ItemTag> itemTags = mItemTags.getValue();
+        if (!itemTags.isEmpty()) {
+            TreeSet<ItemTag> clonedTags = new TreeSet<>();
+            for (ItemTag itemTag : itemTags) {
+                ItemTag clonedTag = itemTag.clone();
+                clonedTag.id = null;
+                clonedTag.itemId = null;
+                clonedTags.add(clonedTag);
+            }
+            clone.updateItemTags(clonedTags);
+        }
+        return clone;
+    }
+
     public void updateItemTags(Collection<ItemTag> itemTags) {
         mItemTags.onNext(new TreeSet<>(itemTags));
     }

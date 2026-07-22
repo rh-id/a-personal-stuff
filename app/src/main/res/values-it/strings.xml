@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Conferma eliminazione</string>
     <string name="confirm_delete_">Sei sicuro di voler eliminare %s?</string>
     <string name="success_delete_item_">Elemento eliminato: %s</string>
+    <string name="title_duplicate">Duplica</string>
+    <string name="success_duplicate_">Elemento duplicato: %s</string>
+    <string name="progress_duplicate">Duplicazione…</string>
     <string name="title_items">Elementi</string>
     <string name="title_add">Aggiungi</string>
     <string name="success_update_item_">Elemento aggiornato: %s</string>

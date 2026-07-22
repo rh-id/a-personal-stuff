@@ -27,6 +27,9 @@
     <string name="title_confirm_delete">Confirm Delete</string>
     <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
     <string name="success_delete_item_">Item deleted : %s</string>
+    <string name="title_duplicate">Duplicate</string>
+    <string name="success_duplicate_">Item duplicated: %s</string>
+    <string name="progress_duplicate">Duplicating…</string>
     <string name="title_items">Items</string>
     <string name="title_add">Add</string>
     <string name="success_update_item_">Item updated: %s</string>

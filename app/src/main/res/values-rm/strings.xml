@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Confermar la stiraziun</string>
     <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
     <string name="success_delete_item_">Object stizzà: %s</string>
+    <string name="title_duplicate">Duplicar</string>
+    <string name="success_duplicate_">Object duplicà: %s</string>
+    <string name="progress_duplicate">Duplicar…</string>
     <string name="title_items">Objects</string>
     <string name="title_add">Agiuntar</string>
     <string name="success_update_item_">Object actualisà: %s</string>

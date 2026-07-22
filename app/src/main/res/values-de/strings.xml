@@ -28,6 +28,9 @@
     <string name="title_confirm_delete">Löschen bestätigen</string>
     <string name="confirm_delete_">Möchten Sie %s wirklich löschen?</string>
     <string name="success_delete_item_">Artikel gelöscht: %s</string>
+    <string name="title_duplicate">Duplizieren</string>
+    <string name="success_duplicate_">Artikel dupliziert: %s</string>
+    <string name="progress_duplicate">Wird dupliziert…</string>
     <string name="title_items">Artikel</string>
     <string name="title_add">Hinzufügen</string>
     <string name="success_update_item_">Artikel aktualisiert: %s</string>

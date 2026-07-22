@@ -23,6 +23,7 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
     private PagedItemCmd mPagedItemCmd;
     private ItemItemSV.OnItemEditClicked mOnItemEditClicked;
     private ItemItemSV.OnItemDeleteClicked mOnItemDeleteClicked;
+    private ItemItemSV.OnItemDuplicateClicked mOnItemDuplicateClicked;
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
@@ -32,9 +33,19 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
                                    ItemItemSV.OnItemDeleteClicked onItemDeleteClicked,
                                    INavigator navigator, StatefulView parentStatefulView
     ) {
+        this(pagedItemCmd, onItemEditClicked, onItemDeleteClicked, null, navigator, parentStatefulView);
+    }
+
+    public ItemRecyclerViewAdapter(PagedItemCmd pagedItemCmd,
+                                   ItemItemSV.OnItemEditClicked onItemEditClicked,
+                                   ItemItemSV.OnItemDeleteClicked onItemDeleteClicked,
+                                   ItemItemSV.OnItemDuplicateClicked onItemDuplicateClicked,
+                                   INavigator navigator, StatefulView parentStatefulView
+    ) {
         mPagedItemCmd = pagedItemCmd;
         mOnItemEditClicked = onItemEditClicked;
         mOnItemDeleteClicked = onItemDeleteClicked;
+        mOnItemDuplicateClicked = onItemDuplicateClicked;
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
         mCreatedSvList = new ArrayList<>();
@@ -52,6 +63,7 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
             ItemItemSV itemSV = new ItemItemSV();
             itemSV.setOnItemEditClicked(mOnItemEditClicked);
             itemSV.setOnItemDeleteClicked(mOnItemDeleteClicked);
+            itemSV.setOnItemDuplicateClicked(mOnItemDuplicateClicked);
             mNavigator.injectRequired(mParentStatefulView, itemSV);
             View view = itemSV.buildView(activity, parent);
             mCreatedSvList.add(itemSV);

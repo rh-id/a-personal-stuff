@@ -26,6 +26,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.DeleteItemCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.command.DuplicateItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.PagedItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemDetailPage;
@@ -35,6 +36,7 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
@@ -46,7 +48,7 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class ItemListSV extends StatefulView<Activity> implements RequireComponent<Provider>, ItemItemSV.OnItemEditClicked, ItemItemSV.OnItemDeleteClicked, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
+public class ItemListSV extends StatefulView<Activity> implements RequireComponent<Provider>, ItemItemSV.OnItemEditClicked, ItemItemSV.OnItemDeleteClicked, ItemItemSV.OnItemDuplicateClicked, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
 
     private static final String TAG = ItemListSV.class.getName();
     private static final int ORDER_BY_EXPIRED_DATE_TIME = 1;
@@ -69,6 +71,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient ItemUsageChangeNotifier mItemUsageChangeNotifier;
     private transient PagedItemCmd mPagedItemCmd;
     private transient DeleteItemCmd mDeleteItemCmd;
+    private transient DuplicateItemCmd mDuplicateItemCmd;
     private transient QueryItemCmd mQueryItemCmd;
 
     private transient ItemAdapter mItemRecyclerViewAdapter;
@@ -106,11 +109,12 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mPagedItemCmd = mSvProvider.get(PagedItemCmd.class);
         mPagedItemCmd.refresh();
         mDeleteItemCmd = mSvProvider.get(DeleteItemCmd.class);
+        mDuplicateItemCmd = mSvProvider.get(DuplicateItemCmd.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
         if (mSelectMode) {
             mItemRecyclerViewAdapter = new SelectableItemRecyclerViewAdapter(mPagedItemCmd, mNavigator, this);
         } else {
-            mItemRecyclerViewAdapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, mNavigator, this);
+            mItemRecyclerViewAdapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, mNavigator, this);
         }
         mSearchTextWatcher = new TextWatcher() {
             @Override
@@ -319,6 +323,29 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mNavigator.push(mNavExtDialogConfig.route_confirmDialog(),
                 mNavExtDialogConfig.args_confirmDialog(title, message),
                 (navigator, navRoute, activity, currentView) -> confirmDeleteItem(navRoute, itemState));
+    }
+
+    @Override
+    public void itemItemSv_onItemDuplicateClicked(ItemState itemState) {
+        Context context = mSvProvider.getContext();
+        String title = context.getString(R.string.title_duplicate);
+        String message = context.getString(R.string.progress_duplicate);
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG,
+                ProgressSVDialog.Args.newArgs(title, message));
+        mRxDisposer.add("duplicateItem",
+                mDuplicateItemCmd.execute(itemState)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(() -> mNavigator.pop())
+                        .subscribe((duplicatedItemState, throwable) -> {
+                            if (throwable != null) {
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) cause = throwable;
+                                mLogger.e(TAG, cause.getMessage(), cause);
+                            } else {
+                                mLogger.i(TAG, context.getString(R.string.success_duplicate_,
+                                        duplicatedItemState.getItemName()));
+                            }
+                        }));
     }
 
     public void showItemId(long itemId) {
