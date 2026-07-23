@@ -83,7 +83,7 @@ public class ItemUsageState implements Serializable, Cloneable {
     }
 
     public Long getItemUsageId() {
-        return getItemUsage().itemId;
+        return getItemUsage().id;
     }
 
     public Date getItemUsageCreatedDateTime() {
