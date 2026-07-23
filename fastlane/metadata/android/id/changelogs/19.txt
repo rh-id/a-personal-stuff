@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Fitur Baru:
+* Duplikat item yang ada dari menu tindakannya
+* Ketuk baris untuk mengubah item, penggunaan, pemeliharaan, dan pengingat
+* Jelajahi semua gambar item di penampil layar penuh
+* Peningkatan ke Android SDK 37 (Android 17)
+
+Perbaikan:
+* Crash saat menambahkan foto ke penggunaan yang ada (kunci asing salah)

@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Nýir eiginleikar:
+* Afrita fyrirliggjandi hlut úr aðgerðavalmyndinni
+* Ýta á röð til að breyta hlutum, notkun, viðhaldi og áminningum
+* Skoða allar myndir hlutar í heilskjásskoðara
+* Uppfæra í Android SDK 37 (Android 17)
+
+Villuleiðréttingar:
+* Hrun við að bæta mynd við fyrirliggjandi notkun (rangur ytri lykill)

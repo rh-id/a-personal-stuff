@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Uued funktsioonid:
+* Olemasoleva eseme dubleerimine toimenemenüüst
+* Rea koputamine eseme, kasutuse, hoolduse ja meeldetuletuse muutmiseks
+* Kõigi eseme piltide sirvimine täisekraanvaaturis
+* Üleminek Android SDK 37-le (Android 17)
+
+Veaparandused:
+* Krahh foto lisamisel olemasolevale kasutusele (vale võõrvõti)

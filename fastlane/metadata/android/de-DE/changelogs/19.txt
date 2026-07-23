@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Neue Funktionen:
+* Vorhandenen Artikel über das Aktionsmenü duplizieren
+* Zeile antippen, um Artikel, Verwendungen, Wartungen und Erinnerungen zu bearbeiten
+* Durch alle Bilder eines Artikels im Vollbild-Viewer blättern
+* Upgrade auf Android SDK 37 (Android 17)
+
+Fehlerbehebungen:
+* Absturz beim Hinzufügen eines Fotos zu einer vorhandenen Verwendung (falscher Fremdschlüssel)

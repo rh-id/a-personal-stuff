@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Nye funksjoner:
+* Dupliser en eksisterende gjenstand fra handlingsmenyen
+* Trykk på en rad for å endre gjenstander, bruk, vedlikehold og påminnelser
+* Bla gjennom alle bildene til en gjenstand i fullskjermviseren
+* Oppgradering til Android SDK 37 (Android 17)
+
+Feilrettinger:
+* Krasj ved tilføyelse av bilde til eksisterende bruk (feil fremmednøkkel)

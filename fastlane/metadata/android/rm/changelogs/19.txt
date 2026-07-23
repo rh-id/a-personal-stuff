@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Novas funcziuns:
+* Duplicar in object existent or da ses menu d'acziuns
+* Tutar ina retscha per modifitgar objects, utilisaziuns, manutenziuns e promemorias
+* Sfliar tras tut las maletgs d'in object en il visur a maletg entir
+* Actualisaziun ad Android SDK 37 (Android 17)
+
+Corecziuns:
+* Crash cun agiuntar ina fotografia ad in'utilisaziun existenta (falsa clav externa)

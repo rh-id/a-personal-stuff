@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Nouvelles fonctionnalités :
+* Dupliquer un élément existant depuis son menu d'actions
+* Appuyer sur une ligne pour modifier les éléments, utilisations, maintenances et rappels
+* Parcourir toutes les images d'un élément dans la visionneuse plein écran
+* Mise à niveau vers Android SDK 37 (Android 17)
+
+Corrections :
+* Crash lors de l'ajout d'une photo à une utilisation existante (mauvaise clé étrangère)

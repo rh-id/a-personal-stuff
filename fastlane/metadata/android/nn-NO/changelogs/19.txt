@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Nye funksjonar:
+* Dupliser ein eksisterande gjenstand frå handlingsmenyen
+* Trykk på ei rad for å endra gjenstandar, bruk, vedlikehald og påminningar
+* Bla gjennom alle bileta til ein gjenstand i fullskjermvisaren
+* Oppgradering til Android SDK 37 (Android 17)
+
+Feilrettingar:
+* Krasj ved tillegging av bilete til eksisterande bruk (feil fremmednøkkel)
