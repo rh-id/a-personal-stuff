@@ -2,6 +2,9 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <!-- Translucent black scrims layered over imagery in the image viewer. -->
+    <color name="scrim_light">#10000000</color>
+    <color name="scrim_strong">#80000000</color>
     <color name="gray_700">#616161</color>
     <color name="light_green_600">#7CB342</color>
     <color name="light_green_200">#C5E1A5</color>

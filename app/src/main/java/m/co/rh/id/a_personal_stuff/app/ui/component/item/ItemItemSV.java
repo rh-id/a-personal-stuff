@@ -21,6 +21,7 @@ import com.google.android.material.chip.Chip;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -279,13 +280,24 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 mOnItemEditClicked.itemItemSv_onItemEditClicked(mItemState.getValue());
             }
         } else if (id == R.id.imageView_thumbnail) {
-            mItemImageDisplay.getValue().
-                    ifPresent(value -> mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                            ImageViewPage.Args.withFile(mItemFileHelper.getItemImage(value.fileName))
-                            , null,
-                            RouteOptions.withTransition(m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_enter,
-                                    m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_exit)
-                    ));
+            // Pass the item's full image list so the viewer can page through
+            // every image, not just the single thumbnail shown in the row.
+            // The currently-displayed thumbnail is the last image in the list
+            // (see createView_onItemStateChanged), so start there.
+            List<ItemImage> itemImages = mItemState.getValue().getItemImages();
+            ArrayList<File> imageFiles = new ArrayList<>();
+            for (ItemImage itemImage : itemImages) {
+                imageFiles.add(mItemFileHelper.getItemImage(itemImage.fileName));
+            }
+            if (!imageFiles.isEmpty()) {
+                int startIndex = imageFiles.size() - 1;
+                mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                        ImageViewPage.Args.withFiles(imageFiles, startIndex)
+                        , null,
+                        RouteOptions.withTransition(m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_enter,
+                                m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_exit)
+                );
+            }
         } else if (id == R.id.button_delete) {
             if (mOnItemDeleteClicked != null) {
                 mOnItemDeleteClicked.itemItemSv_onItemDeleteClicked(mItemState.getValue());

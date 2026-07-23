@@ -2,6 +2,7 @@
 
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -10,27 +11,76 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
+    <!-- Top row: back (left), position counter (center), share (right).
+         Kept at the top so they never overlap the side-centered prev/next
+         nav arrows below. -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
-        android:backgroundTint="#10000000"
+        android:backgroundTint="@color/scrim_light"
         android:minWidth="0dp"
         app:icon="@drawable/ic_arrow_back_white"
         app:iconTint="@color/daynight_black_white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_image_position"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/text_margin"
+        android:background="@color/scrim_strong"
+        android:padding="8dp"
+        android:textColor="@color/white"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="1/10" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/button_share"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="@dimen/text_margin"
-        android:backgroundTint="#10000000"
+        android:backgroundTint="@color/scrim_light"
         android:minWidth="0dp"
         app:icon="@drawable/ic_share_black"
         app:iconTint="@color/daynight_black_white"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- Vertically centered side nav arrows for paging. Constrained only to
+         top/bottom of the image (centered), and ordered AFTER the top buttons
+         so any residual edge touch goes to the nav arrows, not the top row. -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_prev_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/scrim_light"
+        android:minWidth="0dp"
+        android:visibility="gone"
+        app:icon="@drawable/ic_arrow_circle_left_black"
+        app:iconSize="48dp"
+        app:iconTint="@color/daynight_black_white"
+        app:layout_constraintBottom_toBottomOf="@id/image"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/image" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_next_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/scrim_light"
+        android:minWidth="0dp"
+        android:visibility="gone"
+        app:icon="@drawable/ic_arrow_circle_right_black"
+        app:iconSize="48dp"
+        app:iconTint="@color/daynight_black_white"
+        app:layout_constraintBottom_toBottomOf="@id/image"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/image" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

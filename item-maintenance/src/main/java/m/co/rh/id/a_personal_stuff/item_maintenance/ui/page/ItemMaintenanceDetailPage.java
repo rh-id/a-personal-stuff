@@ -88,6 +88,9 @@ public class ItemMaintenanceDetailPage extends StatefulView<Activity> implements
     public ItemMaintenanceDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_item_maintenance_detail);
         mImageSV = new ImageSV();
+        // Sync the inline image to the index the user ends on in the
+        // full-screen viewer (on-screen Back).
+        mImageSV.setSyncIndexOnReturn(true);
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 

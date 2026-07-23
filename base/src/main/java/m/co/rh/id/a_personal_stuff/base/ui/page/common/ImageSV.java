@@ -36,7 +36,9 @@ import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.alogger.ILogger;
+import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.RouteOptions;
+import m.co.rh.id.anavigator.component.NavPopCallback;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
@@ -63,7 +65,21 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
     private SerialBehaviorSubject<ImageState> mImageState;
     private SerialPublishSubject<File> mDeletedFile;
     private SerialPublishSubject<File> mAddFile;
+    /**
+     * When true, the inline view syncs to the image index the user ended on in
+     * the full-screen viewer (after returning via its on-screen Back button).
+     * Opt-in because only some hosts (Item Detail) want this; others (Item
+     * Usage/Maintenance Detail) keep the old no-sync behavior.
+     */
+    private boolean mSyncIndexOnReturn;
     private File mTempCameraFile;
+    /**
+     * The inline image view. Kept so the index-sync after the full-screen
+     * viewer returns can be posted onto a view that stays attached across the
+     * pop (it is the destination of the back navigation). Posting on the
+     * viewer's view (which is being disposed/detached) would never run.
+     */
+    private transient ImageView mImageView;
 
     public ImageSV() {
         mImageState = new SerialBehaviorSubject<>(new ImageState(new ArrayList<>(), 0));
@@ -100,6 +116,7 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
         deleteImageButton.setOnClickListener(this);
         TextView imagePositionText = rootLayout.findViewById(R.id.text_image_position);
         ImageView imageView = rootLayout.findViewById(R.id.imageView);
+        mImageView = imageView;
         imageView.setOnClickListener(this);
         ViewGroup imageViewContainer = rootLayout.findViewById(R.id.container_image_view);
         mRxDisposer.add("createView_onImageStateChanged",
@@ -168,11 +185,48 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
             mDeletedFile.onNext(file);
         } else if (id == R.id.imageView) {
             ImageState current = mImageState.getValue();
-            File file = current.files.get(current.currentIndex);
+            // Pass the full set of images so the full-screen viewer can page
+            // through all of them, starting at the one currently shown inline.
+            // On return, only hosts that opted in (setSyncIndexOnReturn) sync
+            // the inline view to whichever image the user ended on.
+            NavPopCallback<Activity> onPop = mSyncIndexOnReturn
+                    ? (navigator, navRoute, activity, currentView) -> applyImageViewResult(navRoute)
+                    : null;
             mNavigator.push(Routes.COMMON_IMAGEVIEW,
-                    ImageViewPage.Args.withFile(file), null,
+                    ImageViewPage.Args.withFiles(current.files, current.currentIndex),
+                    onPop,
                     RouteOptions.withTransition(R.transition.page_imageview_enter,
                             R.transition.page_imageview_exit));
+        }
+    }
+
+    /**
+     * Apply the index the user ended on in the full-screen {@link ImageViewPage}
+     * back to the inline view, so the two stay in sync. The result is absent
+     * (null) when the viewer was dismissed without returning one.
+     * <p>
+     * This is posted to the next main-thread loop deliberately: the navigator
+     * fires onPop synchronously inside pop(), in the same frame that it kicks
+     * off the return transition (changeBounds/changeTransform/fade). Re-binding
+     * the inline ImageView (setImageURI) during that frame corrupts the
+     * transition and leaves the inline image blank. Posting lets the transition
+     * commit its first frame first, then the new image binds cleanly.
+     * <p>
+     * It must be posted on the INLINE view, not the viewer's view: the viewer is
+     * already disposed/detaching when onPop fires, so a post on it would never
+     * run. The inline view is the pop destination and stays attached.
+     */
+    private void applyImageViewResult(NavRoute navRoute) {
+        if (navRoute == null || mImageView == null) {
+            return;
+        }
+        Serializable result = navRoute.getRouteResult();
+        if (result instanceof Integer) {
+            int index = (Integer) result;
+            ImageState current = mImageState.getValue();
+            if (index >= 0 && index < current.files.size() && index != current.currentIndex) {
+                mImageView.post(() -> mImageState.onNext(new ImageState(current.files, index)));
+            }
         }
     }
 
@@ -223,6 +277,15 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
         ImageState current = mImageState.getValue();
         int index = Math.min(current.currentIndex, Math.max(0, fileList.size() - 1));
         mImageState.onNext(new ImageState(fileList, index));
+    }
+
+    /**
+     * Opt in to syncing the inline view to the image index the user ended on in
+     * the full-screen viewer (after returning via its on-screen Back button).
+     * Off by default; call after construction on hosts that want this behavior.
+     */
+    public void setSyncIndexOnReturn(boolean syncIndexOnReturn) {
+        mSyncIndexOnReturn = syncIndexOnReturn;
     }
 
     public Subject<File> getDeletedFileSubject() {

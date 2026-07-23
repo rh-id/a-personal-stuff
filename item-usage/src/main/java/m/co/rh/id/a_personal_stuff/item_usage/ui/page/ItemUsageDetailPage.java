@@ -75,6 +75,9 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
     public ItemUsageDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_item_usage_detail);
         mImageSV = new ImageSV();
+        // Sync the inline image to the index the user ends on in the
+        // full-screen viewer (on-screen Back).
+        mImageSV.setSyncIndexOnReturn(true);
     }
 
     @Override

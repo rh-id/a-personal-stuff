@@ -116,6 +116,9 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     public ItemDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_item_detail);
         mImageSV = new ImageSV();
+        // Sync the inline image to the index the user ends on in the
+        // full-screen viewer (on-screen Back). Item Detail-specific behavior.
+        mImageSV.setSyncIndexOnReturn(true);
     }
 
     @Override
