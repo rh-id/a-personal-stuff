@@ -8,6 +8,11 @@
             android:title="@string/title_sort"
             app:showAsAction="always" />
         <item
+            android:id="@+id/menu_view_mode"
+            android:icon="@drawable/ic_view_stream_white"
+            android:title="@string/title_view_mode"
+            app:showAsAction="ifRoom" />
+        <item
             android:id="@+id/menu_add"
             android:icon="@drawable/ic_add_white"
             android:title="@string/title_add"

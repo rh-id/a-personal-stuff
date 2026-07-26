@@ -28,6 +28,7 @@
     <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
     <string name="success_delete_item_">Item deleted : %s</string>
     <string name="title_duplicate">Duplicate</string>
+    <string name="title_delete">Delete</string>
     <string name="success_duplicate_">Item duplicated: %s</string>
     <string name="progress_duplicate">Duplicating…</string>
     <string name="title_items">Items</string>
@@ -50,6 +51,9 @@
     <string name="expired_">Expired: %s</string>
     <string name="error_please_select_item">Error, please select item</string>
     <string name="title_sort">Sort</string>
+    <string name="title_view_mode">View mode</string>
+    <string name="title_view_mode_detailed">Switch to detailed view</string>
+    <string name="title_view_mode_compact">Switch to compact view</string>
     <string name="sort_by_default">Default</string>
     <string name="sort_by_expired_date_time_asc">Expired Date Time Ascending</string>
     <string name="sort_by_expired_date_time_desc">Expired Date Time Descending</string>

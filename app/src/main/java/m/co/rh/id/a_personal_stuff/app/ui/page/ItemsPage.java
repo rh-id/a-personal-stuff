@@ -21,6 +21,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.SelectionPage;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -40,6 +41,7 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
     private transient ExecutorService mExecutorService;
     private transient AppNotificationHandler mAppNotificationHandler;
     private transient RxDisposer mRxDisposer;
+    private transient SettingsSharedPreferences mSettingsSharedPreferences;
 
 
     @NavInject
@@ -60,6 +62,7 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mSettingsSharedPreferences = mSvProvider.get(SettingsSharedPreferences.class);
         mRxDisposer.add("provideComponent_onSelectedSortChanged",
                 mSelectedSort.getSubject()
                         .subscribeOn(Schedulers.from(mExecutorService))
@@ -152,8 +155,26 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
             integers.add(R.string.sort_by_created_date_time_desc);
             mNavigator.push(Routes.COMMON_SELECTION, SelectionPage.Args.with(mSelectedSort.getValue(), integers),
                     this);
+        } else if (id == R.id.menu_view_mode) {
+            toggleItemViewMode(item);
         }
         return false;
+    }
+
+    /**
+     * Flip between detailed and compact item cards. The selected mode is
+     * persisted and pushed to {@link ItemListSV} via the settings flow.
+     */
+    private void toggleItemViewMode(MenuItem item) {
+        boolean nowCompact = mSettingsSharedPreferences.getItemViewMode()
+                != SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT;
+        mSettingsSharedPreferences.setItemViewMode(
+                nowCompact ? SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT
+                        : SettingsSharedPreferences.ITEM_VIEW_MODE_DETAILED);
+        // Label the action with the state a tap will switch to, so the icon's
+        // tooltip stays meaningful regardless of the current mode.
+        item.setTitle(nowCompact ? R.string.title_view_mode_detailed
+                : R.string.title_view_mode_compact);
     }
 
     private Long getItemId() {

@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact constraint variant applied to item_item.xml's view tree.
+     Repositions the action-button container to the row end (it holds the
+     overflow button; edit/delete inside it are collapsed), shrinks the
+     thumbnail, and re-anchors name/amount between the thumbnail and the
+     action container. Detailed-only fields are collapsed (visibility=gone).
+
+     Note: ConstraintSet can only reposition direct children of the
+     ConstraintLayout, so we move container_action_button (a direct child)
+     rather than button_more_action (which is nested inside it). -->
+<ConstraintSet xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Constraint
+        android:id="@+id/imageView_thumbnail"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Constraint
+        android:id="@+id/container_action_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="4dp"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Constraint
+        android:id="@+id/text_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@id/text_amount"
+        app:layout_constraintEnd_toStartOf="@id/container_action_button"
+        app:layout_constraintStart_toEndOf="@id/imageView_thumbnail"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <Constraint
+        android:id="@+id/text_amount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/container_action_button"
+        app:layout_constraintStart_toEndOf="@id/imageView_thumbnail"
+        app:layout_constraintTop_toBottomOf="@id/text_name" />
+
+    <!-- Detailed-only views: collapsed in compact mode. (button_edit/button_delete
+         are nested inside container_action_button, so their visibility is toggled
+         in code — see ItemItemSV — not here.) -->
+    <Constraint
+        android:id="@+id/text_expired_date_time"
+        android:visibility="gone" />
+    <Constraint
+        android:id="@+id/button_usage_count"
+        android:visibility="gone" />
+    <Constraint
+        android:id="@+id/text_price"
+        android:visibility="gone" />
+    <Constraint
+        android:id="@+id/text_barcode"
+        android:visibility="gone" />
+    <Constraint
+        android:id="@+id/container_tag_display"
+        android:visibility="gone" />
+</ConstraintSet>

@@ -39,6 +39,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -114,7 +115,15 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         if (mSelectMode) {
             mItemRecyclerViewAdapter = new SelectableItemRecyclerViewAdapter(mPagedItemCmd, mNavigator, this);
         } else {
-            mItemRecyclerViewAdapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, mNavigator, this);
+            ItemRecyclerViewAdapter adapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, mNavigator, this);
+            mItemRecyclerViewAdapter = adapter;
+            SettingsSharedPreferences settings = mSvProvider.get(SettingsSharedPreferences.class);
+            mRxDisposer.add("provideComponent_itemViewModeChanged",
+                    settings.getItemViewModeFlow()
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(mode ->
+                                    adapter.setCompact(
+                                            mode == SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT)));
         }
         mSearchTextWatcher = new TextWatcher() {
             @Override

@@ -21,5 +21,9 @@
             android:id="@+id/menu_item_duplicate"
             android:title="@string/title_duplicate"
             app:showAsAction="ifRoom|withText" />
+        <item
+            android:id="@+id/menu_item_delete"
+            android:title="@string/title_delete"
+            app:showAsAction="ifRoom|withText" />
     </group>
 </menu>

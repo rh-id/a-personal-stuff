@@ -27,6 +27,8 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
+    // Whether newly created rows should start in compact mode.
+    private boolean mCompact;
 
     public ItemRecyclerViewAdapter(PagedItemCmd pagedItemCmd,
                                    ItemItemSV.OnItemEditClicked onItemEditClicked,
@@ -51,6 +53,27 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
         mCreatedSvList = new ArrayList<>();
     }
 
+    /**
+     * Switch every row between detailed and compact. Each row re-applies the
+     * matching ConstraintSet to its existing view tree (no re-inflation, no
+     * notifyDataSetChanged), which is why this just delegates to the rows.
+     */
+    public void setCompact(boolean compact) {
+        if (mCompact == compact) {
+            return;
+        }
+        mCompact = compact;
+        for (StatefulView sv : mCreatedSvList) {
+            if (sv instanceof ItemItemSV) {
+                ((ItemItemSV) sv).setCompact(compact);
+            }
+        }
+    }
+
+    public boolean isCompact() {
+        return mCompact;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -60,7 +83,7 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
                     R.layout.no_record, parent, false);
             return new EmptyViewHolder(view);
         } else {
-            ItemItemSV itemSV = new ItemItemSV();
+            ItemItemSV itemSV = new ItemItemSV(mCompact);
             itemSV.setOnItemEditClicked(mOnItemEditClicked);
             itemSV.setOnItemDeleteClicked(mOnItemDeleteClicked);
             itemSV.setOnItemDuplicateClicked(mOnItemDuplicateClicked);

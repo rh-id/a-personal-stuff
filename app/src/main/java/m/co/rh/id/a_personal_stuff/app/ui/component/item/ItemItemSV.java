@@ -14,6 +14,8 @@ import android.widget.ImageView;
 import android.widget.ListPopupWindow;
 import android.widget.TextView;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.core.os.ConfigurationCompat;
 
@@ -78,14 +80,36 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient int mDefaultExpiredDateColor;
     private transient BehaviorSubject<Integer> mExpiredDateColor;
 
+    /**
+     * Whether this row renders the compact appearance. Reactive so a mode
+     * switch re-applies the matching {@link ConstraintSet} to the existing
+     * view tree (no re-inflation, no RecyclerView recycling churn).
+     */
+    private final SerialBehaviorSubject<Boolean> mCompact;
+
     private transient OnItemEditClicked mOnItemEditClicked;
     private transient OnItemDeleteClicked mOnItemDeleteClicked;
     private transient OnItemDuplicateClicked mOnItemDuplicateClicked;
 
     public ItemItemSV() {
+        this(false);
+    }
+
+    public ItemItemSV(boolean compact) {
         mItemState = new SerialBehaviorSubject<>();
+        mCompact = new SerialBehaviorSubject<>();
+        mCompact.onNext(compact);
         mUsageCount = new SerialOptionalBehaviorSubject<>();
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+    }
+
+    public void setCompact(boolean compact) {
+        mCompact.onNext(compact);
+    }
+
+    public boolean isCompact() {
+        Boolean value = mCompact.getValue();
+        return value != null && value;
     }
 
     @Override
@@ -102,8 +126,14 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
+        // Single unified layout; compact vs detailed is a ConstraintSet applied
+        // to this same view tree (see createView_onCompactChanged), not a
+        // different inflation. All views below always exist.
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_item, container, false);
         rootLayout.setOnClickListener(this);
+        // ConstraintSet operates on the ConstraintLayout child, not the CardView root.
+        ConstraintLayout constraintRoot =
+                rootLayout.findViewById(R.id.constraint_root);
         ImageView imageViewThumbnail = rootLayout.findViewById(R.id.imageView_thumbnail);
         imageViewThumbnail.setOnClickListener(this);
         TextView expireDateTimeText = rootLayout.findViewById(R.id.text_expired_date_time);
@@ -120,6 +150,42 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
         usageCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
+
+        // Apply the matching constraints whenever the mode changes (and once on
+        // bind, since the subject replays its current value to new subscribers).
+        ConstraintSet compactSet = new ConstraintSet();
+        compactSet.load(activity, R.xml.item_item_compact_constraints);
+        // Clone the detailed constraints straight from the inflated
+        // ConstraintLayout child (the layout root is a CardView, so loading the
+        // detailed set from the layout resource would be ambiguous; cloning the
+        // live view's constraints is unambiguous).
+        ConstraintSet detailedSet = new ConstraintSet();
+        detailedSet.clone(constraintRoot);
+        mRxDisposer.add("createView_onCompactChanged",
+                mCompact.getSubject()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(compact -> {
+                            ConstraintSet set = compact ? compactSet : detailedSet;
+                            set.applyTo(constraintRoot);
+                            // button_edit/button_delete live nested inside the action
+                            // container, so ConstraintSet (which targets direct
+                            // children) can't reliably change their visibility — do it
+                            // here. In compact mode only the overflow button shows.
+                            int secondaryVisibility = compact ? View.GONE : View.VISIBLE;
+                            editButton.setVisibility(secondaryVisibility);
+                            deleteButton.setVisibility(secondaryVisibility);
+                            // Re-publish the current item so data-driven visibility
+                            // (e.g. thumbnail hidden when there's no image, description
+                            // hidden when empty, detailed-only fields in detailed mode)
+                            // is re-applied after applyTo resets views from the set's
+                            // snapshot. Cheap: the subscribe block mostly does setText,
+                            // and its detailed-field mutations are gated on !isCompact().
+                            ItemState current = mItemState.getValue();
+                            if (current != null) {
+                                mItemState.onNext(current);
+                            }
+                        }));
+
         mRxDisposer.add("createView_onExpiredDateColorChanged",
                 mExpiredDateColor.observeOn(AndroidSchedulers.mainThread())
                         .subscribe(expireDateTimeText::setBackgroundColor)
@@ -174,66 +240,70 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemState -> {
-                            Date expiredDateTime = itemState.getItemExpiredDateTime();
-                            if (expiredDateTime != null) {
-                                Context context = expireDateTimeText.getContext();
-                                Date currentDate = new Date();
-                                if (currentDate.after(expiredDateTime)) {
-                                    expireDateTimeText.setText(context.getString(R.string.expired_, mDateFormat.format(expiredDateTime)));
-                                } else {
-                                    String expiredIn;
-                                    Instant currentInstant = currentDate.toInstant();
-                                    Instant expiredInstant = expiredDateTime.toInstant();
-                                    Duration duration = Duration.between(currentInstant, expiredInstant);
-                                    long days = duration.toDays();
-                                    long hours = duration.toHours();
-                                    long min = duration.toMinutes();
-                                    if (days != 0) {
-                                        expiredIn = context.getString(R.string._days, days);
-                                    } else if (hours != 0) {
-                                        expiredIn = context.getString(R.string._hours, hours);
-                                    } else {
-                                        expiredIn = context.getString(R.string._minutes, min);
-                                    }
-                                    expireDateTimeText.setText(context
-                                            .getString(R.string.expired_in_, expiredIn));
-                                }
-                                expireDateTimeText.setVisibility(View.VISIBLE);
-                            } else {
-                                expireDateTimeText.setText(null);
-                                expireDateTimeText.setVisibility(View.GONE);
-                            }
                             nameText.setText(itemState.getItemName());
                             amountText.setText(activity.getString(R.string.amount_, itemState.getItemAmount()));
-                            BigDecimal price = itemState.getItemPrice();
-                            if (price != null) {
-                                Locale locale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
-                                priceText.setText(activity.getString(R.string.price_, NumberFormat.getInstance(locale)
-                                        .format(price)));
-                                priceText.setVisibility(View.VISIBLE);
-                            } else {
-                                priceText.setText(null);
-                                priceText.setVisibility(View.GONE);
-                            }
-                            String barcode = itemState.getItemBarcode();
-                            if (barcode != null && !barcode.isEmpty()) {
-                                barcodeText.setText(activity.getString(R.string.barcode_, barcode));
-                                barcodeText.setVisibility(View.VISIBLE);
-                            } else {
-                                barcodeText.setVisibility(View.GONE);
-                            }
-
-                            Collection<ItemTag> itemTags = itemState.getItemTags();
-                            tagDisplayContainer.removeAllViews();
-                            if (!itemTags.isEmpty()) {
-                                for (ItemTag itemTag : itemTags) {
-                                    Chip chip = new Chip(activity);
-                                    chip.setText(itemTag.tag);
-                                    tagDisplayContainer.addView(chip);
+                            Date expiredDateTime = itemState.getItemExpiredDateTime();
+                            // Only manage detailed-only field visibility in detailed
+                            // mode; in compact mode the ConstraintSet hides them and
+                            // we must not re-show them here.
+                            if (!isCompact()) {
+                                if (expiredDateTime != null) {
+                                    Context context = expireDateTimeText.getContext();
+                                    Date currentDate = new Date();
+                                    if (currentDate.after(expiredDateTime)) {
+                                        expireDateTimeText.setText(context.getString(R.string.expired_, mDateFormat.format(expiredDateTime)));
+                                    } else {
+                                        String expiredIn;
+                                        Instant currentInstant = currentDate.toInstant();
+                                        Instant expiredInstant = expiredDateTime.toInstant();
+                                        Duration duration = Duration.between(currentInstant, expiredInstant);
+                                        long days = duration.toDays();
+                                        long hours = duration.toHours();
+                                        long min = duration.toMinutes();
+                                        if (days != 0) {
+                                            expiredIn = context.getString(R.string._days, days);
+                                        } else if (hours != 0) {
+                                            expiredIn = context.getString(R.string._hours, hours);
+                                        } else {
+                                            expiredIn = context.getString(R.string._minutes, min);
+                                        }
+                                        expireDateTimeText.setText(context
+                                                .getString(R.string.expired_in_, expiredIn));
+                                    }
+                                    expireDateTimeText.setVisibility(View.VISIBLE);
+                                } else {
+                                    expireDateTimeText.setText(null);
+                                    expireDateTimeText.setVisibility(View.GONE);
                                 }
-                                tagDisplayContainer.setVisibility(View.VISIBLE);
-                            } else {
-                                tagDisplayContainer.setVisibility(View.GONE);
+                                BigDecimal price = itemState.getItemPrice();
+                                if (price != null) {
+                                    Locale locale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
+                                    priceText.setText(activity.getString(R.string.price_, NumberFormat.getInstance(locale)
+                                            .format(price)));
+                                    priceText.setVisibility(View.VISIBLE);
+                                } else {
+                                    priceText.setText(null);
+                                    priceText.setVisibility(View.GONE);
+                                }
+                                String barcode = itemState.getItemBarcode();
+                                if (barcode != null && !barcode.isEmpty()) {
+                                    barcodeText.setText(activity.getString(R.string.barcode_, barcode));
+                                    barcodeText.setVisibility(View.VISIBLE);
+                                } else {
+                                    barcodeText.setVisibility(View.GONE);
+                                }
+                                Collection<ItemTag> itemTags = itemState.getItemTags();
+                                tagDisplayContainer.removeAllViews();
+                                if (!itemTags.isEmpty()) {
+                                    for (ItemTag itemTag : itemTags) {
+                                        Chip chip = new Chip(activity);
+                                        chip.setText(itemTag.tag);
+                                        tagDisplayContainer.addView(chip);
+                                    }
+                                    tagDisplayContainer.setVisibility(View.VISIBLE);
+                                } else {
+                                    tagDisplayContainer.setVisibility(View.GONE);
+                                }
                             }
                         }));
         mRxDisposer.add("createView_onItemStateChanged_updateUsageCount",
@@ -253,7 +323,9 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer.add("createView_onUsageCountChanged", mUsageCount.getSubject()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(optLong -> {
-                    if (optLong.isPresent()) {
+                    // Usage button is a detailed-only element; compact mode hides
+                    // it via the ConstraintSet, so only show it in detailed mode.
+                    if (optLong.isPresent() && !isCompact()) {
                         usageCountButton.setText(optLong.get().toString());
                         usageCountButton.setVisibility(View.VISIBLE);
                     } else {
@@ -319,12 +391,15 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders),
                 DIVIDER,
                 context.getString(R.string.title_duplicate),
+                DIVIDER,
+                context.getString(R.string.title_delete),
         };
         int[] actionIds = new int[]{
                 R.id.menu_item_usage_list,
                 R.id.menu_item_maintenance_list,
                 R.id.menu_item_reminder_list,
                 R.id.menu_item_duplicate,
+                R.id.menu_item_delete,
         };
         ListPopupWindow listPopupWindow = new ListPopupWindow(context);
         MoreActionAdapter adapter = new MoreActionAdapter(context, items);
@@ -394,6 +469,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         } else if (id == R.id.menu_item_duplicate) {
             if (mOnItemDuplicateClicked != null) {
                 mOnItemDuplicateClicked.itemItemSv_onItemDuplicateClicked(mItemState.getValue());
+            }
+        } else if (id == R.id.menu_item_delete) {
+            if (mOnItemDeleteClicked != null) {
+                mOnItemDeleteClicked.itemItemSv_onItemDeleteClicked(mItemState.getValue());
             }
         }
     }

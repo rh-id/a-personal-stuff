@@ -28,6 +28,7 @@ import m.co.rh.id.a_personal_stuff.item_maintenance.provider.command.PagedItemMa
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.command.QueryItemMaintenanceCmd;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.notifier.ItemMaintenanceChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -94,6 +95,13 @@ public class ItemMaintenanceListSV extends StatefulView<Activity> implements Req
             }
         };
         mItemMaintenanceRecyclerViewAdapter = new ItemMaintenanceRecyclerViewAdapter(mPagedItemMaintenanceCmd, this, this, mNavigator, this);
+        SettingsSharedPreferences settings = mSvProvider.get(SettingsSharedPreferences.class);
+        mRxDisposer.add("provideComponent_itemViewModeChanged",
+                settings.getItemViewModeFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(mode ->
+                                mItemMaintenanceRecyclerViewAdapter.setCompact(
+                                        mode == SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT)));
         mItemsOnScrollListener = new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {

@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
     <string name="success_delete_item_">Item dihapus: %s</string>
     <string name="title_duplicate">Duplikat</string>
+    <string name="title_delete">Hapus</string>
     <string name="success_duplicate_">Item diduplikasi: %s</string>
     <string name="progress_duplicate">Menduplikasi…</string>
     <string name="title_items">Item</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Kedaluwarsa: %s</string>
     <string name="error_please_select_item">Error, silakan pilih item</string>
     <string name="title_sort">Urutkan</string>
+    <string name="title_view_mode">Mode tampilan</string>
+    <string name="title_view_mode_detailed">Beralih ke tampilan rinci</string>
+    <string name="title_view_mode_compact">Beralih ke tampilan ringkas</string>
     <string name="sort_by_default">Bawaan</string>
     <string name="sort_by_expired_date_time_asc">Tanggal dan Waktu Kedaluwarsa Naik</string>
     <string name="sort_by_expired_date_time_desc">Tanggal dan Waktu Kedaluwarsa Turun</string>

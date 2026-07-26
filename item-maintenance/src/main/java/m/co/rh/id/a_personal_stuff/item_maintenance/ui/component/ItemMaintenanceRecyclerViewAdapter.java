@@ -26,6 +26,8 @@ public class ItemMaintenanceRecyclerViewAdapter extends RecyclerView.Adapter<Rec
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
+    // Whether newly created rows should start in compact mode.
+    private boolean mCompact;
 
     public ItemMaintenanceRecyclerViewAdapter(PagedItemMaintenanceCmd pagedItemMaintenanceCmd,
                                               ItemMaintenanceItemSV.OnItemMaintenanceEditClicked onItemMaintenanceEditClicked,
@@ -40,6 +42,27 @@ public class ItemMaintenanceRecyclerViewAdapter extends RecyclerView.Adapter<Rec
         mCreatedSvList = new ArrayList<>();
     }
 
+    /**
+     * Switch every row between detailed and compact. Each row re-applies the
+     * matching ConstraintSet to its existing view tree (no re-inflation, no
+     * notifyDataSetChanged), so this just delegates to the rows.
+     */
+    public void setCompact(boolean compact) {
+        if (mCompact == compact) {
+            return;
+        }
+        mCompact = compact;
+        for (StatefulView sv : mCreatedSvList) {
+            if (sv instanceof ItemMaintenanceItemSV) {
+                ((ItemMaintenanceItemSV) sv).setCompact(compact);
+            }
+        }
+    }
+
+    public boolean isCompact() {
+        return mCompact;
+    }
+
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -49,7 +72,7 @@ public class ItemMaintenanceRecyclerViewAdapter extends RecyclerView.Adapter<Rec
                     R.layout.no_record, parent, false);
             return new EmptyViewHolder(view);
         } else {
-            ItemMaintenanceItemSV itemMaintenanceItemSV = new ItemMaintenanceItemSV();
+            ItemMaintenanceItemSV itemMaintenanceItemSV = new ItemMaintenanceItemSV(mCompact);
             itemMaintenanceItemSV.setOnItemMaintenanceEditClicked(mOnItemMaintenanceEditClicked);
             itemMaintenanceItemSV.setOnItemMaintenanceDeleteClicked(mOnItemMaintenanceDeleteClicked);
             mNavigator.injectRequired(mParentStatefulView, itemMaintenanceItemSV);

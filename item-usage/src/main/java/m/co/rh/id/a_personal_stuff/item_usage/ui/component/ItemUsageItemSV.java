@@ -10,6 +10,8 @@ import android.widget.TextView;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -28,12 +30,33 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
     private SerialBehaviorSubject<ItemUsageState> mItemUsageState;
     private DateFormat mDateFormat;
 
+    /**
+     * Whether this row renders the compact appearance. Reactive so a mode
+     * switch re-applies the matching ConstraintSet to the existing view tree.
+     */
+    private final SerialBehaviorSubject<Boolean> mCompact;
+
     private transient OnItemUsageEditClicked mOnItemUsageEditClicked;
     private transient OnItemUsageDeleteClicked mOnItemUsageDeleteClicked;
 
     public ItemUsageItemSV() {
+        this(false);
+    }
+
+    public ItemUsageItemSV(boolean compact) {
         mItemUsageState = new SerialBehaviorSubject<>();
+        mCompact = new SerialBehaviorSubject<>();
+        mCompact.onNext(compact);
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
+    }
+
+    public void setCompact(boolean compact) {
+        mCompact.onNext(compact);
+    }
+
+    public boolean isCompact() {
+        Boolean value = mCompact.getValue();
+        return value != null && value;
     }
 
     @Override
@@ -44,8 +67,13 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
 
     @Override
     protected View createView(Activity activity, ViewGroup container) {
+        // Single unified layout; compact vs detailed is a ConstraintSet applied
+        // to this same view tree, not a different inflation.
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.item_usage_item, container, false);
         rootLayout.setOnClickListener(this);
+        // ConstraintSet operates on the ConstraintLayout child, not the CardView root.
+        ConstraintLayout constraintRoot =
+                rootLayout.findViewById(R.id.constraint_root);
         TextView createdDateTimeText = rootLayout.findViewById(R.id.text_created_date_time);
         TextView amountText = rootLayout.findViewById(R.id.text_amount);
         TextView descriptionText = rootLayout.findViewById(R.id.text_description);
@@ -53,6 +81,32 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
         editButton.setOnClickListener(this);
         Button deleteButton = rootLayout.findViewById(R.id.button_delete);
         deleteButton.setOnClickListener(this);
+
+        ConstraintSet compactSet = new ConstraintSet();
+        compactSet.load(activity, R.xml.item_usage_item_compact_constraints);
+        // Clone the detailed constraints from the inflated ConstraintLayout child
+        // (the layout root is a CardView, so cloning the live view is unambiguous).
+        ConstraintSet detailedSet = new ConstraintSet();
+        detailedSet.clone(constraintRoot);
+        mRxDisposer.add("createView_onCompactChanged",
+                mCompact.getSubject()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(compact -> {
+                            (compact ? compactSet : detailedSet).applyTo(constraintRoot);
+                            // button_edit is nested inside the action container, so
+                            // ConstraintSet (which targets direct children) can't
+                            // reliably toggle it — do it here. In compact mode the
+                            // edit button is hidden (edit is via card tap); delete stays.
+                            editButton.setVisibility(compact ? View.GONE : View.VISIBLE);
+                            // Re-publish so data-driven visibility (e.g. description
+                            // hidden when empty) is re-applied after applyTo resets
+                            // views from the set's snapshot.
+                            ItemUsageState current = mItemUsageState.getValue();
+                            if (current != null) {
+                                mItemUsageState.onNext(current);
+                            }
+                        }));
+
         Context context = activity.getApplicationContext();
         mRxDisposer.add("createView_onItemUsageStateChanged",
                 mItemUsageState.getSubject().observeOn(AndroidSchedulers.mainThread())
