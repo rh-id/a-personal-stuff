@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Kas oled kindel, et soovid kustutada %s?</string>
     <string name="success_delete_item_">Ese kustutatud: %s</string>
     <string name="title_duplicate">Dubleeri</string>
+    <string name="title_delete">Kustuta</string>
     <string name="success_duplicate_">Ese dubleeritud: %s</string>
     <string name="progress_duplicate">Dubleerimine…</string>
     <string name="title_items">Esemed</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Aegunud: %s</string>
     <string name="error_please_select_item">Viga, palun vali ese</string>
     <string name="title_sort">Sorteeri</string>
+    <string name="title_view_mode">Vaaterežiim</string>
+    <string name="title_view_mode_detailed">Lülitu üksikasjalikule vaatele</string>
+    <string name="title_view_mode_compact">Lülitu kompaktsele vaatele</string>
     <string name="sort_by_default">Vaikimisi</string>
     <string name="sort_by_expired_date_time_asc">Aegumiskuupäev kasvav</string>
     <string name="sort_by_expired_date_time_desc">Aegumiskuupäev kahanev</string>

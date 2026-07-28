@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
     <string name="success_delete_item_">Hlutur eytt: %s</string>
     <string name="title_duplicate">Afrita</string>
+    <string name="title_delete">Eyða</string>
     <string name="success_duplicate_">Hlutur afritaður: %s</string>
     <string name="progress_duplicate">Afritar…</string>
     <string name="title_items">Hlutir</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Gildistími: %s</string>
     <string name="error_please_select_item">Villa, vinsamlega veldu hlut</string>
     <string name="title_sort">Raða</string>
+    <string name="title_view_mode">Skoðunarhamur</string>
+    <string name="title_view_mode_detailed">Skipta yfir í ítarlega skoðun</string>
+    <string name="title_view_mode_compact">Skipta yfir í þjappaða skoðun</string>
     <string name="sort_by_default">Sjálfgefið</string>
     <string name="sort_by_expired_date_time_asc">Gildistími hækkandi</string>
     <string name="sort_by_expired_date_time_desc">Gildistími lækkandi</string>

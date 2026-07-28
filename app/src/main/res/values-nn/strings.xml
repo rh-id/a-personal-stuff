@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
     <string name="success_delete_item_">Gjenstand sletta: %s</string>
     <string name="title_duplicate">Dupliser</string>
+    <string name="title_delete">Slett</string>
     <string name="success_duplicate_">Gjenstand duplisert: %s</string>
     <string name="progress_duplicate">Dupliserer…</string>
     <string name="title_items">Gjenstandar</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Utgått: %s</string>
     <string name="error_please_select_item">Feil, vel gjenstand</string>
     <string name="title_sort">Sorter</string>
+    <string name="title_view_mode">Vismodus</string>
+    <string name="title_view_mode_detailed">Byt til detaljert visning</string>
+    <string name="title_view_mode_compact">Byt til kompakt visning</string>
     <string name="sort_by_default">Standard</string>
     <string name="sort_by_expired_date_time_asc">Utløpsdato og -tid stigande</string>
     <string name="sort_by_expired_date_time_desc">Utløpsdato og -tid synkande</string>

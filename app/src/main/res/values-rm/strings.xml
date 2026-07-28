@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
     <string name="success_delete_item_">Object stizzà: %s</string>
     <string name="title_duplicate">Duplicar</string>
+    <string name="title_delete">Stizzar</string>
     <string name="success_duplicate_">Object duplicà: %s</string>
     <string name="progress_duplicate">Duplicar…</string>
     <string name="title_items">Objects</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Scadì: %s</string>
     <string name="error_please_select_item">Errur, tscherna in object per plaschair</string>
     <string name="title_sort">Ordinar</string>
+    <string name="title_view_mode">Modus da visualisaziun</string>
+    <string name="title_view_mode_detailed">Midar a la vista detagliada</string>
+    <string name="title_view_mode_compact">Midar a la vista compacta</string>
     <string name="sort_by_default">Standard</string>
     <string name="sort_by_expired_date_time_asc">Data da scadenza creschenta</string>
     <string name="sort_by_expired_date_time_desc">Data da scadenza descreschenta</string>

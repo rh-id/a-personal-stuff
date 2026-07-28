@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Sei sicuro di voler eliminare %s?</string>
     <string name="success_delete_item_">Elemento eliminato: %s</string>
     <string name="title_duplicate">Duplica</string>
+    <string name="title_delete">Elimina</string>
     <string name="success_duplicate_">Elemento duplicato: %s</string>
     <string name="progress_duplicate">Duplicazione…</string>
     <string name="title_items">Elementi</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Scaduto: %s</string>
     <string name="error_please_select_item">Errore, seleziona un elemento</string>
     <string name="title_sort">Ordina</string>
+    <string name="title_view_mode">Modalità di visualizzazione</string>
+    <string name="title_view_mode_detailed">Passa alla vista dettagliata</string>
+    <string name="title_view_mode_compact">Passa alla vista compatta</string>
     <string name="sort_by_default">Predefinito</string>
     <string name="sort_by_expired_date_time_asc">Data scadenza crescente</string>
     <string name="sort_by_expired_date_time_desc">Data scadenza decrescente</string>

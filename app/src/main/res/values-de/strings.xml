@@ -29,6 +29,7 @@
     <string name="confirm_delete_">Möchten Sie %s wirklich löschen?</string>
     <string name="success_delete_item_">Artikel gelöscht: %s</string>
     <string name="title_duplicate">Duplizieren</string>
+    <string name="title_delete">Löschen</string>
     <string name="success_duplicate_">Artikel dupliziert: %s</string>
     <string name="progress_duplicate">Wird dupliziert…</string>
     <string name="title_items">Artikel</string>
@@ -51,6 +52,9 @@
     <string name="expired_">Abgelaufen: %s</string>
     <string name="error_please_select_item">Fehler, bitte Artikel auswählen</string>
     <string name="title_sort">Sortieren</string>
+    <string name="title_view_mode">Ansichtsmodus</string>
+    <string name="title_view_mode_detailed">Zur Detailansicht wechseln</string>
+    <string name="title_view_mode_compact">Zur kompakten Ansicht wechseln</string>
     <string name="sort_by_default">Standard</string>
     <string name="sort_by_expired_date_time_asc">Ablaufdatum aufsteigend</string>
     <string name="sort_by_expired_date_time_desc">Ablaufdatum absteigend</string>
