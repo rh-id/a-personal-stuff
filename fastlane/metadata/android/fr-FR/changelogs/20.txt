@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Nouvelles fonctionnalités :
+* Mode vue compacte pour les éléments, utilisations, maintenances et rappels
+
+Corrections :
+* NPE lors de l'export/import après rotation de l'écran ou restauration d'état
+* Traductions manquantes pour les chaînes de suppression et de mode d'affichage

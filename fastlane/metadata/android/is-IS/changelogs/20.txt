@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Nýir eiginleikar:
+* Þétt skoðunarhamur fyrir hluti, notkun, viðhald og áminningar
+
+Villuleiðréttingar:
+* NPE við útflutning/innflutning eftir skjásnúning eða endurheimtingu ástands
+* Vantar þýðingar fyrir eyða og skoðunarhamur strengi

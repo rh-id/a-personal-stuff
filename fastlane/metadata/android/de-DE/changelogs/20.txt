@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Neue Funktionen:
+* Kompakte Ansicht für Artikel, Verwendungen, Wartungen und Erinnerungen
+
+Fehlerbehebungen:
+* NPE beim Export/Import nach Bildschirmdrehung oder Zustandswiederherstellung
+* Fehlende Übersetzungen für Löschen- und Ansichtsmodus-Zeichenketten

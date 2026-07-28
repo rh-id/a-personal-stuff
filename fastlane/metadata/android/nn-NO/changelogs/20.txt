@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Nye funksjonar:
+* Kompakt visningsmodus for gjenstandar, bruk, vedlikehald og påminningar
+
+Feilrettingar:
+* NPE ved eksport/import etter skjermrotasjon eller gjenoppretting av tilstand
+* Manglande omsetjingar for slett- og visningsmodus-strengar

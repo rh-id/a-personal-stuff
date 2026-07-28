@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Uued funktsioonid:
+* Kompaktne vaaterežiim esemete, kasutuste, hooldustöö ja meeldetuletuste jaoks
+
+Veaparandused:
+* NPE eksportimisel/importimisel pärast ekraani pööramist või oleku taastamist
+* Puuduvad tõlked kustutamise ja vaaterežiimi stringide jaoks

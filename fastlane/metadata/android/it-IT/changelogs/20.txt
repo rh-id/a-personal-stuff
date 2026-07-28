@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Nuove funzionalità:
+* Modalità vista compatta per elementi, utilizzi, manutenzioni e promemoria
+
+Correzioni:
+* NPE durante esportazione/importazione dopo rotazione dello schermo o ripristino dello stato
+* Traduzioni mancanti per le stringhe di eliminazione e modalità di visualizzazione

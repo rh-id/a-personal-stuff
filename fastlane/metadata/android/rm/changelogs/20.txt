@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Novas funcziuns:
+* Modus da visualisaziun compacta per objects, utilisaziuns, manutenziuns e promemorias
+
+Corecziuns:
+* NPE cun exportar/importar suenter rotaziun dal scrmen u restauraziun dal stadi
+* Translaziuns mancantes per las cadenas da stritgar e modus da visualisaziun

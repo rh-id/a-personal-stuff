@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Fitur Baru:
+* Mode tampilan ringkas untuk item, penggunaan, pemeliharaan, dan pengingat
+
+Perbaikan:
+* NPE saat ekspor/impor setelah rotasi layar atau pemulihan status
+* Terjemahan yang hilang untuk string hapus dan mode tampilan
