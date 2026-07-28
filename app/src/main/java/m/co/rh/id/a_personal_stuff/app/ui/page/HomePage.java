@@ -72,7 +72,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
-        mCompositeDisposable = new CompositeDisposable();
     }
 
     @Override
@@ -86,6 +85,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mImportCmd = mSvProvider.get(ImportCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
         mLogger = mSvProvider.get(ILogger.class);
+        mCompositeDisposable = new CompositeDisposable();
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
