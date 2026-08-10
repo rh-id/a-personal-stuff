@@ -141,21 +141,10 @@ public class ItemUsageListSV extends StatefulView<Activity> implements RequireCo
         mRxDisposer.add("createView_onItemUsageStateDeleted",
                 mItemUsageChangeNotifier.getDeletedItemUsageFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemUsageRecyclerViewAdapter::notifyItemDeleted));
-        mRxDisposer.add("createView_onItemUsageImageAdded",
-                mItemUsageChangeNotifier.getAddedItemUsageImageFlow()
-                        .map(itemUsageImage ->
-                                mQueryItemUsageCmd
-                                        .findItemUsageStateById(itemUsageImage.itemUsageId)
-                                        .blockingGet())
-                        .subscribeOn(Schedulers.from(mExecutorService))
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(mItemUsageRecyclerViewAdapter::notifyItemUpdated));
-        mRxDisposer.add("createView_onItemUsageImageDeleted",
-                mItemUsageChangeNotifier.getDeletedItemUsageImageFlow()
-                        .map(itemUsageImage ->
-                                mQueryItemUsageCmd
-                                        .findItemUsageStateById(itemUsageImage.itemUsageId)
-                                        .blockingGet())
+        mRxDisposer.add("createView_onItemUsageImageChanged",
+                mItemUsageChangeNotifier.getAnyItemUsageImageChangeFlow()
+                        .map(itemUsageId ->
+                                mQueryItemUsageCmd.findItemUsageStateById(itemUsageId).blockingGet())
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemUsageRecyclerViewAdapter::notifyItemUpdated));
