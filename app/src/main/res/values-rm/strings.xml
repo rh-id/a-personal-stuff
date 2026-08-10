@@ -70,8 +70,15 @@
     <string name="import_failed">Import betg reussì</string>
     <string name="export_progress_gathering">Ravaschond datas…</string>
     <string name="export_progress_writing">Scrivend copia da segirezza…</string>
-    <string name="export_progress_images">Empachond maletgs (%d/6)…</string>
+    <string name="export_progress_images">Empachond maletgs (%d/8)…</string>
     <string name="import_progress_extracting">Extrahend copia da segirezza…</string>
     <string name="import_progress_reading">Legend copia da segirezza…</string>
     <string name="import_progress_importing">Importond object %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Moviments da provisiun</string>
+    <string name="stock_movements_summary">Inizial: %1$d  −  Duvrà: %2$d  +  Cumprà: %3$d  =  Restà: %4$d</string>
+    <string name="movement_amount">Quantità: %d</string>
+    <string name="movement_cost">Datasplaz: %s</string>
+    <string name="movement_description">Descripziun: %s</string>
 </resources>

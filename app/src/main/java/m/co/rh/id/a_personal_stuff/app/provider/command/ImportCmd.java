@@ -60,6 +60,12 @@ import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageState;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseState;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -75,14 +81,17 @@ public class ImportCmd {
     private final ItemDao mItemDao;
     private final ItemMaintenanceDao mItemMaintenanceDao;
     private final ItemUsageDao mItemUsageDao;
+    private final ItemPurchaseDao mItemPurchaseDao;
     private final ItemReminderDao mItemReminderDao;
     private final ItemFileHelper mItemFileHelper;
     private final ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
     private final ItemUsageFileHelper mItemUsageFileHelper;
+    private final ItemPurchaseFileHelper mItemPurchaseFileHelper;
     private final WorkManager mWorkManager;
     private final ItemChangeNotifier mItemChangeNotifier;
     private final ItemMaintenanceChangeNotifier mItemMaintenanceChangeNotifier;
     private final ItemUsageChangeNotifier mItemUsageChangeNotifier;
+    private final ItemPurchaseChangeNotifier mItemPurchaseChangeNotifier;
     private final ItemReminderChangeNotifier mItemReminderChangeNotifier;
     private final Subject<String> mProgressSubject = PublishSubject.create();
 
@@ -94,14 +103,17 @@ public class ImportCmd {
         mItemDao = provider.get(ItemDao.class);
         mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
         mItemUsageDao = provider.get(ItemUsageDao.class);
+        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
         mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
         mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
+        mItemPurchaseFileHelper = provider.get(ItemPurchaseFileHelper.class);
         mWorkManager = provider.get(WorkManager.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
         mItemMaintenanceChangeNotifier = provider.get(ItemMaintenanceChangeNotifier.class);
         mItemUsageChangeNotifier = provider.get(ItemUsageChangeNotifier.class);
+        mItemPurchaseChangeNotifier = provider.get(ItemPurchaseChangeNotifier.class);
         mItemReminderChangeNotifier = provider.get(ItemReminderChangeNotifier.class);
     }
 
@@ -171,10 +183,12 @@ public class ImportCmd {
         Map<Long, Long> oldToNewItemId = new HashMap<>();
         Map<Long, Long> oldToNewMaintenanceId = new HashMap<>();
         Map<Long, Long> oldToNewUsageId = new HashMap<>();
+        Map<Long, Long> oldToNewPurchaseId = new HashMap<>();
         Map<Long, List<ItemImage>> imagesByOldItemId = groupImagesByItemId(data.itemImages);
         Map<Long, List<ItemTag>> tagsByOldItemId = groupTagsByItemId(data.itemTags);
         Map<Long, List<ItemMaintenanceImage>> maintImagesByOldMaintId = groupMaintImagesByMaintId(data.itemMaintenanceImages);
         Map<Long, List<ItemUsageImage>> usageImagesByOldUsageId = groupUsageImagesByUsageId(data.itemUsageImages);
+        Map<Long, List<ItemPurchaseImage>> purchaseImagesByOldPurchaseId = groupPurchaseImagesByPurchaseId(data.itemPurchaseImages);
         int count = 0;
         for (Item item : data.items) {
             long oldId = item.id;
@@ -280,6 +294,37 @@ public class ImportCmd {
             }
             mItemUsageChangeNotifier.itemUsageAdded(usageState.clone());
         }
+        for (ItemPurchase e : data.itemPurchases) {
+            Long newItemId = oldToNewItemId.get(e.itemId);
+            if (newItemId == null) continue;
+            long oldId = e.id;
+            e.id = null;
+            e.itemId = newItemId;
+            long newId = mItemPurchaseDao.insert(e);
+            e.id = newId;
+            oldToNewPurchaseId.put(oldId, newId);
+            List<ItemPurchaseImage> relatedImages = purchaseImagesByOldPurchaseId.getOrDefault(oldId, new ArrayList<>());
+            ArrayList<ItemPurchaseImage> purchaseImages = new ArrayList<>();
+            for (ItemPurchaseImage ie : relatedImages) {
+                ie.id = null;
+                ie.itemPurchaseId = newId;
+                if (ie.fileName != null && !ie.fileName.isEmpty()) {
+                    String oldFileName = ie.fileName;
+                    String newFileName = mFileHelper.generateImageFileName();
+                    ie.fileName = newFileName;
+                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageParent());
+                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageThumbnailParent());
+                }
+                ie.id = mItemPurchaseDao.insert(ie);
+                purchaseImages.add(ie);
+            }
+            ItemPurchaseState purchaseState = new ItemPurchaseState();
+            purchaseState.updateItemPurchase(e);
+            if (!purchaseImages.isEmpty()) {
+                purchaseState.updateItemPurchaseImages(purchaseImages);
+            }
+            mItemPurchaseChangeNotifier.itemPurchaseAdded(purchaseState.clone());
+        }
         for (ItemReminder e : data.itemReminders) {
             Long newItemId = oldToNewItemId.get(e.itemId);
             if (newItemId == null) continue;
@@ -321,6 +366,14 @@ public class ImportCmd {
         Map<Long, List<ItemUsageImage>> map = new HashMap<>();
         for (ItemUsageImage img : images) {
             map.computeIfAbsent(img.itemUsageId, k -> new ArrayList<>()).add(img);
+        }
+        return map;
+    }
+
+    private Map<Long, List<ItemPurchaseImage>> groupPurchaseImagesByPurchaseId(List<ItemPurchaseImage> images) {
+        Map<Long, List<ItemPurchaseImage>> map = new HashMap<>();
+        for (ItemPurchaseImage img : images) {
+            map.computeIfAbsent(img.itemPurchaseId, k -> new ArrayList<>()).add(img);
         }
         return map;
     }

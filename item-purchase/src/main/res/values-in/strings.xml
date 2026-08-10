@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">Jumlah harus lebih dari 0</string>
+    <string name="purchase_date_time_is_required">Tanggal dan waktu pembelian wajib diisi</string>
+    <string name="description_is_required">Deskripsi wajib diisi</string>
+    <string name="amount_">Jumlah: %d</string>
+    <string name="cost_">Biaya: %s</string>
+    <string name="description_">Deskripsi: %s</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
+    <string name="title_purchases">Pembelian</string>
+    <string name="title_add_item_purchase">Tambah Pembelian Item</string>
+    <string name="title_update_item_purchase">Perbarui Pembelian Item</string>
+    <string name="success_add_item_purchase">Pembelian item ditambahkan</string>
+    <string name="success_update_item_purchase">Pembelian item diperbarui</string>
+    <string name="success_delete_item_purchase">Pembelian item dihapus</string>
+    <string name="success_add_item_purchase_image">Gambar pembelian item ditambahkan</string>
+    <string name="success_delete_item_purchase_image">Gambar pembelian item dihapus</string>
+    <string name="title_add">Tambah</string>
+    <string name="save">Simpan</string>
+    <string name="hint_type_to_search">Ketik untuk mencari</string>
+    <string name="form_amount">Jumlah</string>
+    <string name="form_cost">Biaya</string>
+    <string name="form_description">Deskripsi</string>
+    <string name="form_purchase_date_time">Tanggal dan waktu pembelian</string>
+</resources>

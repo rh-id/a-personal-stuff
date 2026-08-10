@@ -70,8 +70,15 @@
     <string name="import_failed">Import nurjus</string>
     <string name="export_progress_gathering">Kogun andmeid…</string>
     <string name="export_progress_writing">Kirjutan varundust…</string>
-    <string name="export_progress_images">Pakin pilte (%d/6)…</string>
+    <string name="export_progress_images">Pakin pilte (%d/8)…</string>
     <string name="import_progress_extracting">Pakkin varundust lahti…</string>
     <string name="import_progress_reading">Loen varundust…</string>
     <string name="import_progress_importing">Impordin eset %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Lao liikumised</string>
+    <string name="stock_movements_summary">Algne: %1$d  −  Kasutatud: %2$d  +  Ostetud: %3$d  =  Jäänud: %4$d</string>
+    <string name="movement_amount">Kogus: %d</string>
+    <string name="movement_cost">Kulu: %s</string>
+    <string name="movement_description">Kirjeldus: %s</string>
 </resources>

@@ -70,8 +70,15 @@
     <string name="import_failed">Innflutningur mistókst</string>
     <string name="export_progress_gathering">Safna gögnum…</string>
     <string name="export_progress_writing">Skrifa afrit…</string>
-    <string name="export_progress_images">Pakka myndum (%d/6)…</string>
+    <string name="export_progress_images">Pakka myndum (%d/8)…</string>
     <string name="import_progress_extracting">Taka út afrit…</string>
     <string name="import_progress_reading">Lesa afrit…</string>
     <string name="import_progress_importing">Flytja inn hlut %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Birgðahreyfingar</string>
+    <string name="stock_movements_summary">Upphaflegt: %1$d  −  Notað: %2$d  +  Keypt: %3$d  =  Eftir: %4$d</string>
+    <string name="movement_amount">Magn: %d</string>
+    <string name="movement_cost">Kostnaður: %s</string>
+    <string name="movement_description">Lýsing: %s</string>
 </resources>

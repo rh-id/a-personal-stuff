@@ -61,4 +61,30 @@ public class ItemUsageChangeNotifier {
     public Flowable<ItemUsageImage> getAddedItemUsageImageFlow() {
         return Flowable.fromObservable(mImageAddedSubject, BackpressureStrategy.BUFFER);
     }
+
+    /**
+     * Emits the affected item id on any usage add/update/delete. Convenience
+     * for consumers that only need to know "something about this item's
+     * usages changed" (e.g. to recompute a remaining-quantity badge).
+     */
+    public Flowable<Long> getAnyItemUsageChangeFlow() {
+        return Flowable.merge(
+                getAddedItemUsageFlow().map(s -> s.getItemId()),
+                getUpdatedItemUsageFlow().map(s -> s.getItemId()),
+                getDeletedItemUsageFlow().map(s -> s.getItemId()));
+    }
+
+    /**
+     * Emits the affected usage id (ItemUsageImage.itemUsageId) on any usage
+     * image add/delete. Convenience for consumers that need to know "a usage's
+     * images changed" — e.g. to reload a list that displays images. Unlike
+     * {@link #getAnyItemUsageChangeFlow()} this emits the usage id (not the
+     * item id) because image events don't carry the item id; the consumer can
+     * resolve it via the usage id if needed.
+     */
+    public Flowable<Long> getAnyItemUsageImageChangeFlow() {
+        return Flowable.merge(
+                getAddedItemUsageImageFlow().map(img -> img.itemUsageId),
+                getDeletedItemUsageImageFlow().map(img -> img.itemUsageId));
+    }
 }

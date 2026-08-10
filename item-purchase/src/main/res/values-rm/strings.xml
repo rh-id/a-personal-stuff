@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">La quantità sto esser pli che 0</string>
+    <string name="purchase_date_time_is_required">La data da cumpra è necessaria</string>
+    <string name="description_is_required">La descripziun è necessaria</string>
+    <string name="amount_">Quantità: %d</string>
+    <string name="cost_">Costs: %s</string>
+    <string name="description_">Descripziun: %s</string>
+    <string name="title_confirm_delete">Confermar la stiraziun</string>
+    <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
+    <string name="title_purchases">Cumpras</string>
+    <string name="title_add_item_purchase">Agiuntar cumpra dals objects</string>
+    <string name="title_update_item_purchase">Actualisar la cumpra dals objects</string>
+    <string name="success_add_item_purchase">Cumpra dals objects agiuntada</string>
+    <string name="success_update_item_purchase">Cumpra dals objects actualisada</string>
+    <string name="success_delete_item_purchase">Cumpra dals objects stizzada</string>
+    <string name="success_add_item_purchase_image">Maletg da la cumpra dals objects agiuntà</string>
+    <string name="success_delete_item_purchase_image">Maletg da la cumpra dals objects stizzà</string>
+    <string name="title_add">Agiuntar</string>
+    <string name="save">Memorisar</string>
+    <string name="hint_type_to_search">Tipisar per tschertgar</string>
+    <string name="form_amount">Quantità</string>
+    <string name="form_cost">Costs</string>
+    <string name="form_description">Descripziun</string>
+    <string name="form_purchase_date_time">Data da cumpra</string>
+</resources>

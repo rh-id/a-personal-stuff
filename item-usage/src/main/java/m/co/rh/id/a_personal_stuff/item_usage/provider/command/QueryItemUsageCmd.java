@@ -28,4 +28,10 @@ public class QueryItemUsageCmd {
         return Single.fromCallable(() ->
                 mItemUsageDao.findItemUsageByItemId(itemId)).subscribeOn(Schedulers.from(mExecutorService));
     }
+
+    public Single<List<ItemUsageState>> findItemUsageStateByItemId(long itemId) {
+        return Single.fromCallable(() ->
+                mItemUsageDao.findItemUsageStateByItemIdWithLimit(itemId, Integer.MAX_VALUE))
+                .subscribeOn(Schedulers.from(mExecutorService));
+    }
 }

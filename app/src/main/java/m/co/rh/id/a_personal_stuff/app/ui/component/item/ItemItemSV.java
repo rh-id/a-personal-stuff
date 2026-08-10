@@ -42,6 +42,7 @@ import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.ui.page.ItemStockMovementsPage;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
@@ -51,9 +52,14 @@ import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.command.QueryItemPurchaseCmd;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchasesPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemRemindersPage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.command.QueryItemUsageCmd;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsagesPage;
 import m.co.rh.id.anavigator.RouteOptions;
 import m.co.rh.id.anavigator.StatefulView;
@@ -72,6 +78,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient ItemFileHelper mItemFileHelper;
     private transient RxDisposer mRxDisposer;
     private transient QueryItemUsageCmd mQueryItemUsageCmd;
+    private transient QueryItemPurchaseCmd mQueryItemPurchaseCmd;
 
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
@@ -119,6 +126,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mItemFileHelper = mSvProvider.get(ItemFileHelper.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
+        mQueryItemPurchaseCmd = mSvProvider.get(QueryItemPurchaseCmd.class);
         mItemImageDisplay = BehaviorSubject.create();
         mDefaultExpiredDateColor = ContextCompat.getColor(provider.getContext(), m.co.rh.id.a_personal_stuff.base.R.color.light_green_600);
         mExpiredDateColor = BehaviorSubject.createDefault(mDefaultExpiredDateColor);
@@ -308,16 +316,33 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         }));
         mRxDisposer.add("createView_onItemStateChanged_updateUsageCount",
                 mItemState.getSubject().observeOn(Schedulers.from(mExecutorService))
-                        .subscribe(itemState -> {
-                            List<ItemUsage> itemUsages = mQueryItemUsageCmd.findItemUsageByItemId(itemState.getItemId()).blockingGet();
-                            if (itemUsages != null && !itemUsages.isEmpty()) {
-                                int count = itemState.getItemAmount();
-                                for (ItemUsage itemUsage : itemUsages) {
-                                    count -= itemUsage.amount;
-                                }
-                                mUsageCount.onNext(count);
-                            } else {
-                                mUsageCount.onNext(null);
+                        .subscribe(this::recomputeRemaining));
+        // Live-refresh the badge when a purchase is added/updated/deleted from
+        // another page — purchases don't mutate ItemState, so the item-state
+        // subscription above would not fire on its own.
+        mRxDisposer.add("createView_onPurchaseChanged_updateUsageCount",
+                mSvProvider.get(ItemPurchaseChangeNotifier.class).getAnyItemPurchaseChangeFlow()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .filter(itemId -> itemId != null
+                                && itemId.equals(getCurrentItemId()))
+                        .subscribe(itemId -> {
+                            ItemState itemState = mItemState.getValue();
+                            if (itemState != null) {
+                                recomputeRemaining(itemState);
+                            }
+                        }));
+        // Also live-refresh on usage changes for parity (the original badge
+        // only re-ran on item-state changes, so it didn't refresh when a usage
+        // was logged from the usages page).
+        mRxDisposer.add("createView_onUsageChanged_updateUsageCount",
+                mSvProvider.get(ItemUsageChangeNotifier.class).getAnyItemUsageChangeFlow()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .filter(itemId -> itemId != null
+                                && itemId.equals(getCurrentItemId()))
+                        .subscribe(itemId -> {
+                            ItemState itemState = mItemState.getValue();
+                            if (itemState != null) {
+                                recomputeRemaining(itemState);
                             }
                         }));
         mRxDisposer.add("createView_onUsageCountChanged", mUsageCount.getSubject()
@@ -342,6 +367,41 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             mSvProvider.dispose();
             mSvProvider = null;
         }
+    }
+
+    /**
+     * Recompute the "remaining" badge as {@code itemAmount − Σusage + Σpurchase}.
+     * Both usage and purchase are pure logs that don't touch Item.amount, so the
+     * remaining quantity is derived here. The badge is shown whenever there is
+     * at least one usage or purchase log; otherwise it is hidden (null).
+     */
+    private void recomputeRemaining(ItemState itemState) {
+        long itemId = itemState.getItemId();
+        List<ItemUsage> itemUsages = mQueryItemUsageCmd.findItemUsageByItemId(itemId).blockingGet();
+        List<ItemPurchase> itemPurchases = mQueryItemPurchaseCmd.findItemPurchaseByItemId(itemId).blockingGet();
+        boolean hasUsages = itemUsages != null && !itemUsages.isEmpty();
+        boolean hasPurchases = itemPurchases != null && !itemPurchases.isEmpty();
+        if (hasUsages || hasPurchases) {
+            int count = itemState.getItemAmount();
+            if (hasUsages) {
+                for (ItemUsage itemUsage : itemUsages) {
+                    count -= itemUsage.amount;
+                }
+            }
+            if (hasPurchases) {
+                for (ItemPurchase itemPurchase : itemPurchases) {
+                    count += itemPurchase.amount;
+                }
+            }
+            mUsageCount.onNext(count);
+        } else {
+            mUsageCount.onNext(null);
+        }
+    }
+
+    private Long getCurrentItemId() {
+        ItemState itemState = mItemState.getValue();
+        return itemState == null ? null : itemState.getItemId();
     }
 
     @Override
@@ -377,16 +437,21 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         } else if (id == R.id.button_more_action) {
             showMoreActionList(view);
         } else if (id == R.id.button_usage_count) {
+            // The badge reflects amount − Σusage + Σpurchase, so tapping it opens
+            // the combined Stock Movements view that explains the number, rather
+            // than the usages list alone.
             Long itemId = mItemState.getValue().getItemId();
-            mNavigator.push(Routes.ITEM_USAGES_PAGE,
-                    ItemUsagesPage.Args.with(itemId));
+            mNavigator.push(Routes.ITEM_STOCK_MOVEMENTS_PAGE,
+                    ItemStockMovementsPage.Args.with(itemId));
         }
     }
 
     private void showMoreActionList(View anchor) {
         Context context = anchor.getContext();
         Object[] items = new Object[]{
+                context.getString(R.string.title_stock_movements),
                 context.getString(m.co.rh.id.a_personal_stuff.item_usage.R.string.title_usages),
+                context.getString(m.co.rh.id.a_personal_stuff.item_purchase.R.string.title_purchases),
                 context.getString(m.co.rh.id.a_personal_stuff.item_maintenance.R.string.title_maintenances),
                 context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders),
                 DIVIDER,
@@ -395,7 +460,9 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 context.getString(R.string.title_delete),
         };
         int[] actionIds = new int[]{
+                R.id.menu_item_stock_movements,
                 R.id.menu_item_usage_list,
+                R.id.menu_item_purchase_list,
                 R.id.menu_item_maintenance_list,
                 R.id.menu_item_reminder_list,
                 R.id.menu_item_duplicate,
@@ -454,10 +521,18 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private static final Object DIVIDER = new Object();
 
     private void handleMoreAction(int id) {
-        if (id == R.id.menu_item_usage_list) {
+        if (id == R.id.menu_item_stock_movements) {
+            Long itemId = mItemState.getValue().getItemId();
+            mNavigator.push(Routes.ITEM_STOCK_MOVEMENTS_PAGE,
+                    ItemStockMovementsPage.Args.with(itemId));
+        } else if (id == R.id.menu_item_usage_list) {
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_USAGES_PAGE,
                     ItemUsagesPage.Args.with(itemId));
+        } else if (id == R.id.menu_item_purchase_list) {
+            Long itemId = mItemState.getValue().getItemId();
+            mNavigator.push(Routes.ITEM_PURCHASES_PAGE,
+                    ItemPurchasesPage.Args.with(itemId));
         } else if (id == R.id.menu_item_maintenance_list) {
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_MAINTENANCES_PAGE,
@@ -576,8 +651,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             if (getItemViewType(position) == VIEW_TYPE_DIVIDER) {
                 if (convertView == null) {
                     View divider = new View(mContext);
+                    float density = mContext.getResources().getDisplayMetrics().density;
+                    int dividerHeightPx = Math.max(1, (int) (1 * density));
                     divider.setLayoutParams(new ViewGroup.LayoutParams(
-                            ViewGroup.LayoutParams.MATCH_PARENT, 1));
+                            ViewGroup.LayoutParams.MATCH_PARENT, dividerHeightPx));
                     TypedValue outValue = new TypedValue();
                     mContext.getTheme().resolveAttribute(
                             android.R.attr.listDivider, outValue, true);

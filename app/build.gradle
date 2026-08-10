@@ -62,6 +62,7 @@ dependencies {
     implementation project(path: ':base')
     implementation project(path: ':barcode')
     implementation project(path: ':item-usage')
+    implementation project(path: ':item-purchase')
     implementation project(path: ':item-maintenance')
     implementation project(path: ':item-reminder')
     implementation project(path: ':settings')

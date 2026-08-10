@@ -34,6 +34,9 @@ import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
+import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
 import m.co.rh.id.aprovider.Provider;
 
@@ -48,10 +51,12 @@ public class ExportCmd {
     private final ItemDao mItemDao;
     private final ItemMaintenanceDao mItemMaintenanceDao;
     private final ItemUsageDao mItemUsageDao;
+    private final ItemPurchaseDao mItemPurchaseDao;
     private final ItemReminderDao mItemReminderDao;
     private final ItemFileHelper mItemFileHelper;
     private final ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
     private final ItemUsageFileHelper mItemUsageFileHelper;
+    private final ItemPurchaseFileHelper mItemPurchaseFileHelper;
 
     public ExportCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -60,10 +65,12 @@ public class ExportCmd {
         mItemDao = provider.get(ItemDao.class);
         mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
         mItemUsageDao = provider.get(ItemUsageDao.class);
+        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
         mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
         mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
+        mItemPurchaseFileHelper = provider.get(ItemPurchaseFileHelper.class);
     }
 
     public Flowable<String> getProgressFlow() {
@@ -95,6 +102,10 @@ public class ExportCmd {
                 for (ItemUsageImage itemUsageImage : backupData.itemUsageImages) {
                     if (itemUsageImage.fileName != null) usageImageFileNames.add(itemUsageImage.fileName);
                 }
+                Set<String> purchaseImageFileNames = new HashSet<>();
+                for (ItemPurchaseImage itemPurchaseImage : backupData.itemPurchaseImages) {
+                    if (itemPurchaseImage.fileName != null) purchaseImageFileNames.add(itemPurchaseImage.fileName);
+                }
                 mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 1));
                 addImageDirToZip(zos, mItemFileHelper.getItemImageParent(), Constants.FILE_DIR_ITEM_IMAGE, itemImageFileNames);
                 mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 2));
@@ -107,6 +118,10 @@ public class ExportCmd {
                 addImageDirToZip(zos, mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnailParent(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL, maintImageFileNames);
                 mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 6));
                 addImageDirToZip(zos, mItemUsageFileHelper.getItemUsageImageThumbnailParent(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL, usageImageFileNames);
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 7));
+                addImageDirToZip(zos, mItemPurchaseFileHelper.getItemPurchaseImageParent(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE, purchaseImageFileNames);
+                mProgressSubject.onNext(mAppContext.getString(R.string.export_progress_images, 8));
+                addImageDirToZip(zos, mItemPurchaseFileHelper.getItemPurchaseImageThumbnailParent(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL, purchaseImageFileNames);
             } finally {
                 zos.close();
             }
@@ -126,6 +141,8 @@ public class ExportCmd {
         data.itemMaintenanceImages.addAll(mItemMaintenanceDao.findAllItemMaintenanceImages());
         data.itemUsages.addAll(mItemUsageDao.findAllItemUsages());
         data.itemUsageImages.addAll(mItemUsageDao.findAllItemUsageImages());
+        data.itemPurchases.addAll(mItemPurchaseDao.findAllItemPurchases());
+        data.itemPurchaseImages.addAll(mItemPurchaseDao.findAllItemPurchaseImages());
         data.itemReminders.addAll(mItemReminderDao.findAllItemReminders());
         return data;
     }

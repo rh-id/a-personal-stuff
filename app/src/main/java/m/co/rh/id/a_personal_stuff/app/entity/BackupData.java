@@ -8,6 +8,8 @@ import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,6 +29,8 @@ public class BackupData {
     private static final String KEY_ITEM_MAINTENANCE_IMAGES = "itemMaintenanceImages";
     private static final String KEY_ITEM_USAGES = "itemUsages";
     private static final String KEY_ITEM_USAGE_IMAGES = "itemUsageImages";
+    private static final String KEY_ITEM_PURCHASES = "itemPurchases";
+    private static final String KEY_ITEM_PURCHASE_IMAGES = "itemPurchaseImages";
     private static final String KEY_ITEM_REMINDERS = "itemReminders";
 
     private static final int CURRENT_VERSION = 1;
@@ -40,6 +44,8 @@ public class BackupData {
     public List<ItemMaintenanceImage> itemMaintenanceImages;
     public List<ItemUsage> itemUsages;
     public List<ItemUsageImage> itemUsageImages;
+    public List<ItemPurchase> itemPurchases;
+    public List<ItemPurchaseImage> itemPurchaseImages;
     public List<ItemReminder> itemReminders;
 
     public BackupData() {
@@ -52,6 +58,8 @@ public class BackupData {
         itemMaintenanceImages = new ArrayList<>();
         itemUsages = new ArrayList<>();
         itemUsageImages = new ArrayList<>();
+        itemPurchases = new ArrayList<>();
+        itemPurchaseImages = new ArrayList<>();
         itemReminders = new ArrayList<>();
     }
 
@@ -66,6 +74,8 @@ public class BackupData {
         json.put(KEY_ITEM_MAINTENANCE_IMAGES, maintenanceImageListToJson(itemMaintenanceImages));
         json.put(KEY_ITEM_USAGES, usageListToJson(itemUsages));
         json.put(KEY_ITEM_USAGE_IMAGES, usageImageListToJson(itemUsageImages));
+        json.put(KEY_ITEM_PURCHASES, purchaseListToJson(itemPurchases));
+        json.put(KEY_ITEM_PURCHASE_IMAGES, purchaseImageListToJson(itemPurchaseImages));
         json.put(KEY_ITEM_REMINDERS, reminderListToJson(itemReminders));
         return json;
     }
@@ -81,6 +91,8 @@ public class BackupData {
         data.itemMaintenanceImages = jsonToMaintenanceImageList(json.optJSONArray(KEY_ITEM_MAINTENANCE_IMAGES));
         data.itemUsages = jsonToUsageList(json.optJSONArray(KEY_ITEM_USAGES));
         data.itemUsageImages = jsonToUsageImageList(json.optJSONArray(KEY_ITEM_USAGE_IMAGES));
+        data.itemPurchases = jsonToPurchaseList(json.optJSONArray(KEY_ITEM_PURCHASES));
+        data.itemPurchaseImages = jsonToPurchaseImageList(json.optJSONArray(KEY_ITEM_PURCHASE_IMAGES));
         data.itemReminders = jsonToReminderList(json.optJSONArray(KEY_ITEM_REMINDERS));
         return data;
     }
@@ -325,6 +337,69 @@ public class BackupData {
             e.taskId = obj.optString("taskId", null);
             e.reminderDateTime = obj.isNull("reminderDateTime") ? null : new Date(obj.getLong("reminderDateTime"));
             e.message = obj.optString("message", null);
+            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
+            list.add(e);
+        }
+        return list;
+    }
+
+    private static JSONArray purchaseListToJson(List<ItemPurchase> entries) throws JSONException {
+        JSONArray arr = new JSONArray();
+        for (ItemPurchase e : entries) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", e.id);
+            obj.put("itemId", e.itemId);
+            obj.put("description", e.description);
+            obj.put("amount", e.amount);
+            obj.put("cost", e.cost != null ? e.cost.toString() : JSONObject.NULL);
+            obj.put("purchaseDateTime", e.purchaseDateTime != null ? e.purchaseDateTime.getTime() : JSONObject.NULL);
+            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
+            arr.put(obj);
+        }
+        return arr;
+    }
+
+    private static List<ItemPurchase> jsonToPurchaseList(JSONArray arr) throws JSONException {
+        List<ItemPurchase> list = new ArrayList<>();
+        if (arr == null) return list;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.getJSONObject(i);
+            ItemPurchase e = new ItemPurchase();
+            e.id = obj.optLong("id", 0);
+            e.itemId = obj.optLong("itemId", 0);
+            e.description = obj.optString("description", null);
+            e.amount = obj.optInt("amount", 0);
+            String costStr = obj.isNull("cost") ? null : obj.optString("cost", null);
+            e.cost = costStr != null && !costStr.isEmpty() ? new BigDecimal(costStr) : null;
+            e.purchaseDateTime = obj.isNull("purchaseDateTime") ? null : new Date(obj.getLong("purchaseDateTime"));
+            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
+            list.add(e);
+        }
+        return list;
+    }
+
+    private static JSONArray purchaseImageListToJson(List<ItemPurchaseImage> entries) throws JSONException {
+        JSONArray arr = new JSONArray();
+        for (ItemPurchaseImage e : entries) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", e.id);
+            obj.put("itemPurchaseId", e.itemPurchaseId);
+            obj.put("fileName", e.fileName);
+            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
+            arr.put(obj);
+        }
+        return arr;
+    }
+
+    private static List<ItemPurchaseImage> jsonToPurchaseImageList(JSONArray arr) throws JSONException {
+        List<ItemPurchaseImage> list = new ArrayList<>();
+        if (arr == null) return list;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.getJSONObject(i);
+            ItemPurchaseImage e = new ItemPurchaseImage();
+            e.id = obj.optLong("id", 0);
+            e.itemPurchaseId = obj.optLong("itemPurchaseId", 0);
+            e.fileName = obj.optString("fileName", null);
             e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
             list.add(e);
         }

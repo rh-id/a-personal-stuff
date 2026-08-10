@@ -70,8 +70,15 @@
     <string name="import_failed">Impor gagal</string>
     <string name="export_progress_gathering">Mengumpulkan data…</string>
     <string name="export_progress_writing">Menulis cadangan…</string>
-    <string name="export_progress_images">Mengemas gambar (%d/6)…</string>
+    <string name="export_progress_images">Mengemas gambar (%d/8)…</string>
     <string name="import_progress_extracting">Mengekstrak cadangan…</string>
     <string name="import_progress_reading">Membaca cadangan…</string>
     <string name="import_progress_importing">Mengimpor item %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Pergerakan Stok</string>
+    <string name="stock_movements_summary">Awal: %1$d  −  Terpakai: %2$d  +  Dibeli: %3$d  =  Sisa: %4$d</string>
+    <string name="movement_amount">Jumlah: %d</string>
+    <string name="movement_cost">Biaya: %s</string>
+    <string name="movement_description">Deskripsi: %s</string>
 </resources>

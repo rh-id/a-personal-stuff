@@ -61,6 +61,12 @@ import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_usage.room.ItemUsageDatabase;
+import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -81,6 +87,7 @@ public class BackupIntegrationTest {
     private ItemMaintenanceDatabase mMaintenanceDb;
     private ItemUsageDatabase mUsageDb;
     private ItemReminderDatabase mReminderDb;
+    private ItemPurchaseDatabase mPurchaseDb;
     private Provider mProvider;
     private File mTempZipDir;
 
@@ -98,6 +105,9 @@ public class BackupIntegrationTest {
                 .allowMainThreadQueries().build();
 
         mReminderDb = Room.inMemoryDatabaseBuilder(mContext, ItemReminderDatabase.class)
+                .allowMainThreadQueries().build();
+
+        mPurchaseDb = Room.inMemoryDatabaseBuilder(mContext, ItemPurchaseDatabase.class)
                 .allowMainThreadQueries().build();
 
         mTempZipDir = new File(mContext.getCacheDir(), "test_zips_" + System.currentTimeMillis());
@@ -119,6 +129,8 @@ public class BackupIntegrationTest {
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL));
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL));
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL));
+        deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE));
+        deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL));
         deleteRecursive(mTempZipDir);
 
         if (mAppDb != null) {
@@ -132,6 +144,9 @@ public class BackupIntegrationTest {
         }
         if (mReminderDb != null) {
             mReminderDb.close();
+        }
+        if (mPurchaseDb != null) {
+            mPurchaseDb.close();
         }
     }
 
@@ -153,6 +168,8 @@ public class BackupIntegrationTest {
         assertTrue(data.itemUsages.isEmpty());
         assertTrue(data.itemUsageImages.isEmpty());
         assertTrue(data.itemReminders.isEmpty());
+        assertTrue(data.itemPurchases.isEmpty());
+        assertTrue(data.itemPurchaseImages.isEmpty());
 
         Set<String> entries = getZipEntryNames(zipFile);
         assertEquals(1, entries.size());
@@ -297,6 +314,21 @@ public class BackupIntegrationTest {
         usageImg.createdDateTime = now;
         mUsageDb.itemUsageDao().insert(usageImg);
 
+        ItemPurchase purchase = new ItemPurchase();
+        purchase.itemId = itemId;
+        purchase.description = "Bought 3 units";
+        purchase.amount = 3;
+        purchase.cost = new BigDecimal("12.50");
+        purchase.purchaseDateTime = now;
+        purchase.createdDateTime = now;
+        long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
+
+        ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
+        purchaseImg.itemPurchaseId = purchaseId;
+        purchaseImg.fileName = "purchase.jpg";
+        purchaseImg.createdDateTime = now;
+        mPurchaseDb.itemPurchaseDao().insert(purchaseImg);
+
         ItemReminder reminder = new ItemReminder();
         reminder.itemId = itemId;
         reminder.taskId = "task-123";
@@ -315,6 +347,12 @@ public class BackupIntegrationTest {
         assertEquals(1, data.itemMaintenanceImages.size());
         assertEquals(1, data.itemUsages.size());
         assertEquals(1, data.itemUsageImages.size());
+        assertEquals(1, data.itemPurchases.size());
+        assertEquals("Bought 3 units", data.itemPurchases.get(0).description);
+        assertEquals(3, data.itemPurchases.get(0).amount);
+        assertEquals(new BigDecimal("12.50"), data.itemPurchases.get(0).cost);
+        assertEquals(1, data.itemPurchaseImages.size());
+        assertEquals("purchase.jpg", data.itemPurchaseImages.get(0).fileName);
         assertEquals(1, data.itemReminders.size());
 
         assertEquals("Full Item", data.items.get(0).name);
@@ -678,6 +716,23 @@ public class BackupIntegrationTest {
         reminderEntry.createdDateTime = now;
         data.itemReminders.add(reminderEntry);
 
+        ItemPurchase purchaseEntry = new ItemPurchase();
+        purchaseEntry.id = 1L;
+        purchaseEntry.itemId = 1L;
+        purchaseEntry.description = "Test purchase";
+        purchaseEntry.amount = 5;
+        purchaseEntry.cost = new BigDecimal("25.00");
+        purchaseEntry.purchaseDateTime = now;
+        purchaseEntry.createdDateTime = now;
+        data.itemPurchases.add(purchaseEntry);
+
+        ItemPurchaseImage purchaseImgEntry = new ItemPurchaseImage();
+        purchaseImgEntry.id = 1L;
+        purchaseImgEntry.itemPurchaseId = 1L;
+        purchaseImgEntry.fileName = "purchase.jpg";
+        purchaseImgEntry.createdDateTime = now;
+        data.itemPurchaseImages.add(purchaseImgEntry);
+
         HashMap<String, byte[]> extraFiles = new HashMap<>();
         extraFiles.put(Constants.FILE_DIR_ITEM_IMAGE + "/item.jpg", "item-data".getBytes());
         extraFiles.put(Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL + "/item.jpg", "item-thumb".getBytes());
@@ -685,6 +740,8 @@ public class BackupIntegrationTest {
         extraFiles.put(Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL + "/maint.jpg", "maint-thumb".getBytes());
         extraFiles.put(Constants.FILE_DIR_ITEM_USAGE_IMAGE + "/usage.jpg", "usage-data".getBytes());
         extraFiles.put(Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL + "/usage.jpg", "usage-thumb".getBytes());
+        extraFiles.put(Constants.FILE_DIR_ITEM_PURCHASE_IMAGE + "/purchase.jpg", "purchase-data".getBytes());
+        extraFiles.put(Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL + "/purchase.jpg", "purchase-thumb".getBytes());
 
         File zipFile = createBackupZip(data, extraFiles);
 
@@ -748,6 +805,25 @@ public class BackupIntegrationTest {
         File restoredUsageThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL), usageImages.get(0).fileName);
         assertTrue(restoredUsageThumb.exists());
 
+        List<ItemPurchase> purchases = mPurchaseDb.itemPurchaseDao().findAllItemPurchases();
+        assertEquals(1, purchases.size());
+        assertEquals(Long.valueOf(newItemId), purchases.get(0).itemId);
+        assertEquals("Test purchase", purchases.get(0).description);
+        assertEquals(5, purchases.get(0).amount);
+        assertEquals(new BigDecimal("25.00"), purchases.get(0).cost);
+
+        List<ItemPurchaseImage> purchaseImages = mPurchaseDb.itemPurchaseDao().findAllItemPurchaseImages();
+        assertEquals(1, purchaseImages.size());
+        assertTrue(purchaseImages.get(0).fileName.endsWith(".jpg"));
+        assertNotEquals("purchase.jpg", purchaseImages.get(0).fileName);
+        assertEquals(purchases.get(0).id, purchaseImages.get(0).itemPurchaseId);
+
+        File restoredPurchaseImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseImage.exists());
+
+        File restoredPurchaseThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseThumb.exists());
+
         List<ItemReminder> reminders = mReminderDb.itemReminderDao().findAllItemReminders();
         assertEquals(1, reminders.size());
         assertEquals(Long.valueOf(newItemId), reminders.get(0).itemId);
@@ -790,6 +866,16 @@ public class BackupIntegrationTest {
         usageThumbDir.mkdirs();
         File usageThumbFile = new File(usageThumbDir, "roundtrip_usage.jpg");
         writeBytes(usageThumbFile, "roundtrip-usage-thumb".getBytes());
+
+        File purchaseImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE);
+        purchaseImageDir.mkdirs();
+        File purchaseImageFile = new File(purchaseImageDir, "roundtrip_purchase.jpg");
+        writeBytes(purchaseImageFile, "roundtrip-purchase-data".getBytes());
+
+        File purchaseThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL);
+        purchaseThumbDir.mkdirs();
+        File purchaseThumbFile = new File(purchaseThumbDir, "roundtrip_purchase.jpg");
+        writeBytes(purchaseThumbFile, "roundtrip-purchase-thumb".getBytes());
 
         ItemState itemState = new ItemState();
         Item item = new Item();
@@ -847,6 +933,21 @@ public class BackupIntegrationTest {
         usageImg.createdDateTime = now;
         mUsageDb.itemUsageDao().insert(usageImg);
 
+        ItemPurchase purchase = new ItemPurchase();
+        purchase.itemId = itemId;
+        purchase.description = "Round trip purchase";
+        purchase.amount = 4;
+        purchase.cost = new BigDecimal("40.00");
+        purchase.purchaseDateTime = now;
+        purchase.createdDateTime = now;
+        long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
+
+        ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
+        purchaseImg.itemPurchaseId = purchaseId;
+        purchaseImg.fileName = "roundtrip_purchase.jpg";
+        purchaseImg.createdDateTime = now;
+        mPurchaseDb.itemPurchaseDao().insert(purchaseImg);
+
         ItemReminder reminder = new ItemReminder();
         reminder.itemId = itemId;
         reminder.taskId = "roundtrip-task";
@@ -871,6 +972,10 @@ public class BackupIntegrationTest {
 
         mReminderDb.close();
         mReminderDb = Room.inMemoryDatabaseBuilder(mContext, ItemReminderDatabase.class)
+                .allowMainThreadQueries().build();
+
+        mPurchaseDb.close();
+        mPurchaseDb = Room.inMemoryDatabaseBuilder(mContext, ItemPurchaseDatabase.class)
                 .allowMainThreadQueries().build();
 
         mProvider = Provider.createProvider(mContext, new TestBackupProviderModule());
@@ -928,6 +1033,21 @@ public class BackupIntegrationTest {
         assertTrue(restoredUsageImage.exists());
         File restoredUsageThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL), usageImages.get(0).fileName);
         assertTrue(restoredUsageThumb.exists());
+
+        List<ItemPurchase> purchases = mPurchaseDb.itemPurchaseDao().findAllItemPurchases();
+        assertEquals(1, purchases.size());
+        assertEquals("Round trip purchase", purchases.get(0).description);
+        assertEquals(4, purchases.get(0).amount);
+        assertEquals(new BigDecimal("40.00"), purchases.get(0).cost);
+
+        List<ItemPurchaseImage> purchaseImages = mPurchaseDb.itemPurchaseDao().findAllItemPurchaseImages();
+        assertEquals(1, purchaseImages.size());
+        assertTrue(purchaseImages.get(0).fileName.endsWith(".jpg"));
+        assertNotEquals("roundtrip_purchase.jpg", purchaseImages.get(0).fileName);
+        File restoredPurchaseImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseImage.exists());
+        File restoredPurchaseThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseThumb.exists());
 
         List<ItemReminder> reminders = mReminderDb.itemReminderDao().findAllItemReminders();
         assertEquals(1, reminders.size());
@@ -1286,6 +1406,23 @@ public class BackupIntegrationTest {
         usageImg.createdDateTime = now;
         original.itemUsageImages.add(usageImg);
 
+        ItemPurchase purchase = new ItemPurchase();
+        purchase.id = 1L;
+        purchase.itemId = 1L;
+        purchase.description = "Test purchase";
+        purchase.amount = 5;
+        purchase.cost = new BigDecimal("25.00");
+        purchase.purchaseDateTime = now;
+        purchase.createdDateTime = now;
+        original.itemPurchases.add(purchase);
+
+        ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
+        purchaseImg.id = 1L;
+        purchaseImg.itemPurchaseId = 1L;
+        purchaseImg.fileName = "purchase.jpg";
+        purchaseImg.createdDateTime = now;
+        original.itemPurchaseImages.add(purchaseImg);
+
         ItemReminder reminder = new ItemReminder();
         reminder.id = 1L;
         reminder.itemId = 1L;
@@ -1358,6 +1495,20 @@ public class BackupIntegrationTest {
         assertEquals("Test reminder", restored.itemReminders.get(0).message);
         assertNotNull(restored.itemReminders.get(0).reminderDateTime);
         assertEquals(now.getTime() + 86400000, restored.itemReminders.get(0).reminderDateTime.getTime());
+
+        assertEquals(1, restored.itemPurchases.size());
+        assertEquals(Long.valueOf(1L), restored.itemPurchases.get(0).id);
+        assertEquals(Long.valueOf(1L), restored.itemPurchases.get(0).itemId);
+        assertEquals("Test purchase", restored.itemPurchases.get(0).description);
+        assertEquals(5, restored.itemPurchases.get(0).amount);
+        assertEquals(new BigDecimal("25.00"), restored.itemPurchases.get(0).cost);
+        assertNotNull(restored.itemPurchases.get(0).purchaseDateTime);
+        assertEquals(now.getTime(), restored.itemPurchases.get(0).purchaseDateTime.getTime());
+
+        assertEquals(1, restored.itemPurchaseImages.size());
+        assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).id);
+        assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).itemPurchaseId);
+        assertEquals("purchase.jpg", restored.itemPurchaseImages.get(0).fileName);
     }
 
     private File createBackupZip(BackupData data) throws Exception {
@@ -1470,11 +1621,14 @@ public class BackupIntegrationTest {
             providerRegistry.register(ItemMaintenanceChangeNotifier.class, this::getItemMaintenanceChangeNotifier);
             providerRegistry.register(ItemUsageChangeNotifier.class, this::getItemUsageChangeNotifier);
             providerRegistry.register(ItemReminderChangeNotifier.class, this::getItemReminderChangeNotifier);
+            providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
+            providerRegistry.register(ItemPurchaseChangeNotifier.class, this::getItemPurchaseChangeNotifier);
             providerRegistry.register(WorkManager.class, this::getWorkManager);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
             providerRegistry.registerLazy(ItemFileHelper.class, () -> new ItemFileHelper(provider));
             providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new ItemMaintenanceFileHelper(provider));
             providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new ItemUsageFileHelper(provider));
+            providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new ItemPurchaseFileHelper(provider));
         }
 
         private ExecutorService getExecutorService() {
@@ -1518,6 +1672,14 @@ public class BackupIntegrationTest {
 
         private ItemReminderChangeNotifier getItemReminderChangeNotifier() {
             return new ItemReminderChangeNotifier();
+        }
+
+        private ItemPurchaseDao getItemPurchaseDao() {
+            return mPurchaseDb.itemPurchaseDao();
+        }
+
+        private ItemPurchaseChangeNotifier getItemPurchaseChangeNotifier() {
+            return new ItemPurchaseChangeNotifier();
         }
 
         private WorkManager getWorkManager() {

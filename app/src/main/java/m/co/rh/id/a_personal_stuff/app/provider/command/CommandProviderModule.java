@@ -1,6 +1,7 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.ItemMaintenanceCmdProviderModule;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.ItemPurchaseCmdProviderModule;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.ItemReminderCmdProviderModule;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.ItemUsageCmdProviderModule;
 import m.co.rh.id.aprovider.Provider;
@@ -23,6 +24,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(ExportCmd.class, () -> new ExportCmd(provider));
         providerRegistry.registerLazy(ImportCmd.class, () -> new ImportCmd(provider));
         providerRegistry.registerModule(new ItemUsageCmdProviderModule());
+        providerRegistry.registerModule(new ItemPurchaseCmdProviderModule());
         providerRegistry.registerModule(new ItemMaintenanceCmdProviderModule());
         providerRegistry.registerModule(new ItemReminderCmdProviderModule());
     }

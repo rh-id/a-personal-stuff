@@ -70,8 +70,15 @@
     <string name="import_failed">Import fallito</string>
     <string name="export_progress_gathering">Raccolta dati…</string>
     <string name="export_progress_writing">Scrittura backup…</string>
-    <string name="export_progress_images">Impacchettamento immagini (%d/6)…</string>
+    <string name="export_progress_images">Impacchettamento immagini (%d/8)…</string>
     <string name="import_progress_extracting">Estrazione backup…</string>
     <string name="import_progress_reading">Lettura backup…</string>
     <string name="import_progress_importing">Importazione elemento %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Movimenti di magazzino</string>
+    <string name="stock_movements_summary">Iniziale: %1$d  −  Usato: %2$d  +  Comprato: %3$d  =  Rimanente: %4$d</string>
+    <string name="movement_amount">Quantità: %d</string>
+    <string name="movement_cost">Costo: %s</string>
+    <string name="movement_description">Descrizione: %s</string>
 </resources>

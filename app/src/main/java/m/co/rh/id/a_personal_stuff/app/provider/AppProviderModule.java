@@ -9,6 +9,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.BaseProviderModule;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.RxProviderModule;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.ItemMaintenanceProviderModule;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.ItemPurchaseProviderModule;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.ItemReminderProviderModule;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.ItemUsageProviderModule;
 import m.co.rh.id.a_personal_stuff.settings.provider.SettingsProviderModule;
@@ -31,6 +32,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new RxProviderModule());
         providerRegistry.registerModule(new BarcodeProviderModule());
         providerRegistry.registerModule(new ItemUsageProviderModule());
+        providerRegistry.registerModule(new ItemPurchaseProviderModule());
         providerRegistry.registerModule(new ItemMaintenanceProviderModule());
         providerRegistry.registerModule(new ItemReminderProviderModule());
         providerRegistry.registerModule(new SettingsProviderModule());

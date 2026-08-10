@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">Magn verður að vera meira en 0</string>
+    <string name="purchase_date_time_is_required">Kaupadagsetning og tími er nauðsynlegur</string>
+    <string name="description_is_required">Lýsing er nauðsynleg</string>
+    <string name="amount_">Magn: %d</string>
+    <string name="cost_">Kostnaður: %s</string>
+    <string name="description_">Lýsing: %s</string>
+    <string name="title_confirm_delete">Staðfesta eyðingu</string>
+    <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
+    <string name="title_purchases">Kaup</string>
+    <string name="title_add_item_purchase">Bæta við kaupum hluta</string>
+    <string name="title_update_item_purchase">Uppfæra kaup hluta</string>
+    <string name="success_add_item_purchase">Kaup hluta bætt við</string>
+    <string name="success_update_item_purchase">Kaup hluta uppfærð</string>
+    <string name="success_delete_item_purchase">Kaup hluta eytt</string>
+    <string name="success_add_item_purchase_image">Mynd kaupa hluta bætt við</string>
+    <string name="success_delete_item_purchase_image">Mynd kaupa hluta eytt</string>
+    <string name="title_add">Bæta við</string>
+    <string name="save">Vista</string>
+    <string name="hint_type_to_search">Skrifaðu til að leita</string>
+    <string name="form_amount">Magn</string>
+    <string name="form_cost">Kostnaður</string>
+    <string name="form_description">Lýsing</string>
+    <string name="form_purchase_date_time">Kaupadagsetning og tími</string>
+</resources>

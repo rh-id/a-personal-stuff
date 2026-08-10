@@ -70,8 +70,15 @@
     <string name="import_failed">Import feilet</string>
     <string name="export_progress_gathering">Samler data…</string>
     <string name="export_progress_writing">Skriver sikkerhetskopi…</string>
-    <string name="export_progress_images">Pakker bilder (%d/6)…</string>
+    <string name="export_progress_images">Pakker bilder (%d/8)…</string>
     <string name="import_progress_extracting">Pakker ut sikkerhetskopi…</string>
     <string name="import_progress_reading">Leser sikkerhetskopi…</string>
     <string name="import_progress_importing">Importerer gjenstand %d/%d…</string>
+
+    <!-- Stock Movements -->
+    <string name="title_stock_movements">Lagerbevegelser</string>
+    <string name="stock_movements_summary">Startbeholdning: %1$d  −  Brukt: %2$d  +  Kjøpt: %3$d  =  Gjenstående: %4$d</string>
+    <string name="movement_amount">Mengde: %d</string>
+    <string name="movement_cost">Kostnad: %s</string>
+    <string name="movement_description">Beskrivelse: %s</string>
 </resources>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">Menge muss mehr als 0 sein</string>
+    <string name="purchase_date_time_is_required">Kaufdatum und -uhrzeit erforderlich</string>
+    <string name="description_is_required">Beschreibung erforderlich</string>
+    <string name="amount_">Menge: %d</string>
+    <string name="cost_">Kosten: %s</string>
+    <string name="description_">Beschreibung: %s</string>
+    <string name="title_confirm_delete">Löschen bestätigen</string>
+    <string name="confirm_delete_">Möchten Sie %s wirklich löschen?</string>
+    <string name="title_purchases">Einkäufe</string>
+    <string name="title_add_item_purchase">Kauf hinzufügen</string>
+    <string name="title_update_item_purchase">Kauf aktualisieren</string>
+    <string name="success_add_item_purchase">Kauf hinzugefügt</string>
+    <string name="success_update_item_purchase">Kauf aktualisiert</string>
+    <string name="success_delete_item_purchase">Kauf gelöscht</string>
+    <string name="success_add_item_purchase_image">Kaufbild hinzugefügt</string>
+    <string name="success_delete_item_purchase_image">Kaufbild gelöscht</string>
+    <string name="title_add">Hinzufügen</string>
+    <string name="save">Speichern</string>
+    <string name="hint_type_to_search">Zum Suchen tippen</string>
+    <string name="form_amount">Menge</string>
+    <string name="form_cost">Kosten</string>
+    <string name="form_description">Beschreibung</string>
+    <string name="form_purchase_date_time">Kaufdatum und -uhrzeit</string>
+</resources>

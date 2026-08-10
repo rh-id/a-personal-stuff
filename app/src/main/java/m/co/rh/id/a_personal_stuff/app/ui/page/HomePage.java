@@ -30,6 +30,7 @@ import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
+import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsageDetailPage;
 import m.co.rh.id.alogger.ILogger;
@@ -113,6 +114,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addItemButton.setOnClickListener(this);
         Button addItemUsageButton = rootLayout.findViewById(R.id.button_add_item_usage);
         addItemUsageButton.setOnClickListener(this);
+        Button addItemPurchaseButton = rootLayout.findViewById(R.id.button_add_item_purchase);
+        addItemPurchaseButton.setOnClickListener(this);
         Button addItemMaintenanceButton = rootLayout.findViewById(R.id.button_add_item_maintenance);
         addItemMaintenanceButton.setOnClickListener(this);
         Button addItemReminderButton = rootLayout.findViewById(R.id.button_add_item_reminder);
@@ -226,6 +229,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_add_item_usage) {
             mNavigator.push(Routes.ITEM_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> itemSelectedForUsage(navRoute));
+        } else if (id == R.id.button_add_item_purchase) {
+            mNavigator.push(Routes.ITEM_SELECT_PAGE,
+                    (navigator, navRoute, activity, currentView) -> itemSelectedForPurchase(navRoute));
         } else if (id == R.id.button_add_item_maintenance) {
             mNavigator.push(Routes.ITEM_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> itemSelectedForMaintenance(navRoute));
@@ -343,6 +349,15 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             ItemState itemState = result.getItemState();
             mNavigator.push(Routes.ITEM_USAGE_DETAIL_PAGE,
                     ItemUsageDetailPage.Args.with(itemState.getItemId()));
+        }
+    }
+
+    private void itemSelectedForPurchase(NavRoute navRoute) {
+        ItemSelectPage.Result result = ItemSelectPage.Result.of(navRoute);
+        if (result != null) {
+            ItemState itemState = result.getItemState();
+            mNavigator.push(Routes.ITEM_PURCHASE_DETAIL_PAGE,
+                    ItemPurchaseDetailPage.Args.with(itemState.getItemId()));
         }
     }
 

@@ -69,8 +69,17 @@
     <string name="import_failed">Import failed</string>
     <string name="export_progress_gathering">Gathering data…</string>
     <string name="export_progress_writing">Writing backup…</string>
-    <string name="export_progress_images">Packaging images (%d/6)…</string>
+    <string name="export_progress_images">Packaging images (%d/8)…</string>
     <string name="import_progress_extracting">Extracting backup…</string>
     <string name="import_progress_reading">Reading backup…</string>
     <string name="import_progress_importing">Importing item %d/%d…</string>
+    
+    <!-- Stock Movements. title_add_item_usage and title_add_item_purchase are
+         provided (and translated) by the :item-usage and :item-purchase library
+         modules, which are merged into this module's resources. -->
+    <string name="title_stock_movements">Stock Movements</string>
+    <string name="stock_movements_summary">Initial: %1$d  −  Used: %2$d  +  Bought: %3$d  =  Remaining: %4$d</string>
+    <string name="movement_amount">Amount: %d</string>
+    <string name="movement_cost">Cost: %s</string>
+    <string name="movement_description">Description: %s</string>
 </resources>

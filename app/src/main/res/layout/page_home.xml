@@ -43,6 +43,17 @@
                 app:icon="@drawable/ic_playlist_add_black" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_item_purchase"
+                style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:gravity="center"
+                android:text="@string/title_add_item_purchase"
+                app:icon="@drawable/ic_playlist_add_black" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_add_item_maintenance"
                 style="@style/Theme.Apersonalstuff.HomeMenuButton"
                 android:layout_width="0dp"

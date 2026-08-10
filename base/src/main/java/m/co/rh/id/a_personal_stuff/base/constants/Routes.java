@@ -10,6 +10,9 @@ public class Routes {
     public static final String ITEM_SELECT_PAGE = "/items/select";
     public static final String ITEM_USAGES_PAGE = "/item-usages";
     public static final String ITEM_USAGE_DETAIL_PAGE = "/item-usage/detail";
+    public static final String ITEM_PURCHASES_PAGE = "/item-purchases";
+    public static final String ITEM_PURCHASE_DETAIL_PAGE = "/item-purchase/detail";
+    public static final String ITEM_STOCK_MOVEMENTS_PAGE = "/item-stock-movements";
     public static final String ITEM_MAINTENANCES_PAGE = "/item-maintenances";
     public static final String ITEM_MAINTENANCE_DETAIL_PAGE = "/item-maintenance/detail";
     public static final String ITEM_REMINDERS_PAGE = "/item-reminders";

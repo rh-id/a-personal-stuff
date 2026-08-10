@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.textview.MaterialTextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/text_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="@dimen/text_margin"
+    android:paddingTop="8dp"
+    android:paddingEnd="@dimen/text_margin"
+    android:paddingBottom="8dp"
+    android:textStyle="bold"
+    android:textSize="14sp"
+    tools:text="Usages" />

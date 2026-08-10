@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">Amount must be more than 0</string>
+    <string name="purchase_date_time_is_required">Purchase date time is required</string>
+    <string name="description_is_required">Description is required</string>
+    <string name="amount_">Amount: %d</string>
+    <string name="cost_">Cost: %s</string>
+    <string name="description_">Description: %s</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
+    <string name="title_purchases">Purchases</string>
+    <string name="title_add_item_purchase">Add Item Purchase</string>
+    <string name="title_update_item_purchase">Update Item Purchase</string>
+    <string name="success_add_item_purchase">Item purchase added</string>
+    <string name="success_update_item_purchase">Item purchase updated</string>
+    <string name="success_delete_item_purchase">Item purchase deleted</string>
+    <string name="success_add_item_purchase_image">Item purchase image added</string>
+    <string name="success_delete_item_purchase_image">Item purchase image deleted</string>
+    <string name="title_add">Add</string>
+    <string name="save">Save</string>
+    <string name="hint_type_to_search">Type to search</string>
+    <string name="form_amount">Amount</string>
+    <string name="form_cost">Cost</string>
+    <string name="form_description">Description</string>
+    <string name="form_purchase_date_time">Purchase Date Time</string>
+</resources>

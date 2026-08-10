@@ -6,8 +6,16 @@
 
     <group>
         <item
+            android:id="@+id/menu_item_stock_movements"
+            android:title="@string/title_stock_movements"
+            app:showAsAction="ifRoom|withText" />
+        <item
             android:id="@+id/menu_item_usage_list"
             android:title="@string/title_usages"
+            app:showAsAction="ifRoom|withText" />
+        <item
+            android:id="@+id/menu_item_purchase_list"
+            android:title="@string/title_purchases"
             app:showAsAction="ifRoom|withText" />
         <item
             android:id="@+id/menu_item_maintenance_list"

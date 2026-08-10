@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">Mengde må vere meir enn 0</string>
+    <string name="purchase_date_time_is_required">Kjøpsdato og -tid er påkravd</string>
+    <string name="description_is_required">Skildring er påkravd</string>
+    <string name="amount_">Mengde: %d</string>
+    <string name="cost_">Kostnad: %s</string>
+    <string name="description_">Skildring: %s</string>
+    <string name="title_confirm_delete">Stadfest sletting</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="title_purchases">Kjøp</string>
+    <string name="title_add_item_purchase">Legg til gjenstandkjøp</string>
+    <string name="title_update_item_purchase">Oppdater gjenstandkjøp</string>
+    <string name="success_add_item_purchase">Gjenstandkjøp lagt til</string>
+    <string name="success_update_item_purchase">Gjenstandkjøp oppdatert</string>
+    <string name="success_delete_item_purchase">Gjenstandkjøp sletta</string>
+    <string name="success_add_item_purchase_image">Gjenstandkjøpbilete lagt til</string>
+    <string name="success_delete_item_purchase_image">Gjenstandkjøpbilete sletta</string>
+    <string name="title_add">Legg til</string>
+    <string name="save">Lagre</string>
+    <string name="hint_type_to_search">Skriv for å søkje</string>
+    <string name="form_amount">Mengde</string>
+    <string name="form_cost">Kostnad</string>
+    <string name="form_description">Skildring</string>
+    <string name="form_purchase_date_time">Kjøpsdato og -tid</string>
+</resources>

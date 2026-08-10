@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">La quantità deve essere maggiore di 0</string>
+    <string name="purchase_date_time_is_required">Data e ora acquisto richieste</string>
+    <string name="description_is_required">Descrizione obbligatoria</string>
+    <string name="amount_">Quantità: %d</string>
+    <string name="cost_">Costo: %s</string>
+    <string name="description_">Descrizione: %s</string>
+    <string name="title_confirm_delete">Conferma eliminazione</string>
+    <string name="confirm_delete_">Sei sicuro di voler eliminare %s?</string>
+    <string name="title_purchases">Acquisti</string>
+    <string name="title_add_item_purchase">Aggiungi acquisto</string>
+    <string name="title_update_item_purchase">Aggiorna acquisto</string>
+    <string name="success_add_item_purchase">Acquisto aggiunto</string>
+    <string name="success_update_item_purchase">Acquisto aggiornato</string>
+    <string name="success_delete_item_purchase">Acquisto eliminato</string>
+    <string name="success_add_item_purchase_image">Immagine acquisto aggiunta</string>
+    <string name="success_delete_item_purchase_image">Immagine acquisto eliminata</string>
+    <string name="title_add">Aggiungi</string>
+    <string name="save">Salva</string>
+    <string name="hint_type_to_search">Digita per cercare</string>
+    <string name="form_amount">Quantità</string>
+    <string name="form_cost">Costo</string>
+    <string name="form_description">Descrizione</string>
+    <string name="form_purchase_date_time">Data e ora acquisto</string>
+</resources>
