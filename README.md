@@ -16,6 +16,8 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Item Management**: Easily add, edit, and organize items.
 *   **Smart Reminders**: Set up notifications for expiration dates or custom events.
 *   **Usage Tracking**: Log when and how much of an item is used.
+*   **Purchase Tracking**: Track when items are purchased or acquired.
+*   **Stock Movements**: Unified view of item usage and purchase history per item.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan barcodes for quick input and searching.
 *   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
@@ -54,6 +56,7 @@ The codebase is split into feature-centric modules to enforce boundaries:
 | `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, and shared UI components (AppBar, ImageSV, SelectionPage) |
 | `:barcode` | Barcode scanning functionality using Camera2 API with ScanBarcodePage and ScanBarcodePreview components |
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
+| `:item-purchase` | Item purchase tracking feature with entities (ItemPurchase, ItemPurchaseImage), commands, DAO, event handler for cascade delete, and UI pages (ItemPurchasesPage, ItemPurchaseDetailPage) |
 | `:item-maintenance` | Item maintenance tracking with entities (ItemMaintenance, ItemMaintenanceImage), commands, DAO, and UI pages (ItemMaintenancesPage, ItemMaintenanceDetailPage) |
 | `:item-reminder` | Reminder and alarm scheduling using WorkManager with entities (ItemReminder), commands, DAO, and UI pages (ItemRemindersPage, ItemReminderDetailPage) |
 | `:settings` | App configuration and preferences with SettingsPage, theme management, log viewing, and license display |
@@ -66,6 +69,7 @@ Instead of a monolithic database, the app uses **Multiple Room Databases**, one 
 | `AppDatabase` | base | AndroidNotification, Item, ItemImage, ItemTag |
 | `ItemMaintenanceDatabase` | item-maintenance | ItemMaintenance, ItemMaintenanceImage |
 | `ItemUsageDatabase` | item-usage | ItemUsage, ItemUsageImage |
+| `ItemPurchaseDatabase` | item-purchase | ItemPurchase, ItemPurchaseImage |
 | `ItemReminderDatabase` | item-reminder | ItemReminder |
 
 This ensures that modules remain decoupled and can be maintained or extracted independently. Each database has its own DAO registered separately to decouple from the database instance.
@@ -103,6 +107,7 @@ Business logic is encapsulated using the **Command Pattern**:
 - Notifiers use RxJava `PublishSubject` to emit events
 - Notifiers expose `Flowable` streams for subscribers
 - Pattern: `itemAdded()`, `itemUpdated()`, `itemDeleted()` → `getAddedItemFlow()`, `getUpdatedItemFlow()`, `getDeletedItemFlow()`
+- Notifiers also provide convenience methods like `getAnyItemUsageChangeFlow()`, `getAnyItemUsageImageChangeFlow()`, `getAnyItemPurchaseChangeFlow()`, and `getAnyItemPurchaseImageChangeFlow()` for simplified subscriptions
 - Event handlers (`*EventHandler` classes) listen to base module events and trigger feature-specific actions
 - Example: `ItemMaintenanceEventHandler` listens to `ItemChangeNotifier` and handles cascade deletions
 
@@ -286,20 +291,31 @@ a-personal-stuff/
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/app/
 │   │   ├── MainActivity.java      # Single activity hosting all views
 │   │   ├── MainApplication.java   # Application class with global provider
+│   │   ├── entity/
+│   │   │   └── BackupData.java    # Backup data entity
+│   │   ├── receiver/
+│   │   │   └── NotificationDeleteReceiver.java # Notification delete receiver
 │   │   ├── provider/
 │   │   │   ├── AppProviderModule.java          # Root DI module registration
 │   │   │   ├── NavigatorProvider.java          # Navigation route setup
 │   │   │   ├── StatefulViewProvider.java       # StatefulView-scoped provider
-│   │   │   ├── CommandProviderModule.java      # App-level commands
+│   │   │   ├── StatefulViewProviderModule.java
 │   │   │   ├── component/
 │   │   │   │   └── AppNotificationHandler.java # Notification processing
-│   │   │   └── command/
-│   │   │       ├── NewItemCmd.java             # Create item command
-│   │   │       ├── UpdateItemCmd.java          # Update item command
-│   │   │       ├── DeleteItemCmd.java          # Delete item command
-│   │   │       ├── QueryItemCmd.java           # Query item command
-│   │   │       ├── PagedItemCmd.java           # Paged item query
-│   │   │       └── *Item{Tag/Image}Cmd.java    # Tag/Image commands
+│   │   │   ├── command/
+│   │   │   │   ├── CommandProviderModule.java
+│   │   │   │   ├── NewItemCmd.java             # Create item command
+│   │   │   │   ├── UpdateItemCmd.java          # Update item command
+│   │   │   │   ├── DeleteItemCmd.java          # Delete item command
+│   │   │   │   ├── QueryItemCmd.java           # Query item command
+│   │   │   │   ├── PagedItemCmd.java           # Paged item query
+│   │   │   │   ├── NewItemTagCmd.java          # Create item tag command
+│   │   │   │   ├── DeleteItemTagCmd.java       # Delete item tag command
+│   │   │   │   ├── NewItemImageCmd.java        # Create item image command
+│   │   │   │   ├── DeleteItemImageCmd.java     # Delete item image command
+│   │   │   │   ├── DuplicateItemCmd.java       # Duplicate item command
+│   │   │   │   ├── ExportCmd.java              # Export data command
+│   │   │   │   └── ImportCmd.java              # Import data command
 │   │   └── ui/
 │   │       ├── page/
 │   │       │   ├── SplashPage.java             # Splash screen
@@ -307,14 +323,23 @@ a-personal-stuff/
 │   │       │   ├── ItemsPage.java              # Item list
 │   │       │   ├── ItemDetailPage.java        # Item add/edit
 │   │       │   ├── ItemSelectPage.java        # Item selection dialog
+│   │       │   ├── ItemStockMovementsPage.java # Stock movements page
 │   │       │   └── DonationsPage.java         # Donation page
+│   │       ├── model/
+│   │       │   └── StockMovement.java         # Stock movement model (usage/purchase entry)
 │   │       └── component/
+│   │           ├── StockMovementsListSV.java  # Stock movements list StatefulView
+│   │           ├── StockMovementRecyclerViewAdapter.java
 │   │           ├── item/
 │   │           │   ├── ItemListSV.java        # Item list StatefulView
 │   │           │   ├── ItemItemSV.java         # Item item StatefulView
-│   │           │   └── ItemAdapter.java       # RecyclerView adapter
+│   │           │   ├── SelectableItemItemSV.java # Selectable item StatefulView
+│   │           │   ├── ItemAdapter.java       # RecyclerView adapter
+│   │           │   ├── ItemRecyclerViewAdapter.java
+│   │           │   └── SelectableItemRecyclerViewAdapter.java
 │   │           └── adapter/
-│   │               └── ItemSuggestionAdapter.java
+│   │               ├── ItemSuggestionAdapter.java
+│   │               └── SuggestionAdapter.java
 │
 ├── base/                         # Shared base module
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/base/
@@ -326,7 +351,8 @@ a-personal-stuff/
 │   │   │   ├── Item.java                     # Item entity
 │   │   │   ├── ItemImage.java                # Item image entity
 │   │   │   ├── ItemTag.java                  # Item tag entity
-│   │   │   ├── AndroidNotification.java     # Notification entity
+│   │   │   └── AndroidNotification.java     # Notification entity
+│   │   ├── model/
 │   │   │   └── ItemState.java                # Item state model
 │   │   ├── dao/
 │   │   │   ├── ItemDao.java                  # Item data access object
@@ -355,6 +381,7 @@ a-personal-stuff/
 │   │   │   │   ├── common/
 │   │   │   │   │   ├── ImageSV.java          # Image viewer SV
 │   │   │   │   │   ├── ImageViewPage.java    # Image viewer page
+│   │   │   │   │   ├── ProgressSVDialog.java # Progress dialog SV
 │   │   │   │   │   └── SelectionPage.java    # Selection dialog
 │   │   │   └── recyclerview/
 │   │   │       └── CustomLinearLayoutManager.java
@@ -365,7 +392,8 @@ a-personal-stuff/
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_maintenance/
 │   │   ├── entity/
 │   │   │   ├── ItemMaintenance.java          # Maintenance entity
-│   │   │   ├── ItemMaintenanceImage.java     # Maintenance image entity
+│   │   │   └── ItemMaintenanceImage.java     # Maintenance image entity
+│   │   ├── model/
 │   │   │   └── ItemMaintenanceState.java     # Maintenance state model
 │   │   ├── dao/
 │   │   │   └── ItemMaintenanceDao.java       # Maintenance DAO
@@ -380,7 +408,9 @@ a-personal-stuff/
 │   │   │   │   ├── UpdateItemMaintenanceCmd.java
 │   │   │   │   ├── DeleteItemMaintenanceCmd.java
 │   │   │   │   ├── QueryItemMaintenanceCmd.java
-│   │   │   │   └── PagedItemMaintenanceCmd.java
+│   │   │   │   ├── PagedItemMaintenanceCmd.java
+│   │   │   │   ├── NewItemMaintenanceImageCmd.java
+│   │   │   │   └── DeleteItemMaintenanceImageCmd.java
 │   │   │   ├── component/
 │   │   │   │   ├── ItemMaintenanceFileHelper.java
 │   │   │   │   └── ItemMaintenanceEventHandler.java
@@ -395,7 +425,78 @@ a-personal-stuff/
 │   │           └── ItemMaintenanceItemSV.java
 │
 ├── item-usage/                  # Item usage tracking module
-│   └── (Similar structure to item-maintenance)
+│   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_usage/
+│   │   ├── entity/
+│   │   │   ├── ItemUsage.java                    # Usage entity
+│   │   │   └── ItemUsageImage.java               # Usage image entity
+│   │   ├── model/
+│   │   │   └── ItemUsageState.java                # Usage state model
+│   │   ├── dao/
+│   │   │   └── ItemUsageDao.java                 # Usage DAO
+│   │   ├── room/
+│   │   │   └── ItemUsageDatabase.java            # Usage Room database
+│   │   ├── provider/
+│   │   │   ├── ItemUsageProviderModule.java
+│   │   │   ├── ItemUsageDatabaseProviderModule.java
+│   │   │   ├── ItemUsageCmdProviderModule.java
+│   │   │   ├── command/
+│   │   │   │   ├── NewItemUsageCmd.java
+│   │   │   │   ├── UpdateItemUsageCmd.java
+│   │   │   │   ├── DeleteItemUsageCmd.java
+│   │   │   │   ├── QueryItemUsageCmd.java
+│   │   │   │   ├── PagedItemUsageCmd.java
+│   │   │   │   ├── NewItemUsageImageCmd.java
+│   │   │   │   └── DeleteItemUsageImageCmd.java
+│   │   │   ├── component/
+│   │   │   │   ├── ItemUsageFileHelper.java
+│   │   │   │   └── ItemUsageEventHandler.java
+│   │   │   └── notifier/
+│   │   │       └── ItemUsageChangeNotifier.java
+│   │   └── ui/
+│   │       ├── page/
+│   │       │   ├── ItemUsagesPage.java
+│   │       │   └── ItemUsageDetailPage.java
+│   │       └── component/
+│   │           ├── ItemUsageListSV.java
+│   │           ├── ItemUsageItemSV.java
+│   │           └── ItemUsageRecyclerViewAdapter.java
+│
+├── item-purchase/               # Item purchase tracking module
+│   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_purchase/
+│   │   ├── entity/
+│   │   │   ├── ItemPurchase.java                   # Purchase entity
+│   │   │   └── ItemPurchaseImage.java              # Purchase image entity
+│   │   ├── model/
+│   │   │   └── ItemPurchaseState.java              # Purchase state model
+│   │   ├── dao/
+│   │   │   └── ItemPurchaseDao.java                # Purchase DAO
+│   │   ├── room/
+│   │   │   └── ItemPurchaseDatabase.java           # Purchase Room database
+│   │   ├── provider/
+│   │   │   ├── ItemPurchaseProviderModule.java
+│   │   │   ├── ItemPurchaseDatabaseProviderModule.java
+│   │   │   ├── ItemPurchaseCmdProviderModule.java
+│   │   │   ├── command/
+│   │   │   │   ├── NewItemPurchaseCmd.java
+│   │   │   │   ├── UpdateItemPurchaseCmd.java
+│   │   │   │   ├── DeleteItemPurchaseCmd.java
+│   │   │   │   ├── QueryItemPurchaseCmd.java
+│   │   │   │   ├── PagedItemPurchaseCmd.java
+│   │   │   │   ├── NewItemPurchaseImageCmd.java
+│   │   │   │   └── DeleteItemPurchaseImageCmd.java
+│   │   │   ├── component/
+│   │   │   │   ├── ItemPurchaseFileHelper.java
+│   │   │   │   └── ItemPurchaseEventHandler.java
+│   │   │   └── notifier/
+│   │   │       └── ItemPurchaseChangeNotifier.java
+│   │   └── ui/
+│   │       ├── page/
+│   │       │   ├── ItemPurchasesPage.java
+│   │       │   └── ItemPurchaseDetailPage.java
+│   │       └── component/
+│   │           ├── ItemPurchaseListSV.java
+│   │           ├── ItemPurchaseItemSV.java
+│   │           └── ItemPurchaseRecyclerViewAdapter.java
 │
 ├── item-reminder/               # Item reminder/notification module
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_reminder/
@@ -456,7 +557,8 @@ a-personal-stuff/
 │   │           ├── ThemeMenuSV.java         # Theme selector
 │   │           ├── VersionMenuSV.java       # Version display
 │   │           ├── LogMenuSV.java           # Log menu
-│   │           └── LicensesMenuSV.java     # Licenses menu
+│   │           ├── LicensesMenuSV.java      # Licenses menu
+│   │           └── LogLineAdapter.java      # Log line adapter
 │
 ├── graphics/                     # App graphics (launcher icon, etc.)
 ├── fastlane/                     # App store metadata (descriptions, screenshots)
@@ -516,19 +618,21 @@ When an item is deleted:
 1. `DeleteItemCmd.execute()` called with `ItemState`
 2. Command deletes item from `AppDatabase` via `ItemDao`
 3. `ItemChangeNotifier.itemDeleted(itemState)` emits event
-4. `ItemMaintenanceEventHandler` subscribes to `ItemChangeNotifier`
-5. On `itemDeleted` event, handler deletes related maintenance records
-6. Similar flow for `ItemUsageEventHandler` and `ItemReminderEventHandler`
+4. `ItemMaintenanceEventHandler`, `ItemUsageEventHandler`, `ItemPurchaseEventHandler`, and `ItemReminderEventHandler` subscribe to `ItemChangeNotifier`
+5. On `itemDeleted` event, each handler deletes related records (maintenance, usage, purchase, reminder)
+6. This cascade delete ensures data consistency across modules
 
 #### State Management
 - **ItemState**: Aggregate of Item, ItemImages, and ItemTags
-- **Feature-specific states**: `ItemMaintenanceState`, `ItemUsageState`
+- **Feature-specific states**: `ItemMaintenanceState`, `ItemUsageState`, `ItemPurchaseState`
 - States are passed between views via navigation arguments
 - States are cloned before modification to avoid reference issues
 
 #### File Management
 - `FileHelper`: Base class for file operations (app directory management)
 - `ItemFileHelper`: Manages item-related files (images, etc.)
+- `ItemUsageFileHelper`: Manages usage-related files
+- `ItemPurchaseFileHelper`: Manages purchase-related files
 - `ItemMaintenanceFileHelper`: Manages maintenance-related files
 - File deletion cascades through event handlers
 
