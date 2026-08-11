@@ -225,14 +225,14 @@ public class ItemMaintenanceDetailPage extends StatefulView<Activity> implements
                             }
                             inputDescription.setText(itemMaintenance.description);
                         }));
-        mRxDisposer.add("createView_onItemUsageImagesChanged",
+        mRxDisposer.add("createView_onItemMaintenanceImagesChanged",
                 mItemMaintenanceState.getItemMaintenanceImagesFlow()
                         .observeOn(Schedulers.from(mExecutorService))
                         .subscribe(itemMaintenanceImages -> {
                             if (!itemMaintenanceImages.isEmpty()) {
                                 List<File> fileList = new ArrayList<>();
-                                for (ItemMaintenanceImage itemUsageImage : itemMaintenanceImages) {
-                                    fileList.add(mItemMaintenanceFileHelper.getItemMaintenanceImage(itemUsageImage.fileName));
+                                for (ItemMaintenanceImage itemMaintenanceImage : itemMaintenanceImages) {
+                                    fileList.add(mItemMaintenanceFileHelper.getItemMaintenanceImage(itemMaintenanceImage.fileName));
                                 }
                                 mImageSV.setImageFiles(fileList);
                             }
