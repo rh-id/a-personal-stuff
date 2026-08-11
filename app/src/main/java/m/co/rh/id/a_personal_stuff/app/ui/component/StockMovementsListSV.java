@@ -218,7 +218,7 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
                                                 for (ItemUsageState usageState : itemUsageStates) {
                                                     StockMovement movement = new StockMovement();
                                                     movement.type = StockMovement.Type.USAGE;
-                                                    movement.date = usageState.getItemUsageCreatedDateTime();
+                                                    movement.date = usageState.getUsageDateTime();
                                                     movement.signedAmount = -usageState.getItemUsageAmount();
                                                     movement.cost = null;
                                                     movement.description = usageState.getItemUsageDescription();

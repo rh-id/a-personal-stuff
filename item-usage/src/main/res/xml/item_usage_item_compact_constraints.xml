@@ -18,7 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <Constraint
-        android:id="@+id/text_created_date_time"
+        android:id="@+id/text_usage_date_time"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/text_margin"
@@ -38,7 +38,7 @@
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@id/container_action_button"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text_created_date_time" />
+        app:layout_constraintTop_toBottomOf="@id/text_usage_date_time" />
 
     <Constraint
         android:id="@+id/text_description"

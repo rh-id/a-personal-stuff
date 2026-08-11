@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="amount_cannot_be_0">Menge darf nicht 0 sein</string>
+    <string name="usage_date_time_is_required">Verwendungsdatum und -uhrzeit erforderlich</string>
     <string name="description_is_required">Beschreibung erforderlich</string>
     <string name="amount_">Menge: %d</string>
     <string name="description_">Beschreibung: %s</string>
@@ -19,4 +20,5 @@
     <string name="hint_type_to_search">Zum Suchen tippen</string>
     <string name="form_amount">Menge</string>
     <string name="form_description">Beschreibung</string>
+    <string name="form_usage_date_time">Verwendungsdatum und -uhrzeit</string>
 </resources>

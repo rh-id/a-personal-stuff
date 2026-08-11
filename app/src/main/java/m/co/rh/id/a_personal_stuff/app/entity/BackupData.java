@@ -261,6 +261,7 @@ public class BackupData {
             obj.put("itemId", e.itemId);
             obj.put("description", e.description);
             obj.put("amount", e.amount);
+            obj.put("usageDateTime", e.usageDateTime != null ? e.usageDateTime.getTime() : JSONObject.NULL);
             obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
             arr.put(obj);
         }
@@ -277,6 +278,7 @@ public class BackupData {
             e.itemId = obj.optLong("itemId", 0);
             e.description = obj.optString("description", null);
             e.amount = obj.optInt("amount", 0);
+            e.usageDateTime = obj.isNull("usageDateTime") ? null : new Date(obj.getLong("usageDateTime"));
             e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
             list.add(e);
         }

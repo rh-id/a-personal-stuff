@@ -8,7 +8,7 @@ import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 
 @Database(entities = {ItemUsage.class, ItemUsageImage.class},
-        version = 1)
+        version = 2)
 public abstract class ItemUsageDatabase extends RoomDatabase {
     public abstract ItemUsageDao itemUsageDao();
 }

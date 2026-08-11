@@ -7,6 +7,7 @@ import androidx.room.Room;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.room.ItemUsageDatabase;
+import m.co.rh.id.a_personal_stuff.item_usage.room.Migration1To2;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -29,6 +30,7 @@ public class ItemUsageDatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(ItemUsageDatabase.class, () ->
                 Room.databaseBuilder(appContext,
                                 ItemUsageDatabase.class, mDbName)
+                        .addMigrations(new Migration1To2())
                         .build());
         // register Dao separately to decouple from Database
         providerRegistry.registerAsync(ItemUsageDao.class, () -> provider.get(ItemUsageDatabase.class)

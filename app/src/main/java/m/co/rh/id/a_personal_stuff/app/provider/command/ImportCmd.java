@@ -269,6 +269,10 @@ public class ImportCmd {
             long oldId = e.id;
             e.id = null;
             e.itemId = newItemId;
+            // Handle null usageDateTime from old backups
+            if (e.usageDateTime == null) {
+                e.usageDateTime = e.createdDateTime;
+            }
             long newId = mItemUsageDao.insert(e);
             e.id = newId;
             oldToNewUsageId.put(oldId, newId);

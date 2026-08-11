@@ -28,11 +28,17 @@ public class ItemUsage implements Serializable, Cloneable {
     public int amount;
 
     @TypeConverters({Converter.class})
+    @ColumnInfo(name = "usage_date_time")
+    public Date usageDateTime;
+
+    @TypeConverters({Converter.class})
     @ColumnInfo(name = "created_date_time")
     public Date createdDateTime;
 
     public ItemUsage() {
-        createdDateTime = new Date();
+        Date date = new Date();
+        usageDateTime = date;
+        createdDateTime = date;
     }
 
     @Override

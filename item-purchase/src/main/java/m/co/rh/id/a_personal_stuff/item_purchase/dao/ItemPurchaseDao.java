@@ -101,7 +101,7 @@ public abstract class ItemPurchaseDao {
     protected abstract List<ItemPurchaseImage> findItemPurchaseImagesByItemPurchaseId(Long itemPurchaseId);
 
     @Query("SELECT * FROM item_purchase WHERE item_id = :itemId ORDER BY" +
-            " created_date_time DESC" +
+            " purchase_date_time DESC" +
             " LIMIT :limit ")
     public abstract List<ItemPurchase> findItemPurchasesByItemIdWithLimit(long itemId, int limit);
 

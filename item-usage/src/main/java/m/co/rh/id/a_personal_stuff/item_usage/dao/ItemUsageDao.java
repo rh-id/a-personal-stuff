@@ -101,7 +101,7 @@ public abstract class ItemUsageDao {
     protected abstract List<ItemUsageImage> findItemUsageImagesByItemUsageId(Long itemUsageId);
 
     @Query("SELECT * FROM item_usage WHERE item_id = :itemId ORDER BY" +
-            " created_date_time DESC" +
+            " usage_date_time DESC" +
             " LIMIT :limit ")
     public abstract List<ItemUsage> findItemUsagesByItemIdWithLimit(long itemId, int limit);
 

@@ -18,7 +18,7 @@
         android:layout_height="wrap_content">
 
         <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/text_created_date_time"
+            android:id="@+id/text_usage_date_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
@@ -36,7 +36,7 @@
             android:layout_marginEnd="@dimen/text_margin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/text_created_date_time"
+            app:layout_constraintTop_toBottomOf="@id/text_usage_date_time"
             tools:text="Amount: 2" />
 
         <com.google.android.material.textview.MaterialTextView

@@ -10,6 +10,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -305,6 +306,7 @@ public class BackupIntegrationTest {
         usage.itemId = itemId;
         usage.description = "Used for project";
         usage.amount = 1;
+        usage.usageDateTime = now;
         usage.createdDateTime = now;
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
@@ -376,6 +378,10 @@ public class BackupIntegrationTest {
         assertEquals("Used for project", data.itemUsages.get(0).description);
         assertEquals(1, data.itemUsages.get(0).amount);
         assertEquals(Long.valueOf(itemId), data.itemUsages.get(0).itemId);
+        assertNotNull(data.itemUsages.get(0).usageDateTime);
+        assertEquals(now.getTime(), data.itemUsages.get(0).usageDateTime.getTime());
+        assertNotNull(data.itemUsages.get(0).createdDateTime);
+        assertEquals(now.getTime(), data.itemUsages.get(0).createdDateTime.getTime());
 
         assertEquals("usage.jpg", data.itemUsageImages.get(0).fileName);
         assertEquals(usageId, data.itemUsageImages.get(0).itemUsageId.longValue());
@@ -924,6 +930,7 @@ public class BackupIntegrationTest {
         usage.itemId = itemId;
         usage.description = "Round trip usage";
         usage.amount = 2;
+        usage.usageDateTime = now;
         usage.createdDateTime = now;
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
@@ -1024,6 +1031,10 @@ public class BackupIntegrationTest {
         assertEquals(1, usages.size());
         assertEquals("Round trip usage", usages.get(0).description);
         assertEquals(2, usages.get(0).amount);
+        assertNotNull(usages.get(0).usageDateTime);
+        assertEquals(now.getTime(), usages.get(0).usageDateTime.getTime());
+        assertNotNull(usages.get(0).createdDateTime);
+        assertEquals(now.getTime(), usages.get(0).createdDateTime.getTime());
 
         List<ItemUsageImage> usageImages = mUsageDb.itemUsageDao().findAllItemUsageImages();
         assertEquals(1, usageImages.size());
@@ -1396,6 +1407,7 @@ public class BackupIntegrationTest {
         usage.itemId = 1L;
         usage.description = "Test usage";
         usage.amount = 1;
+        usage.usageDateTime = now;
         usage.createdDateTime = now;
         original.itemUsages.add(usage);
 
@@ -1482,6 +1494,10 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(1L), restored.itemUsages.get(0).itemId);
         assertEquals("Test usage", restored.itemUsages.get(0).description);
         assertEquals(1, restored.itemUsages.get(0).amount);
+        assertNotNull(restored.itemUsages.get(0).usageDateTime);
+        assertEquals(now.getTime(), restored.itemUsages.get(0).usageDateTime.getTime());
+        assertNotNull(restored.itemUsages.get(0).createdDateTime);
+        assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
 
         assertEquals(1, restored.itemUsageImages.size());
         assertEquals(Long.valueOf(1L), restored.itemUsageImages.get(0).id);
@@ -1509,6 +1525,37 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).id);
         assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).itemPurchaseId);
         assertEquals("purchase.jpg", restored.itemPurchaseImages.get(0).fileName);
+    }
+
+    @Test
+    public void backupDataJsonRoundTripOldBackupWithoutUsageDateTime() throws Exception {
+        // Simulates an old backup (pre usage_date_time) where the itemUsage
+        // entry omits the usageDateTime key entirely. BackupData.fromJson must
+        // yield usageDateTime == null so ImportCmd can fall back to createdDateTime.
+        Date now = new Date();
+        JSONObject usageObj = new JSONObject();
+        usageObj.put("id", 1L);
+        usageObj.put("itemId", 1L);
+        usageObj.put("description", "Old backup usage");
+        usageObj.put("amount", 3);
+        usageObj.put("createdDateTime", now.getTime());
+        // intentionally NO usageDateTime key
+        JSONArray usages = new JSONArray();
+        usages.put(usageObj);
+
+        JSONObject json = new JSONObject();
+        json.put("version", 1);
+        json.put("exportedAt", now.getTime());
+        json.put("itemUsages", usages);
+
+        BackupData restored = BackupData.fromJson(json);
+        assertEquals(1, restored.itemUsages.size());
+        assertEquals("Old backup usage", restored.itemUsages.get(0).description);
+        assertEquals(3, restored.itemUsages.get(0).amount);
+        assertNotNull(restored.itemUsages.get(0).createdDateTime);
+        assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
+        assertNull("Old backups without usageDateTime must deserialize to null",
+                restored.itemUsages.get(0).usageDateTime);
     }
 
     private File createBackupZip(BackupData data) throws Exception {

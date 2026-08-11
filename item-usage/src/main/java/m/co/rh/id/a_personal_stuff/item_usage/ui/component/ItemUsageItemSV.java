@@ -74,7 +74,7 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
         // ConstraintSet operates on the ConstraintLayout child, not the CardView root.
         ConstraintLayout constraintRoot =
                 rootLayout.findViewById(R.id.constraint_root);
-        TextView createdDateTimeText = rootLayout.findViewById(R.id.text_created_date_time);
+        TextView usageDateTimeText = rootLayout.findViewById(R.id.text_usage_date_time);
         TextView amountText = rootLayout.findViewById(R.id.text_amount);
         TextView descriptionText = rootLayout.findViewById(R.id.text_description);
         Button editButton = rootLayout.findViewById(R.id.button_edit);
@@ -111,7 +111,7 @@ public class ItemUsageItemSV extends StatefulView<Activity> implements RequireCo
         mRxDisposer.add("createView_onItemUsageStateChanged",
                 mItemUsageState.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemUsageState -> {
-                            createdDateTimeText.setText(mDateFormat.format(itemUsageState.getItemUsageCreatedDateTime()));
+                            usageDateTimeText.setText(mDateFormat.format(itemUsageState.getUsageDateTime()));
                             amountText.setText(
                                     context
                                             .getString(R.string.amount_, itemUsageState.getItemUsageAmount())

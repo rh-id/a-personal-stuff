@@ -25,8 +25,10 @@ public class NewItemUsageCmd {
 
     protected BehaviorSubject<String> mAmountValidSubject;
     protected BehaviorSubject<String> mDescriptionValidSubject;
+    protected BehaviorSubject<String> mUsageDateTimeValidSubject;
     protected Subject<String> mAmountValidEmitter;
     protected Subject<String> mDescriptionValidEmitter;
+    protected Subject<String> mUsageDateTimeValidEmitter;
 
     public NewItemUsageCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -37,6 +39,8 @@ public class NewItemUsageCmd {
         mAmountValidEmitter = mAmountValidSubject.toSerialized();
         mDescriptionValidSubject = BehaviorSubject.create();
         mDescriptionValidEmitter = mDescriptionValidSubject.toSerialized();
+        mUsageDateTimeValidSubject = BehaviorSubject.create();
+        mUsageDateTimeValidEmitter = mUsageDateTimeValidSubject.toSerialized();
     }
 
     public Single<ItemUsageState> execute(ItemUsageState itemUsageState) {
@@ -52,6 +56,7 @@ public class NewItemUsageCmd {
         if (itemUsageState != null) {
             boolean amtValid;
             boolean descValid;
+            boolean dateTimeValid;
             ItemUsage itemUsage = itemUsageState.getItemUsage();
             if (itemUsage.amount != 0) {
                 amtValid = true;
@@ -67,7 +72,14 @@ public class NewItemUsageCmd {
                 descValid = false;
                 mDescriptionValidEmitter.onNext(mAppContext.getString(R.string.description_is_required));
             }
-            valid = amtValid && descValid;
+            if (itemUsage.usageDateTime != null) {
+                dateTimeValid = true;
+                mUsageDateTimeValidEmitter.onNext("");
+            } else {
+                dateTimeValid = false;
+                mUsageDateTimeValidEmitter.onNext(mAppContext.getString(R.string.usage_date_time_is_required));
+            }
+            valid = amtValid && descValid && dateTimeValid;
         }
         return valid;
     }
@@ -81,6 +93,10 @@ public class NewItemUsageCmd {
         if (descValid != null && !descValid.isEmpty()) {
             return descValid;
         }
+        String dateTimeValid = mUsageDateTimeValidSubject.getValue();
+        if (dateTimeValid != null && !dateTimeValid.isEmpty()) {
+            return dateTimeValid;
+        }
         return "";
     }
 
@@ -90,5 +106,9 @@ public class NewItemUsageCmd {
 
     public Flowable<String> getDescriptionValidFlow() {
         return Flowable.fromObservable(mDescriptionValidEmitter, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<String> getUsageDateTimeValidFlow() {
+        return Flowable.fromObservable(mUsageDateTimeValidEmitter, BackpressureStrategy.BUFFER);
     }
 }

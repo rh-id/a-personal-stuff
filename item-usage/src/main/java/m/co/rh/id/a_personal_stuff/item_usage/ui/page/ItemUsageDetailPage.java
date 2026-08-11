@@ -16,7 +16,10 @@ import androidx.appcompat.widget.Toolbar;
 
 import java.io.File;
 import java.io.Serializable;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -43,6 +46,7 @@ import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnRequestPermissionResult;
 import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
 public class ItemUsageDetailPage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnActivityResult<Activity>, NavOnRequestPermissionResult<Activity>, Toolbar.OnMenuItemClickListener, View.OnClickListener {
@@ -57,6 +61,7 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
     private transient ILogger mLogger;
     private transient ExecutorService mExecutorService;
     private transient ItemUsageFileHelper mItemUsageFileHelper;
+    private transient NavExtDialogConfig mNavExtDialogConfig;
     private transient RxDisposer mRxDisposer;
     private transient NewItemUsageCmd mNewItemUsageCmd;
     private transient NewItemUsageImageCmd mNewItemUsageImageCmd;
@@ -71,13 +76,13 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
 
     private transient TextWatcher mAmountTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
+    private DateFormat mDateFormat;
 
     public ItemUsageDetailPage() {
         mAppBarSV = new AppBarSV(R.menu.page_item_usage_detail);
         mImageSV = new ImageSV();
-        // Sync the inline image to the index the user ends on in the
-        // full-screen viewer (on-screen Back).
         mImageSV.setSyncIndexOnReturn(true);
+        mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
     @Override
@@ -86,6 +91,7 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
         mLogger = mSvProvider.get(ILogger.class);
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mItemUsageFileHelper = mSvProvider.get(ItemUsageFileHelper.class);
+        mNavExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         if (isUpdate()) {
             mNewItemUsageCmd = mSvProvider.get(UpdateItemUsageCmd.class);
@@ -152,6 +158,8 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
     @Override
     protected View createView(Activity activity, ViewGroup container) {
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_item_usage_detail, container, false);
+        EditText inputUsageDateTime = rootLayout.findViewById(R.id.input_text_usage_date_time);
+        inputUsageDateTime.setOnClickListener(this);
         EditText inputAmount = rootLayout.findViewById(R.id.input_text_amount);
         inputAmount.addTextChangedListener(mAmountTextWatcher);
         Button plusOneButton = rootLayout.findViewById(R.id.button_plus_1);
@@ -175,6 +183,10 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
                         .subscribe(itemUsage -> {
                             inputAmount.setText(String.valueOf(itemUsage.amount));
                             inputDesc.setText(itemUsage.description);
+                            Date usageDateTime = itemUsage.usageDateTime;
+                            if (usageDateTime != null) {
+                                inputUsageDateTime.setText(mDateFormat.format(usageDateTime));
+                            }
                         }));
         mRxDisposer.add("createView_onItemUsageImagesChanged",
                 mItemUsageState.getItemUsageImagesFlow()
@@ -266,6 +278,15 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
                                 inputDesc.setError(null);
                             }
                         }));
+        mRxDisposer.add("createView_onUsageDateTimeValid",
+                mNewItemUsageCmd.getUsageDateTimeValidFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(s -> {
+                            if (!s.isEmpty()) {
+                                inputUsageDateTime.setError(s);
+                            } else {
+                                inputUsageDateTime.setError(null);
+                            }
+                        }));
         return rootLayout;
     }
 
@@ -293,7 +314,11 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
     @Override
     public void onClick(View view) {
         int id = view.getId();
-        if (id == R.id.button_plus_1) {
+        if (id == R.id.input_text_usage_date_time) {
+            mNavigator.push(mNavExtDialogConfig.route_dateTimePickerDialog(),
+                    mNavExtDialogConfig.args_dateTimePickerDialog(true, mItemUsageState.getUsageDateTime()),
+                    (navigator, navRoute, activity, currentView) -> usageDateTimeSelected(navRoute));
+        } else if (id == R.id.button_plus_1) {
             ViewParent viewParent = view.getParent();
             if (viewParent instanceof ViewGroup) {
                 if (((ViewGroup) viewParent).getId() == R.id.container_amount) {
@@ -347,6 +372,13 @@ public class ItemUsageDetailPage extends StatefulView<Activity> implements Requi
     @Override
     public void onRequestPermissionsResult(View currentView, Activity activity, INavigator INavigator, int requestCode, String[] permissions, int[] grantResults) {
         mImageSV.onRequestPermissionsResult(currentView, activity, INavigator, requestCode, permissions, grantResults);
+    }
+
+    private void usageDateTimeSelected(NavRoute navRoute) {
+        Date result = mNavExtDialogConfig.result_dateTimePickerDialog(navRoute);
+        if (result != null) {
+            mItemUsageState.updateUsageDateTime(result);
+        }
     }
 
     private Long getItemId() {

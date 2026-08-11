@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="amount_cannot_be_0">Jumlah tidak boleh 0</string>
+    <string name="usage_date_time_is_required">Tanggal dan waktu penggunaan wajib diisi</string>
     <string name="description_is_required">Deskripsi wajib diisi</string>
     <string name="amount_">Jumlah: %d</string>
     <string name="description_">Deskripsi: %s</string>
@@ -19,4 +20,5 @@
     <string name="hint_type_to_search">Ketik untuk mencari</string>
     <string name="form_amount">Jumlah</string>
     <string name="form_description">Deskripsi</string>
+    <string name="form_usage_date_time">Tanggal dan waktu penggunaan</string>
 </resources>

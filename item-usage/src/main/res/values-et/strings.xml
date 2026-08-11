@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="amount_cannot_be_0">Kogus ei saa olla 0</string>
+    <string name="usage_date_time_is_required">Kasutuse kuupäev on kohustuslik</string>
     <string name="description_is_required">Kirjeldus on kohustuslik</string>
     <string name="amount_">Kogus: %d</string>
     <string name="description_">Kirjeldus: %s</string>
@@ -19,4 +20,5 @@
     <string name="hint_type_to_search">Tippida otsinguks</string>
     <string name="form_amount">Kogus</string>
     <string name="form_description">Kirjeldus</string>
+    <string name="form_usage_date_time">Kasutuse kuupäev</string>
 </resources>
