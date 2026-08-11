@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Novas funcziuns:
+* Folgir cumpras/acquisiziuns d'objects
+* Nova pagina Moviments da provisiun che cumbina utilisaziuns e cumpras en ina singula lingia da temp, cun totals per grup e ina resuma Inizial - Duvrà + Cumprà = Restà
+* Agiuntar ina Data/Ura da utilisaziun editabla da l'utilisador a las utilisaziuns
+* Miniaturas da lingia da glista cun tip per zoomar per utilisaziuns, cumpras e manutenziuns (eretà era da ils Moviments da provisiun)
+
+Corecziuns:
+* Las lingias da Moviments da provisiun stevan senza lur maletgs
+* Ils divididers da il popup "dapli activitads" da la glista d'objects eran invisibels sin ecrans ad auta densitad
+* Las cumpras mussavan il temp da creaziun enstag da la data da cumpra editabla

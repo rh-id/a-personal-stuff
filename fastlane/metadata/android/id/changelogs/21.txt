@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Fitur Baru:
+* Lacak pembelian/perolehan item
+* Halaman Pergerakan Stok baru yang menggabungkan penggunaan dan pembelian dalam satu linimasa, dengan total per grup dan ringkasan Awal - Terpakai + Dibeli = Sisa
+* Tambahkan Tanggal/Waktu Penggunaan yang dapat diedit pengguna ke penggunaan
+* Thumbnail baris daftar dengan ketuk untuk zum untuk penggunaan, pembelian, dan pemeliharaan (juga diwarisi oleh Pergerakan Stok)
+
+Perbaikan:
+* Baris Pergerakan Stok kehilangan gambar mereka
+* Pembagi popup "tindakan lain" daftar item tidak terlihat pada layar kepadatan tinggi
+* Pembelian menampilkan waktu pembuatan alih-alih tanggal pembelian yang dapat diedit

@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Nuove funzionalità:
+* Traccia acquisti/acquisizioni di articoli
+* Nuova pagina Movimenti di magazzino che combina utilizzi e acquisti in una singola timeline, con totali per gruppo e un riepilogo Iniziale - Usato + Comprato = Rimanente
+* Aggiungi Data/Ora Utilizzo modificabile dall'utente agli utilizzi
+* Miniature riga elenco con tocco per zoom per utilizzi, acquisti e manutenzioni (ereditato anche dai Movimenti di magazzino)
+
+Correzioni:
+* Le righe Movimenti di magazzino mancavano delle loro immagini
+* I divisori del popup "più azioni" dell'elenco articoli erano invisibili sugli schermi ad alta densità
+* Gli acquisti mostravano l'ora di creazione invece della data di acquisto modificabile

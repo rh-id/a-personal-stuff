@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Nye funksjoner:
+* Spor varekjøp/anskaffelser
+* Ny Lagerbevegelser-side som kombinerer bruk og kjøp i en enkelt tidslinje, med totaler per gruppe og en Startbeholdning - Brukt + Kjøpt = Gjenstående oppsummering
+* Legg til brukerredigerbar Bruksdato/-tid for bruk
+* Liste-rad-miniatyrbilder med trykk for å forstørre for bruk, kjøp og vedlikehold (også arvet av Lagerbevegelser)
+
+Feilrettinger:
+* Lagerbevegelser-rader manglet bildene sine
+* Skillelinjer i vareliste "flere handlinger"-popups var usynlige på høytetthetsskjermer
+* Kjøp viste opprettelsestidspunktet i stedet for den redigerbare kjøpsdatoen

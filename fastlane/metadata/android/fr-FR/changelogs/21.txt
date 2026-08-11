@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Nouvelles fonctionnalités :
+* Suivre les achats/acquisitions d'articles
+* Nouvelle page Mouvements de stock combinant les utilisations et les achats dans une seule chronologie, avec des totaux par groupe et un résumé Initial - Utilisé + Acheté = Restant
+* Ajouter une Date/Heure d'utilisation modifiable par l'utilisateur aux utilisations
+* Miniatures de ligne de liste avec appui pour zoomer pour les utilisations, achats et maintenances (également hérité par les Mouvements de stock)
+
+Corrections :
+* Les lignes de Mouvements de stock manquaient leurs images
+* Les séparateurs du popup "plus d'actions" de la liste d'articles étaient invisibles sur les écrans haute densité
+* Les achats affichaient l'heure de création au lieu de la date d'achat modifiable

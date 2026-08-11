@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Neue Funktionen:
+* Artikelkäufe/-erwerb verfolgen
+* Neue Bestandsbewegungen-Seite, die Verwendungen und Käufe in einer einzigen Zeitleiste kombiniert, mit Summen pro Gruppe und einer Zusammenfassung: Anfangsbestand - Verbraucht + Gekauft = Restbestand
+* Benutzerbearbeitbares Verwendungsdatum/-uhrzeit für Verwendungen hinzufügen
+* Listen-Zeilen-Miniaturansichten mit Tippen zum Vergrößern für Verwendungen, Käufe und Wartungen (auch von Bestandsbewegungen geerbt)
+
+Fehlerbehebungen:
+* Bestandsbewegungen-Zeilen fehlten ihre Bilder
+* Trennlinien im Artikel-"Weitere Aktionen"-Popup waren auf hochauflösenden Bildschirmen unsichtbar
+* Einkäufe zeigten die Erstellungszeit anstelle des bearbeitbaren Kaufdatums

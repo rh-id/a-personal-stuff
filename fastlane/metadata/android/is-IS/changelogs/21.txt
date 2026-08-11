@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Nýir eiginleikar:
+* Fylgstu með kaupum/öðrum pónum á hluti
+* Nýr Birgðahreyfingar síða sem sameinar notkun og kaupa í eina tímalínu, með sumrum fyrir hóp og útskýringu með Upphaflegt - Notað + Keypt = Eftir
+* Bæta við notkvemlegri Notkunardagsetningu/tíma í notkun
+* Smámyndir í listaröðum með þrekkju til að stækka fyrir notkun, kaup og viðhald (einni erft af Birgðahreyfingar)
+
+Villuleiðréttingar:
+* Birgðahreyfingar raðir vantar myndirnar sínar
+* Skilgreinir í "fleiri aðgerðir" sprettiglugga hluta lista voru ósýnilegar á háþéttniskjám
+* Kaup sýndu stofntíma í staðinn fyrir breytilega kaupdagsetningu

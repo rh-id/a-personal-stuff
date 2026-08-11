@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Uued funktsioonid:
+* Jälgige esemete ostu/soetamist
+* Uus Lao liikumiste leht, kus käsutused ja ostud on kombineeritud ühte ajaskaalasse, koos gruppikaupa summade ja kokkuvõttega: Algne - Kasutatud + Ostetud = Jäänud
+* Kasutajate poolt redigeeritava Kasutuse Kuupäev/Kellaaeg lisamine kasutustele
+* Loendirea pisipildid, mida saab suumida klõpsuga, kasutuste, ostude ja hoolduste jaoks (päritud ka Lao liikumistele)
+
+Veaparandused:
+* Lao liikumiste ridadel puudusid pildid
+* Esemete loendi "rohkem tegevusi" hüpikakna eraldajad olid kõrgtihedusel ekraanidel nähtamatud
+* Ostud näitasid loomise aega redigeeritava ostu kuupäeva asemel

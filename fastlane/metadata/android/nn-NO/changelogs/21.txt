@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Nye funksjonar:
+* Spor varekjøp/anskaffingar
+* Ny Lagerbevegningar-side som kombinerer bruk og kjøp i ei enkel tidslinje, med totalar per gruppe og ein Startbeholdning - Brukt + Kjøpt = Attverande oppsummering
+* Legg til brukarredigerbar Bruksdato/-tid for bruk
+* Listerekkje-miniatyrbilete med trykk for å forstørra for bruk, kjøp og vedlikehald (også arva av Lagerbevegningar)
+
+Feilrettingar:
+* Lagerbevegningar-rekkjer mangla bileta sine
+* Skillelinjer i vareliste "fleire handlingar"-sprettoppvindauge var usynlege på høgtettheitsskjermar
+* Kjøp viste opprettingstidspunktet i staden for den redigerbare kjøpsdatoen
