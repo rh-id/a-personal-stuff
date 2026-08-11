@@ -17,6 +17,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
+        <ImageView
+            android:scaleType="centerCrop"
+            android:id="@+id/imageView_thumbnail"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            app:layout_constraintBottom_toTopOf="@id/text_created_date_time"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text_created_date_time"
             android:layout_width="match_parent"
@@ -24,7 +34,7 @@
             android:layout_margin="@dimen/text_margin"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imageView_thumbnail"
             tools:text="20 Jan 2023, 12:00" />
 
         <com.google.android.material.textview.MaterialTextView

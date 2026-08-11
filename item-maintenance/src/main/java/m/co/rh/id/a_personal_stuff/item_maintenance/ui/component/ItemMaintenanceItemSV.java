@@ -2,30 +2,48 @@ package m.co.rh.id.a_personal_stuff.item_maintenance.ui.component;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Optional;
 
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.subjects.BehaviorSubject;
+import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.R;
+import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.model.ItemMaintenanceState;
+import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
+import m.co.rh.id.anavigator.RouteOptions;
 import m.co.rh.id.anavigator.StatefulView;
+import m.co.rh.id.anavigator.annotation.NavInject;
+import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.aprovider.Provider;
 
 public class ItemMaintenanceItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener {
 
+    @NavInject
+    private transient INavigator mNavigator;
+
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
+    private transient ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
+    private transient BehaviorSubject<Optional<ItemMaintenanceImage>> mItemImageDisplay;
 
     private SerialBehaviorSubject<ItemMaintenanceState> mItemMaintenanceState;
     private DateFormat mDateFormat;
@@ -63,6 +81,8 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
+        mItemMaintenanceFileHelper = mSvProvider.get(ItemMaintenanceFileHelper.class);
+        mItemImageDisplay = BehaviorSubject.create();
     }
 
     @Override
@@ -77,6 +97,8 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
         TextView maintenanceDateTimeText = rootLayout.findViewById(R.id.text_maintenance_date_time);
         TextView costText = rootLayout.findViewById(R.id.text_cost);
         TextView descriptionText = rootLayout.findViewById(R.id.text_description);
+        ImageView imageViewThumbnail = rootLayout.findViewById(R.id.imageView_thumbnail);
+        imageViewThumbnail.setOnClickListener(this);
         Button editButton = rootLayout.findViewById(R.id.button_edit);
         editButton.setOnClickListener(this);
         Button deleteButton = rootLayout.findViewById(R.id.button_delete);
@@ -107,9 +129,37 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
                             }
                         }));
 
+        mRxDisposer.add("createView_onImageThumbnailFileChanged",
+                mItemImageDisplay
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemImage -> {
+                            if (itemImage.isPresent()) {
+                                String fileName = itemImage.get().fileName;
+                                File file = mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnail(fileName);
+                                imageViewThumbnail.setImageURI(Uri.fromFile(file));
+                                imageViewThumbnail.setVisibility(View.VISIBLE);
+                                Uri actualImageUri = Uri.fromFile(mItemMaintenanceFileHelper.getItemMaintenanceImage(fileName));
+                                imageViewThumbnail.setTransitionName(actualImageUri.toString());
+                            } else {
+                                imageViewThumbnail.setVisibility(View.GONE);
+                                imageViewThumbnail.setTransitionName(null);
+                            }
+                        })
+        );
+
         Context context = activity.getApplicationContext();
         mRxDisposer.add("createView_onItemMaintenanceStateChanged",
-                mItemMaintenanceState.getSubject().observeOn(AndroidSchedulers.mainThread())
+                mItemMaintenanceState.getSubject()
+                        .doOnNext(itemMaintenanceState -> {
+                            ArrayList<ItemMaintenanceImage> itemMaintenanceImages = itemMaintenanceState.getItemMaintenanceImages();
+                            if (!itemMaintenanceImages.isEmpty()) {
+                                ItemMaintenanceImage itemImage = itemMaintenanceImages.get(itemMaintenanceImages.size() - 1);
+                                mItemImageDisplay.onNext(Optional.of(itemImage));
+                            } else {
+                                mItemImageDisplay.onNext(Optional.empty());
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemMaintenanceState -> {
                             maintenanceDateTimeText.setText(mDateFormat.format(itemMaintenanceState.getItemMaintenanceDateTime()));
                             costText.setText(
@@ -137,6 +187,21 @@ public class ItemMaintenanceItemSV extends StatefulView<Activity> implements Req
         if (id == R.id.card_root || id == R.id.button_edit) {
             if (mOnItemMaintenanceEditClicked != null) {
                 mOnItemMaintenanceEditClicked.itemMaintenanceItemSV_onItemMaintenanceEditClicked(mItemMaintenanceState.getValue());
+            }
+        } else if (id == R.id.imageView_thumbnail) {
+            ArrayList<ItemMaintenanceImage> itemMaintenanceImages = mItemMaintenanceState.getValue().getItemMaintenanceImages();
+            ArrayList<File> imageFiles = new ArrayList<>();
+            for (ItemMaintenanceImage itemMaintenanceImage : itemMaintenanceImages) {
+                imageFiles.add(mItemMaintenanceFileHelper.getItemMaintenanceImage(itemMaintenanceImage.fileName));
+            }
+            if (!imageFiles.isEmpty()) {
+                int startIndex = imageFiles.size() - 1;
+                mNavigator.push(Routes.COMMON_IMAGEVIEW,
+                        ImageViewPage.Args.withFiles(imageFiles, startIndex),
+                        null,
+                        RouteOptions.withTransition(
+                                m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_enter,
+                                m.co.rh.id.a_personal_stuff.base.R.transition.page_imageview_exit));
             }
         } else if (id == R.id.button_delete) {
             if (mOnItemMaintenanceDeleteClicked != null) {

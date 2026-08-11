@@ -8,6 +8,18 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <Constraint
+        android:id="@+id/imageView_thumbnail"
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginTop="@dimen/text_margin"
+        android:layout_marginBottom="@dimen/text_margin"
+        android:visibility="visible"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Constraint
         android:id="@+id/container_action_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -26,7 +38,7 @@
         android:layout_marginEnd="@dimen/text_margin"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@id/container_action_button"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_thumbnail"
         app:layout_constraintTop_toTopOf="parent" />
 
     <Constraint
@@ -37,7 +49,7 @@
         android:layout_marginEnd="@dimen/text_margin"
         android:visibility="visible"
         app:layout_constraintEnd_toStartOf="@id/container_action_button"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_thumbnail"
         app:layout_constraintTop_toBottomOf="@id/text_usage_date_time" />
 
     <Constraint
@@ -52,7 +64,7 @@
         android:visibility="visible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/container_action_button"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/imageView_thumbnail"
         app:layout_constraintTop_toBottomOf="@id/text_amount" />
 
     <!-- button_edit is nested inside container_action_button, so its visibility

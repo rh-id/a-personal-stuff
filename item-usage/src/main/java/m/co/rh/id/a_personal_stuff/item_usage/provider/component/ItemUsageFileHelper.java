@@ -101,6 +101,10 @@ public class ItemUsageFileHelper {
         return new File(mItemUsageImageParent, fileName);
     }
 
+    public File getItemUsageImageThumbnail(String fileName) {
+        return new File(mItemUsageImageThumbnailParent, fileName);
+    }
+
     public File createItemUsageImageThumbnail(Uri content, String fileName) throws IOException {
         File outFile = new File(mItemUsageImageThumbnailParent, fileName);
         try {

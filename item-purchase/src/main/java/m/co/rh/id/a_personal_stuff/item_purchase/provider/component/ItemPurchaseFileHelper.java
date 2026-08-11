@@ -113,6 +113,10 @@ public class ItemPurchaseFileHelper {
         }
     }
 
+    public File getItemPurchaseImageThumbnail(String fileName) {
+        return new File(mItemPurchaseImageThumbnailParent, fileName);
+    }
+
     public File getItemPurchaseImageParent() {
         return mItemPurchaseImageParent;
     }

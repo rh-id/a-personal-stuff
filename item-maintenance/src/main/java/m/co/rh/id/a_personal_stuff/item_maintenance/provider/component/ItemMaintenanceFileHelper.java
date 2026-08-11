@@ -100,6 +100,10 @@ public class ItemMaintenanceFileHelper {
         return new File(mItemMaintenanceImageParent, fileName);
     }
 
+    public File getItemMaintenanceImageThumbnail(String fileName) {
+        return new File(mItemMaintenanceImageThumbnailParent, fileName);
+    }
+
     public File createItemMaintenanceImageThumbnail(Uri content, String fileName) throws IOException {
         File outFile = new File(mItemMaintenanceImageThumbnailParent, fileName);
         try {
