@@ -6,22 +6,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
+import m.co.rh.id.a_personal_stuff.base.ui.recyclerview.CustomLinearLayoutManager;
 import m.co.rh.id.a_personal_stuff.app.ui.model.StockMovement;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.command.DeleteItemPurchaseCmd;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.command.QueryItemPurchaseCmd;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
@@ -95,15 +99,15 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
         mItemUsageChangeNotifier = mSvProvider.get(ItemUsageChangeNotifier.class);
         mItemPurchaseChangeNotifier = mSvProvider.get(ItemPurchaseChangeNotifier.class);
         mItemChangeNotifier = mSvProvider.get(ItemChangeNotifier.class);
-        m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences settings =
-                mSvProvider.get(m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences.class);
+        SettingsSharedPreferences settings =
+                mSvProvider.get(SettingsSharedPreferences.class);
         mRxDisposer.add("provideComponent_itemViewModeChanged",
                 settings.getItemViewModeFlow()
-                        .observeOn(io.reactivex.rxjava3.android.schedulers.AndroidSchedulers.mainThread())
+                        .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mode -> {
                             if (mAdapter != null) {
                                 mAdapter.setCompact(
-                                        mode == m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT);
+                                        mode == SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT);
                             }
                         }));
     }
@@ -115,13 +119,13 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
         mSummaryTextView = rootLayout.findViewById(R.id.text_summary);
         SwipeRefreshLayout swipeRefreshLayout = rootLayout.findViewById(R.id.container_swipe_refresh_list);
         swipeRefreshLayout.setOnRefreshListener(this);
-        androidx.recyclerview.widget.RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new m.co.rh.id.a_personal_stuff.base.ui.recyclerview.CustomLinearLayoutManager(activity));
+        RecyclerView recyclerView = rootLayout.findViewById(R.id.recyclerView);
+        recyclerView.setLayoutManager(new CustomLinearLayoutManager(activity));
         mAdapter = new StockMovementRecyclerViewAdapter(mNavigator, this, this, this, this, this);
-        m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences settings =
-                mSvProvider.get(m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences.class);
+        SettingsSharedPreferences settings =
+                mSvProvider.get(SettingsSharedPreferences.class);
         mAdapter.setCompact(settings.getItemViewMode()
-                == m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT);
+                == SettingsSharedPreferences.ITEM_VIEW_MODE_COMPACT);
         recyclerView.setAdapter(mAdapter);
 
         swipeRefreshLayout.setRefreshing(true);
@@ -163,7 +167,7 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
                         .subscribe(change -> loadMovements(swipeRefreshLayout)));
 
         mRxDisposer.add("createView_onItemChanged",
-                io.reactivex.rxjava3.core.Flowable.merge(
+                Flowable.merge(
                         mItemChangeNotifier.getAddedItemFlow(),
                         mItemChangeNotifier.getUpdatedItemFlow(),
                         mItemChangeNotifier.getDeletedItemFlow()
@@ -207,12 +211,12 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
         mRxDisposer.add("loadMovements",
                 mQueryItemCmd.findItemStateByItemId(mItemId)
                         .subscribeOn(Schedulers.from(mExecutorService))
-                        .flatMap(itemState -> {
-                            if (itemState == null) {
-                                return io.reactivex.rxjava3.core.Single.just(new Pair<List<StockMovement>, ItemState>(new ArrayList<>(), itemState));
-                            }
-                            return io.reactivex.rxjava3.core.Single.zip(
-                                    mQueryItemUsageCmd.findItemUsageStateByItemId(mItemId)
+                            .flatMap(itemState -> {
+                                if (itemState == null) {
+                                    return Single.just(new Pair<List<StockMovement>, ItemState>(new ArrayList<>(), itemState));
+                                }
+                                return Single.zip(
+                                        mQueryItemUsageCmd.findItemUsageStateByItemId(mItemId)
                                             .map(itemUsageStates -> {
                                                 List<StockMovement> movements = new ArrayList<>();
                                                 for (ItemUsageState usageState : itemUsageStates) {
