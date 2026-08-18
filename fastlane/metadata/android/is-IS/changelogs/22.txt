@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Nýir eiginleikar:
+* Athugasemdalistar: búið til lista yfir hluti ykkar, t.d. fyrir pakkingu eða flutninga, og hakaði hluti af
+* Framvinda athugasemdalista, með þjappað og nákvæm spjald
+* Athugasemdalistar eru teknir með í öryggisafriti útflutningi og endurheimtu

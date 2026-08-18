@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Fitur Baru:
+* Daftar periksa: buat daftar item Anda, misalnya untuk packing atau pindah, dan centang item
+* Pelacakan progres daftar periksa, dengan kartu compact dan detail
+* Daftar periksa disertakan dalam ekspor dan pemulihan backup

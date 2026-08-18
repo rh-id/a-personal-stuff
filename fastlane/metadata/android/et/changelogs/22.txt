@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Uued funktsioonid:
+* Kontrollnimekirjad: looge oma esemete nimekirju, nt pakkimiseks või kolimiseks, ja märkige esemed kinni
+* Kontrollnimekirjade edenuse jälgimine, koos kompaktsete ja detailsete kaartidega
+* Kontrollnimekirjad on kaasatud varundamise eksportimisse ja taastamisse

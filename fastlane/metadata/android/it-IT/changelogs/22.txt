@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Nuove funzionalità:
+* Checklist: crea elenchi dei tuoi articoli, ad esempio per imballaggio o trasloco, e spunta gli articoli
+* Monitoraggio dei progressi delle checklist, con schede compatte e dettagliate
+* Le checklist sono incluse nell'esportazione e ripristino del backup

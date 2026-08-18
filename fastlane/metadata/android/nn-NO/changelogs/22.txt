@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Nye funksjonar:
+* Sjekklister: bygg lister over varene dine, t.d. for pakking eller flytting, og sjekk av varer
+* Sjekkliste-framdriftsporing, med kompakte og detaljerte kort
+* Sjekklister er inkluderte i tryggleikskopiering-eksport og -gjenoppretting

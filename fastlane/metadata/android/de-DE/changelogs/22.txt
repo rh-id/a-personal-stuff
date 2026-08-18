@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Neue Funktionen:
+* Checklisten: Listen Ihrer Artikel erstellen, z. B. für Packen oder Umziehen, und Artikel abhaken
+* Checklisten-Fortschrittsverfolgung, mit kompakten und Detailkarten
+* Checklisten sind im Backup-Export und -Restore enthalten

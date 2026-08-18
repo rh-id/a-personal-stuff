@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Novas funcziuns:
+* Glistas da control: crea glistas da tes objects, p. ex. per pachar u movier, e checks objects ora
+* Seguir il progress da glistas da control, cun cartas compactas e detagliadas
+* Glistas da control èn incluids en l'export e restauraziun da backup

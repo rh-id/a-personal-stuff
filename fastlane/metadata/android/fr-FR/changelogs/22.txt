@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Nouvelles fonctionnalités :
+* Listes de contrôle : créez des listes de vos articles, par exemple pour les déménagements ou les voyages, et cochez les articles
+* Suivi de la progression des listes de contrôle, avec des cartes compactes et détaillées
+* Les listes de contrôle sont incluses dans l'exportation et la restauration des sauvegardes
