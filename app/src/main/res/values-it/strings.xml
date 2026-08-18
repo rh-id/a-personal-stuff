@@ -33,6 +33,9 @@
     <string name="success_duplicate_">Elemento duplicato: %s</string>
     <string name="progress_duplicate">Duplicazione…</string>
     <string name="title_items">Elementi</string>
+    <string name="title_checklists">Liste di controllo</string>
+    <string name="title_add_item_checklist">Aggiungi lista di controllo</string>
+    <string name="success_add_checklist_">Lista di controllo aggiunta: %s</string>
     <string name="title_add">Aggiungi</string>
     <string name="success_update_item_">Elemento aggiornato: %s</string>
     <string name="title_update_item">Aggiorna elemento</string>

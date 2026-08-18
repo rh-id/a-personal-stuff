@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Gátlistar</string>
+    <string name="title_checklists_with_">Gátlistar með %s</string>
+    <string name="title_add_to_checklist">Bæta við gátlista</string>
+    <string name="title_rename_checklist">Endurnefna gátlista</string>
+    <string name="checklist_title_required">Heiti gátlista er nauðsynlegt</string>
+    <string name="title_add">Bæta við</string>
+    <string name="add_items">Bæta við hlutum</string>
+    <string name="rename">Endurnefna</string>
+    <string name="remove_from_checklist">Fjarlægja úr gátlista</string>
+    <string name="checklist_progress">Hakað %1$d/%2$d</string>
+    <string name="updated_date_time">Uppfært: %1$s</string>
+    <string name="title_confirm_delete">Staðfesta eyðingu</string>
+    <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
+    <string name="success_update_checklist_">Gátlisti uppfærður: %s</string>
+    <string name="success_delete_checklist_">Gátlisti eytt: %s</string>
+    <string name="success_add_items">%1$d hlutum bætt við</string>
+    <string name="success_add_item_to_checklist_">Hlutur bætt í gátlista: %s</string>
+    <string name="success_remove_item_">Hlut fjarlægður úr gátlista: %s</string>
+    <string name="hint_checklist_title">Heiti gátlista</string>
+    <string name="hint_checklist_description">Lýsing</string>
+    <string name="title_edit_checklist_description">Breyta lýsingu</string>
+    <string name="hint_type_to_search">Skrifaðu til að leita</string>
+    <string name="title_view_mode">Skoðunarhamur</string>
+    <string name="title_view_mode_detailed">Skipta yfir í ítarlega skoðun</string>
+    <string name="title_view_mode_compact">Skipta yfir í þjappaða skoðun</string>
+</resources>

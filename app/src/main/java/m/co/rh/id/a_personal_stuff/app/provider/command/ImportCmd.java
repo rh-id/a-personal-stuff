@@ -14,6 +14,7 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -66,6 +67,11 @@ import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseState;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
+import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -93,6 +99,8 @@ public class ImportCmd {
     private final ItemUsageChangeNotifier mItemUsageChangeNotifier;
     private final ItemPurchaseChangeNotifier mItemPurchaseChangeNotifier;
     private final ItemReminderChangeNotifier mItemReminderChangeNotifier;
+    private final ItemChecklistDao mItemChecklistDao;
+    private final ItemChecklistChangeNotifier mItemChecklistChangeNotifier;
     private final Subject<String> mProgressSubject = PublishSubject.create();
 
     public ImportCmd(Provider provider) {
@@ -105,6 +113,7 @@ public class ImportCmd {
         mItemUsageDao = provider.get(ItemUsageDao.class);
         mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
+        mItemChecklistDao = provider.get(ItemChecklistDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
         mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
         mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
@@ -115,6 +124,7 @@ public class ImportCmd {
         mItemUsageChangeNotifier = provider.get(ItemUsageChangeNotifier.class);
         mItemPurchaseChangeNotifier = provider.get(ItemPurchaseChangeNotifier.class);
         mItemReminderChangeNotifier = provider.get(ItemReminderChangeNotifier.class);
+        mItemChecklistChangeNotifier = provider.get(ItemChecklistChangeNotifier.class);
     }
 
     public Flowable<String> getProgressFlow() {
@@ -184,6 +194,7 @@ public class ImportCmd {
         Map<Long, Long> oldToNewMaintenanceId = new HashMap<>();
         Map<Long, Long> oldToNewUsageId = new HashMap<>();
         Map<Long, Long> oldToNewPurchaseId = new HashMap<>();
+        Map<Long, Long> oldToNewItemChecklistId = new HashMap<>();
         Map<Long, List<ItemImage>> imagesByOldItemId = groupImagesByItemId(data.itemImages);
         Map<Long, List<ItemTag>> tagsByOldItemId = groupTagsByItemId(data.itemTags);
         Map<Long, List<ItemMaintenanceImage>> maintImagesByOldMaintId = groupMaintImagesByMaintId(data.itemMaintenanceImages);
@@ -338,6 +349,41 @@ public class ImportCmd {
             mItemReminderDao.insertItemReminder(e);
             scheduleReminder(e);
             mItemReminderChangeNotifier.added(e);
+        }
+        for (ItemChecklist e : data.itemChecklists) {
+            long oldId = e.id;
+            // Preserve original createdDateTime and updatedDateTime
+            Date originalCreatedDateTime = e.createdDateTime;
+            Date originalUpdatedDateTime = e.updatedDateTime;
+            e.id = null;
+            ItemChecklistState checklistState = new ItemChecklistState();
+            checklistState.updateItemChecklist(e);
+            // Set the dates explicitly to preserve them
+            if (originalCreatedDateTime != null) {
+                checklistState.setCreatedDateTime(originalCreatedDateTime);
+            }
+            if (originalUpdatedDateTime != null) {
+                checklistState.setUpdatedDateTime(originalUpdatedDateTime);
+            }
+            mItemChecklistDao.insertItemChecklist(checklistState);
+            long newId = checklistState.getChecklistId();
+            oldToNewItemChecklistId.put(oldId, newId);
+            mItemChecklistChangeNotifier.checklistAdded(checklistState.clone());
+        }
+        for (ItemChecklistItem e : data.itemChecklistItems) {
+            Long newItemChecklistId = oldToNewItemChecklistId.get(e.itemChecklistId);
+            Long newItemId = oldToNewItemId.get(e.itemId);
+            if (newItemChecklistId == null || newItemId == null) continue;
+            e.id = null;
+            e.itemChecklistId = newItemChecklistId;
+            e.itemId = newItemId;
+            // Preserve checkedDateTime and createdDateTime
+            List<Long> inserted = mItemChecklistDao.insertItemChecklistItems(
+                    Collections.singletonList(e));
+            if (!inserted.isEmpty() && inserted.get(0) != null && inserted.get(0) != -1) {
+                e.id = inserted.get(0);
+                mItemChecklistChangeNotifier.checklistItemAdded(e, null);
+            }
         }
         return count;
     }

@@ -33,6 +33,9 @@
     <string name="success_duplicate_">Hlutur afritaður: %s</string>
     <string name="progress_duplicate">Afritar…</string>
     <string name="title_items">Hlutir</string>
+    <string name="title_checklists">Gátlistar</string>
+    <string name="title_add_item_checklist">Bæta við gátlista</string>
+    <string name="success_add_checklist_">Gátlista bætt við: %s</string>
     <string name="title_add">Bæta við</string>
     <string name="success_update_item_">Hlutur uppfærður: %s</string>
     <string name="title_update_item">Uppfæra hlut</string>

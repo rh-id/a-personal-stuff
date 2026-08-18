@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Liste di controllo</string>
+    <string name="title_checklists_with_">Liste di controllo con %s</string>
+    <string name="title_add_to_checklist">Aggiungi alla lista di controllo</string>
+    <string name="title_rename_checklist">Rinomina lista di controllo</string>
+    <string name="checklist_title_required">Il titolo della lista di controllo è obbligatorio</string>
+    <string name="title_add">Aggiungi</string>
+    <string name="add_items">Aggiungi elementi</string>
+    <string name="rename">Rinomina</string>
+    <string name="remove_from_checklist">Rimuovi dalla lista di controllo</string>
+    <string name="checklist_progress">Spuntati %1$d/%2$d</string>
+    <string name="updated_date_time">Aggiornato: %1$s</string>
+    <string name="title_confirm_delete">Conferma eliminazione</string>
+    <string name="confirm_delete_">Sei sicuro di voler eliminare %s?</string>
+    <string name="success_update_checklist_">Lista di controllo aggiornata: %s</string>
+    <string name="success_delete_checklist_">Lista di controllo eliminata: %s</string>
+    <string name="success_add_items">%1$d elementi aggiunti</string>
+    <string name="success_add_item_to_checklist_">Elemento aggiunto alla lista di controllo: %s</string>
+    <string name="success_remove_item_">Elemento rimosso dalla lista di controllo: %s</string>
+    <string name="hint_checklist_title">Titolo della lista di controllo</string>
+    <string name="hint_checklist_description">Descrizione</string>
+    <string name="title_edit_checklist_description">Modifica descrizione</string>
+    <string name="hint_type_to_search">Digita per cercare</string>
+    <string name="title_view_mode">Modalità di visualizzazione</string>
+    <string name="title_view_mode_detailed">Passa alla vista dettagliata</string>
+    <string name="title_view_mode_compact">Passa alla vista compatta</string>
+</resources>

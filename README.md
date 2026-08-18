@@ -18,6 +18,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Usage Tracking**: Log when and how much of an item is used.
 *   **Purchase Tracking**: Track when items are purchased or acquired.
 *   **Stock Movements**: Unified view of item usage and purchase history per item.
+*   **Checklists**: Create checklists over your items (e.g. a packing list when moving home), track progress by checking items off.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan barcodes for quick input and searching.
 *   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
@@ -58,6 +59,7 @@ The codebase is split into feature-centric modules to enforce boundaries:
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
 | `:item-purchase` | Item purchase tracking feature with entities (ItemPurchase, ItemPurchaseImage), commands, DAO, event handler for cascade delete, and UI pages (ItemPurchasesPage, ItemPurchaseDetailPage) |
 | `:item-maintenance` | Item maintenance tracking with entities (ItemMaintenance, ItemMaintenanceImage), commands, DAO, and UI pages (ItemMaintenancesPage, ItemMaintenanceDetailPage) |
+| `:item-checklist` | Checklist feature with entities (ItemChecklist, ItemChecklistItem), commands, DAO, and UI pages (ItemChecklistsPage, ItemChecklistDetailPage) |
 | `:item-reminder` | Reminder and alarm scheduling using WorkManager with entities (ItemReminder), commands, DAO, and UI pages (ItemRemindersPage, ItemReminderDetailPage) |
 | `:settings` | App configuration and preferences with SettingsPage, theme management, log viewing, and license display |
 
@@ -69,6 +71,7 @@ Instead of a monolithic database, the app uses **Multiple Room Databases**, one 
 | `AppDatabase` | base | AndroidNotification, Item, ItemImage, ItemTag |
 | `ItemMaintenanceDatabase` | item-maintenance | ItemMaintenance, ItemMaintenanceImage |
 | `ItemUsageDatabase` | item-usage | ItemUsage, ItemUsageImage |
+| `ItemChecklistDatabase` | item-checklist | ItemChecklist, ItemChecklistItem |
 | `ItemPurchaseDatabase` | item-purchase | ItemPurchase, ItemPurchaseImage |
 | `ItemReminderDatabase` | item-reminder | ItemReminder |
 
@@ -323,7 +326,10 @@ a-personal-stuff/
 │   │       │   ├── ItemsPage.java              # Item list
 │   │       │   ├── ItemDetailPage.java        # Item add/edit
 │   │       │   ├── ItemSelectPage.java        # Item selection dialog
+│   │       │   ├── ItemMultiSelectPage.java   # Multi-select item picker page
+│   │       │   ├── ItemChecklistAddPage.java  # Add checklist page (paged, searchable item picker)
 │   │       │   ├── ItemStockMovementsPage.java # Stock movements page
+│   │       │   ├── AppItemChecklistDetailPage.java # Checklist detail (app wiring for item picker)
 │   │       │   └── DonationsPage.java         # Donation page
 │   │       ├── model/
 │   │       │   └── StockMovement.java         # Stock movement model (usage/purchase entry)
@@ -334,9 +340,11 @@ a-personal-stuff/
 │   │           │   ├── ItemListSV.java        # Item list StatefulView
 │   │           │   ├── ItemItemSV.java         # Item item StatefulView
 │   │           │   ├── SelectableItemItemSV.java # Selectable item StatefulView
+│   │           │   ├── CheckableItemItemSV.java  # Checkable (multi-select) item StatefulView
 │   │           │   ├── ItemAdapter.java       # RecyclerView adapter
 │   │           │   ├── ItemRecyclerViewAdapter.java
-│   │           │   └── SelectableItemRecyclerViewAdapter.java
+│   │           │   ├── SelectableItemRecyclerViewAdapter.java
+│   │           │   └── CheckableItemRecyclerViewAdapter.java
 │   │           └── adapter/
 │   │               ├── ItemSuggestionAdapter.java
 │   │               └── SuggestionAdapter.java
@@ -381,6 +389,7 @@ a-personal-stuff/
 │   │   │   │   ├── common/
 │   │   │   │   │   ├── ImageSV.java          # Image viewer SV
 │   │   │   │   │   ├── ImageViewPage.java    # Image viewer page
+│   │   │   │   │   ├── InputSVDialog.java    # Text input dialog SV (routed, config-change safe)
 │   │   │   │   │   ├── ProgressSVDialog.java # Progress dialog SV
 │   │   │   │   │   └── SelectionPage.java    # Selection dialog
 │   │   │   └── recyclerview/
@@ -531,6 +540,46 @@ a-personal-stuff/
 │   │       ├── WorkManagerConstants.java
 │   │       └── worker/
 │   │           └── ItemReminderNotificationWorker.java
+│
+├── item-checklist/              # Item checklist feature module
+│   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_checklist/
+│   │   ├── entity/
+│   │   │   ├── ItemChecklist.java
+│   │   │   └── ItemChecklistItem.java
+│   │   ├── model/
+│   │   │   ├── ItemChecklistState.java
+│   │   │   └── ItemChecklistProgress.java
+│   │   ├── dao/
+│   │   │   └── ItemChecklistDao.java
+│   │   ├── room/
+│   │   │   └── ItemChecklistDatabase.java
+│   │   ├── provider/
+│   │   │   ├── ItemChecklistProviderModule.java
+│   │   │   ├── ItemChecklistDatabaseProviderModule.java
+│   │   │   ├── ItemChecklistCmdProviderModule.java
+│   │   │   ├── command/
+│   │   │   │   ├── NewItemChecklistCmd.java
+│   │   │   │   ├── UpdateItemChecklistCmd.java
+│   │   │   │   ├── DeleteItemChecklistCmd.java
+│   │   │   │   ├── QueryItemChecklistCmd.java
+│   │   │   │   ├── PagedItemChecklistCmd.java
+│   │   │   │   ├── AddItemChecklistItemCmd.java
+│   │   │   │   ├── UpdateItemChecklistItemCmd.java
+│   │   │   │   └── DeleteItemChecklistItemCmd.java
+│   │   │   ├── component/
+│   │   │   │   └── ItemChecklistEventHandler.java
+│   │   │   └── notifier/
+│   │   │       └── ItemChecklistChangeNotifier.java
+│   │   └── ui/
+│   │       ├── page/
+│   │       │   ├── ItemChecklistsPage.java
+│   │       │   └── ItemChecklistDetailPage.java
+│   │       └── component/
+│   │           ├── ItemChecklistListSV.java
+│   │           ├── ItemChecklistItemSV.java
+│   │           ├── ItemChecklistEntrySV.java
+│   │           ├── ItemChecklistRecyclerViewAdapter.java
+│   │           └── ItemChecklistEntryRecyclerViewAdapter.java
 │
 ├── barcode/                      # Barcode scanning module
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/barcode/

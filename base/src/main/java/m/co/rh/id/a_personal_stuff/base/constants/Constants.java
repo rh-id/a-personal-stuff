@@ -7,6 +7,7 @@ public class Constants {
     public static final String DATABASE_ITEM_PURCHASE = "a-personal-stuff.item-purchase.db";
     public static final String DATABASE_ITEM_MAINTENANCE = "a-personal-stuff.item-maintenance.db";
     public static final String DATABASE_ITEM_REMINDER = "a-personal-stuff.item-reminder.db";
+    public static final String DATABASE_ITEM_CHECKLIST = "a-personal-stuff.item-checklist.db";
     public static final String FILE_DIR_ITEM_IMAGE = "app/item/image";
     public static final String FILE_DIR_ITEM_IMAGE_THUMBNAIL = "app/item/image/thumbnail";
     public static final String FILE_DIR_ITEM_USAGE_IMAGE = "app/item-usage/image";

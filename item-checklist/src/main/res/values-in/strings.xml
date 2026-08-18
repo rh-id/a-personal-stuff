@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Daftar periksa</string>
+    <string name="title_checklists_with_">Daftar periksa dengan %s</string>
+    <string name="title_add_to_checklist">Tambahkan ke daftar periksa</string>
+    <string name="title_rename_checklist">Ganti nama daftar periksa</string>
+    <string name="checklist_title_required">Judul daftar periksa wajib diisi</string>
+    <string name="title_add">Tambah</string>
+    <string name="add_items">Tambah item</string>
+    <string name="rename">Ganti nama</string>
+    <string name="remove_from_checklist">Hapus dari daftar periksa</string>
+    <string name="checklist_progress">Dicentang %1$d/%2$d</string>
+    <string name="updated_date_time">Diperbarui: %1$s</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
+    <string name="success_update_checklist_">Daftar periksa diperbarui: %s</string>
+    <string name="success_delete_checklist_">Daftar periksa dihapus: %s</string>
+    <string name="success_add_items">%1$d item ditambahkan</string>
+    <string name="success_add_item_to_checklist_">Item ditambahkan ke daftar periksa: %s</string>
+    <string name="success_remove_item_">Item dihapus dari daftar periksa: %s</string>
+    <string name="hint_checklist_title">Judul daftar periksa</string>
+    <string name="hint_checklist_description">Deskripsi</string>
+    <string name="title_edit_checklist_description">Edit deskripsi</string>
+    <string name="hint_type_to_search">Ketik untuk mencari</string>
+    <string name="title_view_mode">Mode tampilan</string>
+    <string name="title_view_mode_detailed">Beralih ke tampilan rinci</string>
+    <string name="title_view_mode_compact">Beralih ke tampilan ringkas</string>
+</resources>

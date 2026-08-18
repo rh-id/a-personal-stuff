@@ -51,6 +51,10 @@ import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.command.QueryItemChecklistCmd;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistSelectPage;
+import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistsPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.command.QueryItemPurchaseCmd;
@@ -79,9 +83,11 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient RxDisposer mRxDisposer;
     private transient QueryItemUsageCmd mQueryItemUsageCmd;
     private transient QueryItemPurchaseCmd mQueryItemPurchaseCmd;
+    private transient QueryItemChecklistCmd mQueryItemChecklistCmd;
 
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
+    private final SerialOptionalBehaviorSubject<Integer> mChecklistCount;
     private final DateFormat mDateFormat;
     private transient BehaviorSubject<Optional<ItemImage>> mItemImageDisplay;
     private transient int mDefaultExpiredDateColor;
@@ -107,6 +113,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mCompact = new SerialBehaviorSubject<>();
         mCompact.onNext(compact);
         mUsageCount = new SerialOptionalBehaviorSubject<>();
+        mChecklistCount = new SerialOptionalBehaviorSubject<>();
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
@@ -127,6 +134,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
         mQueryItemPurchaseCmd = mSvProvider.get(QueryItemPurchaseCmd.class);
+        mQueryItemChecklistCmd = mSvProvider.get(QueryItemChecklistCmd.class);
         mItemImageDisplay = BehaviorSubject.create();
         mDefaultExpiredDateColor = ContextCompat.getColor(provider.getContext(), m.co.rh.id.a_personal_stuff.base.R.color.light_green_600);
         mExpiredDateColor = BehaviorSubject.createDefault(mDefaultExpiredDateColor);
@@ -157,6 +165,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         moreActionButton.setOnClickListener(this);
         Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
         usageCountButton.setOnClickListener(this);
+        Button checklistCountButton = rootLayout.findViewById(R.id.button_checklist_count);
+        checklistCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
 
         // Apply the matching constraints whenever the mode changes (and once on
@@ -345,6 +355,30 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                                 recomputeRemaining(itemState);
                             }
                         }));
+        // Checklist count subscriptions
+        mRxDisposer.add("createView_onItemStateChanged_updateChecklistCount",
+                mItemState.getSubject().observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(this::recomputeChecklistCount));
+        // Checklist-level events must also trigger recompute because bulk item-add
+        // and checklist-delete only emit checklist-level events.
+        mRxDisposer.add("createView_onChecklistChanged_updateChecklistCount",
+                mSvProvider.get(ItemChecklistChangeNotifier.class).getAnyItemChecklistChangeFlow()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(ignored -> {
+                            ItemState itemState = mItemState.getValue();
+                            if (itemState != null) {
+                                recomputeChecklistCount(itemState);
+                            }
+                        }));
+        mRxDisposer.add("createView_onChecklistItemChanged_updateChecklistCount",
+                mSvProvider.get(ItemChecklistChangeNotifier.class).getAnyItemChecklistItemChangeFlow()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(ignored -> {
+                            ItemState itemState = mItemState.getValue();
+                            if (itemState != null) {
+                                recomputeChecklistCount(itemState);
+                            }
+                        }));
         mRxDisposer.add("createView_onUsageCountChanged", mUsageCount.getSubject()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(optLong -> {
@@ -355,6 +389,18 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         usageCountButton.setVisibility(View.VISIBLE);
                     } else {
                         usageCountButton.setVisibility(View.GONE);
+                    }
+                }));
+        mRxDisposer.add("createView_onChecklistCountChanged", mChecklistCount.getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(optCount -> {
+                    // Checklist button is detailed-only, like the usage button;
+                    // compact mode hides it via the ConstraintSet.
+                    if (optCount.isPresent() && !isCompact()) {
+                        checklistCountButton.setText(optCount.get().toString());
+                        checklistCountButton.setVisibility(View.VISIBLE);
+                    } else {
+                        checklistCountButton.setVisibility(View.GONE);
                     }
                 }));
         return rootLayout;
@@ -397,6 +443,15 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         } else {
             mUsageCount.onNext(null);
         }
+    }
+
+    /**
+     * Recompute the checklist badge as the number of checklists that
+     * contain this item; hidden when the item is in no checklist (null).
+     */
+    private void recomputeChecklistCount(ItemState itemState) {
+        int count = mQueryItemChecklistCmd.countChecklistsByItemId(itemState.getItemId()).blockingGet();
+        mChecklistCount.onNext(count > 0 ? count : null);
     }
 
     private Long getCurrentItemId() {
@@ -443,6 +498,12 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_STOCK_MOVEMENTS_PAGE,
                     ItemStockMovementsPage.Args.with(itemId));
+        } else if (id == R.id.button_checklist_count) {
+            ItemState itemState = mItemState.getValue();
+            if (itemState != null && itemState.getItemId() != null) {
+                mNavigator.push(Routes.ITEM_CHECKLISTS_PAGE,
+                        ItemChecklistsPage.Args.with(itemState.getItemId(), itemState.getItemName()));
+            }
         }
     }
 
@@ -455,6 +516,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 context.getString(m.co.rh.id.a_personal_stuff.item_maintenance.R.string.title_maintenances),
                 context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders),
                 DIVIDER,
+                context.getString(m.co.rh.id.a_personal_stuff.item_checklist.R.string.title_add_to_checklist),
                 context.getString(R.string.title_duplicate),
                 DIVIDER,
                 context.getString(R.string.title_delete),
@@ -465,6 +527,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 R.id.menu_item_purchase_list,
                 R.id.menu_item_maintenance_list,
                 R.id.menu_item_reminder_list,
+                R.id.menu_item_add_to_checklist,
                 R.id.menu_item_duplicate,
                 R.id.menu_item_delete,
         };
@@ -541,6 +604,12 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_REMINDERS_PAGE,
                     ItemRemindersPage.Args.with(itemId));
+        } else if (id == R.id.menu_item_add_to_checklist) {
+            ItemState itemState = mItemState.getValue();
+            if (itemState != null && itemState.getItemId() != null) {
+                mNavigator.push(Routes.ITEM_CHECKLIST_SELECT_PAGE,
+                        ItemChecklistSelectPage.Args.with(itemState.getItemId()));
+            }
         } else if (id == R.id.menu_item_duplicate) {
             if (mOnItemDuplicateClicked != null) {
                 mOnItemDuplicateClicked.itemItemSv_onItemDuplicateClicked(mItemState.getValue());

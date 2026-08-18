@@ -76,6 +76,17 @@
                 app:icon="@drawable/ic_add_alert_black" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_item_checklist"
+                style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_columnWeight="1"
+                android:layout_gravity="fill"
+                android:gravity="center"
+                android:text="@string/title_add_item_checklist"
+                app:icon="@drawable/ic_playlist_add_black" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_export"
                 style="@style/Theme.Apersonalstuff.HomeMenuButton"
                 android:layout_width="0dp"
@@ -128,6 +139,14 @@
             android:layout_height="wrap_content"
             android:text="@string/title_items"
             app:icon="@drawable/ic_list_alt_black" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_item_checklists"
+            style="@style/Theme.Apersonalstuff.BorderlessMenuButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_checklists"
+            app:icon="@drawable/ic_checklist_black" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_settings"

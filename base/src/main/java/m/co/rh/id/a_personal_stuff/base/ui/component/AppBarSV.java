@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 
 import androidx.appcompat.widget.Toolbar;
 
+import java.io.Serializable;
+
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_personal_stuff.base.BaseApplication;
@@ -25,19 +27,24 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
     @NavRouteIndex
     private transient byte mRouteIndex;
     private transient View.OnClickListener mNavigationOnClickListener;
-    private Integer mMenuResId;
     private transient Toolbar.OnMenuItemClickListener mOnMenuItemClickListener;
     private transient Provider mSvProvider;
     private transient RxDisposer mRxDisposer;
     private SerialBehaviorSubject<String> mUpdateTitle;
+    private SerialBehaviorSubject<MenuItemTitle> mUpdateMenuItemTitle;
+    private SerialBehaviorSubject<Integer> mMenuResId;
 
     public AppBarSV() {
         this(null);
     }
 
     public AppBarSV(Integer menuResId) {
-        mMenuResId = menuResId;
         mUpdateTitle = new SerialBehaviorSubject<>();
+        mUpdateMenuItemTitle = new SerialBehaviorSubject<>();
+        mMenuResId = new SerialBehaviorSubject<>();
+        if (menuResId != null) {
+            mMenuResId.onNext(menuResId);
+        }
     }
 
     @Override
@@ -58,13 +65,32 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
             toolbar.setNavigationIcon(R.drawable.ic_arrow_back_white);
         }
         toolbar.setNavigationOnClickListener(this);
-        if (mMenuResId != null) {
-            toolbar.inflateMenu(mMenuResId);
-        }
+        mRxDisposer.add("createView_updateMenu",
+                mMenuResId.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(menuResId -> {
+                            // clear() before re-inflating keeps repeated emissions
+                            // (e.g. a menu swapped via setMenu) from stacking items.
+                            toolbar.getMenu().clear();
+                            toolbar.inflateMenu(menuResId);
+                            // clear() resets item titles to their xml defaults, so
+                            // re-apply the last queued menu-item title.
+                            MenuItemTitle menuItemTitle = mUpdateMenuItemTitle.getValue();
+                            if (menuItemTitle != null) {
+                                mUpdateMenuItemTitle.onNext(menuItemTitle);
+                            }
+                        }));
         toolbar.setOnMenuItemClickListener(this);
         mRxDisposer.add("createView_updateTitle",
                 mUpdateTitle.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(toolbar::setTitle));
+        mRxDisposer.add("createView_updateMenuItemTitle",
+                mUpdateMenuItemTitle.getSubject().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(menuItemTitle -> {
+                            MenuItem menuItem = toolbar.getMenu().findItem(menuItemTitle.menuItemId);
+                            if (menuItem != null) {
+                                menuItem.setTitle(menuItemTitle.titleResId);
+                            }
+                        }));
         return view;
     }
 
@@ -85,6 +111,12 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
 
     public void setTitle(String title) {
         mUpdateTitle.onNext(title);
+    }
+
+    public void setMenu(Integer menuResId) {
+        if (menuResId != null) {
+            mMenuResId.onNext(menuResId);
+        }
     }
 
     public void setNavigationOnClick(View.OnClickListener navigationOnClickListener) {
@@ -112,5 +144,24 @@ public class AppBarSV extends StatefulView<Activity> implements RequireNavigator
             return mOnMenuItemClickListener.onMenuItemClick(item);
         }
         return false;
+    }
+
+    /**
+     * Update a menu item's title after the menu is inflated. The value is queued
+     * like setTitle and applied when the view exists. No-op when the app bar
+     * has no menu.
+     */
+    public void setMenuItemTitle(int menuItemId, int titleResId) {
+        mUpdateMenuItemTitle.onNext(new MenuItemTitle(menuItemId, titleResId));
+    }
+
+    private static class MenuItemTitle implements Serializable {
+        final int menuItemId;
+        final int titleResId;
+
+        MenuItemTitle(int menuItemId, int titleResId) {
+            this.menuItemId = menuItemId;
+            this.titleResId = titleResId;
+        }
     }
 }

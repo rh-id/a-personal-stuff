@@ -26,6 +26,10 @@
             android:title="@string/title_reminders"
             app:showAsAction="ifRoom|withText" />
         <item
+            android:id="@+id/menu_item_add_to_checklist"
+            android:title="@string/title_add_to_checklist"
+            app:showAsAction="ifRoom|withText" />
+        <item
             android:id="@+id/menu_item_duplicate"
             android:title="@string/title_duplicate"
             app:showAsAction="ifRoom|withText" />

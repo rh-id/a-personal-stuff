@@ -55,6 +55,22 @@
             app:layout_constraintTop_toBottomOf="@id/imageView_thumbnail"
             tools:text="3" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_checklist_count"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minWidth="0dp"
+            android:textColor="@color/daynight_black_white"
+            android:textStyle="bold"
+            android:visibility="gone"
+            app:icon="@drawable/ic_checklist_black"
+            app:iconGravity="end"
+            app:iconTint="@color/daynight_black_white"
+            app:layout_constraintEnd_toStartOf="@id/button_usage_count"
+            app:layout_constraintTop_toBottomOf="@id/imageView_thumbnail"
+            tools:text="2" />
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text_name"
             android:layout_width="match_parent"

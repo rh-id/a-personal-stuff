@@ -10,6 +10,8 @@ import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -32,6 +34,8 @@ public class BackupData {
     private static final String KEY_ITEM_PURCHASES = "itemPurchases";
     private static final String KEY_ITEM_PURCHASE_IMAGES = "itemPurchaseImages";
     private static final String KEY_ITEM_REMINDERS = "itemReminders";
+    private static final String KEY_ITEM_CHECKLISTS = "itemChecklists";
+    private static final String KEY_ITEM_CHECKLIST_ITEMS = "itemChecklistItems";
 
     private static final int CURRENT_VERSION = 1;
 
@@ -47,6 +51,8 @@ public class BackupData {
     public List<ItemPurchase> itemPurchases;
     public List<ItemPurchaseImage> itemPurchaseImages;
     public List<ItemReminder> itemReminders;
+    public List<ItemChecklist> itemChecklists;
+    public List<ItemChecklistItem> itemChecklistItems;
 
     public BackupData() {
         version = CURRENT_VERSION;
@@ -61,6 +67,8 @@ public class BackupData {
         itemPurchases = new ArrayList<>();
         itemPurchaseImages = new ArrayList<>();
         itemReminders = new ArrayList<>();
+        itemChecklists = new ArrayList<>();
+        itemChecklistItems = new ArrayList<>();
     }
 
     public JSONObject toJson() throws JSONException {
@@ -77,6 +85,8 @@ public class BackupData {
         json.put(KEY_ITEM_PURCHASES, purchaseListToJson(itemPurchases));
         json.put(KEY_ITEM_PURCHASE_IMAGES, purchaseImageListToJson(itemPurchaseImages));
         json.put(KEY_ITEM_REMINDERS, reminderListToJson(itemReminders));
+        json.put(KEY_ITEM_CHECKLISTS, checklistListToJson(itemChecklists));
+        json.put(KEY_ITEM_CHECKLIST_ITEMS, checklistItemListToJson(itemChecklistItems));
         return json;
     }
 
@@ -94,6 +104,8 @@ public class BackupData {
         data.itemPurchases = jsonToPurchaseList(json.optJSONArray(KEY_ITEM_PURCHASES));
         data.itemPurchaseImages = jsonToPurchaseImageList(json.optJSONArray(KEY_ITEM_PURCHASE_IMAGES));
         data.itemReminders = jsonToReminderList(json.optJSONArray(KEY_ITEM_REMINDERS));
+        data.itemChecklists = jsonToChecklistList(json.optJSONArray(KEY_ITEM_CHECKLISTS));
+        data.itemChecklistItems = jsonToChecklistItemList(json.optJSONArray(KEY_ITEM_CHECKLIST_ITEMS));
         return data;
     }
 
@@ -402,6 +414,66 @@ public class BackupData {
             e.id = obj.optLong("id", 0);
             e.itemPurchaseId = obj.optLong("itemPurchaseId", 0);
             e.fileName = obj.optString("fileName", null);
+            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
+            list.add(e);
+        }
+        return list;
+    }
+
+    private static JSONArray checklistListToJson(List<ItemChecklist> entries) throws JSONException {
+        JSONArray arr = new JSONArray();
+        for (ItemChecklist e : entries) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", e.id);
+            obj.put("title", e.title);
+            obj.put("description", e.description);
+            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
+            obj.put("updatedDateTime", e.updatedDateTime != null ? e.updatedDateTime.getTime() : JSONObject.NULL);
+            arr.put(obj);
+        }
+        return arr;
+    }
+
+    private static List<ItemChecklist> jsonToChecklistList(JSONArray arr) throws JSONException {
+        List<ItemChecklist> list = new ArrayList<>();
+        if (arr == null) return list;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.getJSONObject(i);
+            ItemChecklist e = new ItemChecklist();
+            e.id = obj.optLong("id", 0);
+            e.title = obj.optString("title", null);
+            e.description = obj.optString("description", null);
+            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
+            e.updatedDateTime = obj.isNull("updatedDateTime") ? null : new Date(obj.getLong("updatedDateTime"));
+            list.add(e);
+        }
+        return list;
+    }
+
+    private static JSONArray checklistItemListToJson(List<ItemChecklistItem> entries) throws JSONException {
+        JSONArray arr = new JSONArray();
+        for (ItemChecklistItem e : entries) {
+            JSONObject obj = new JSONObject();
+            obj.put("id", e.id);
+            obj.put("itemChecklistId", e.itemChecklistId);
+            obj.put("itemId", e.itemId);
+            obj.put("checkedDateTime", e.checkedDateTime != null ? e.checkedDateTime.getTime() : JSONObject.NULL);
+            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
+            arr.put(obj);
+        }
+        return arr;
+    }
+
+    private static List<ItemChecklistItem> jsonToChecklistItemList(JSONArray arr) throws JSONException {
+        List<ItemChecklistItem> list = new ArrayList<>();
+        if (arr == null) return list;
+        for (int i = 0; i < arr.length(); i++) {
+            JSONObject obj = arr.getJSONObject(i);
+            ItemChecklistItem e = new ItemChecklistItem();
+            e.id = obj.optLong("id", 0);
+            e.itemChecklistId = obj.optLong("itemChecklistId", 0);
+            e.itemId = obj.optLong("itemId", 0);
+            e.checkedDateTime = obj.isNull("checkedDateTime") ? null : new Date(obj.getLong("checkedDateTime"));
             e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
             list.add(e);
         }

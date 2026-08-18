@@ -80,17 +80,25 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient RecyclerView.OnScrollListener mItemsOnScrollListener;
 
     private boolean mSelectMode;
+    private boolean mCheckMode;
+    private Set<Long> mCheckedItemIds;
     private SerialBehaviorSubject<String> mSearchEditText;
     private SerialBehaviorSubject<String> mSearchString;
     private SerialBehaviorSubject<Long> mShowItemId;
     private SerialBehaviorSubject<Integer> mOrderByOption;
 
     public ItemListSV() {
-        this(false);
+        this(false, false);
     }
 
     public ItemListSV(boolean selectMode) {
+        this(selectMode, false);
+    }
+
+    public ItemListSV(boolean selectMode, boolean checkMode) {
         mSelectMode = selectMode;
+        mCheckMode = checkMode;
+        mCheckedItemIds = new LinkedHashSet<>();
         mSearchEditText = new SerialBehaviorSubject<>();
         mSearchString = new SerialBehaviorSubject<>();
         mShowItemId = new SerialBehaviorSubject<>();
@@ -112,7 +120,9 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mDeleteItemCmd = mSvProvider.get(DeleteItemCmd.class);
         mDuplicateItemCmd = mSvProvider.get(DuplicateItemCmd.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
-        if (mSelectMode) {
+        if (mCheckMode) {
+            mItemRecyclerViewAdapter = new CheckableItemRecyclerViewAdapter(mPagedItemCmd, mNavigator, this, mCheckedItemIds);
+        } else if (mSelectMode) {
             mItemRecyclerViewAdapter = new SelectableItemRecyclerViewAdapter(mPagedItemCmd, mNavigator, this);
         } else {
             ItemRecyclerViewAdapter adapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, mNavigator, this);
@@ -402,6 +412,26 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
             }
         }
         return null;
+    }
+
+    public List<ItemState> getSelectedItems() {
+        if (mCheckMode) {
+            if (mItemRecyclerViewAdapter instanceof CheckableItemRecyclerViewAdapter) {
+                return ((CheckableItemRecyclerViewAdapter) mItemRecyclerViewAdapter)
+                        .getSelectedItems();
+            }
+        }
+        return null;
+    }
+
+    public Set<Long> getSelectedIds() {
+        if (mCheckMode) {
+            if (mItemRecyclerViewAdapter instanceof CheckableItemRecyclerViewAdapter) {
+                return ((CheckableItemRecyclerViewAdapter) mItemRecyclerViewAdapter)
+                        .getSelectedIds();
+            }
+        }
+        return Collections.emptySet();
     }
 
     private void updateScanResult(NavRoute navRoute, View currentView) {

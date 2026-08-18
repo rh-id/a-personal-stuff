@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact constraint variant applied to item_checklist.xml's view tree.
+     Only title and progress stay visible; description, updated-date, and the
+     action button container are hidden. Card tap still opens the checklist. -->
+<ConstraintSet xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <Constraint
+        android:id="@+id/text_title"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Constraint
+        android:id="@+id/text_progress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_title" />
+
+    <Constraint
+        android:id="@+id/text_description"
+        android:visibility="gone" />
+
+    <Constraint
+        android:id="@+id/text_updated_date_time"
+        android:visibility="gone" />
+
+    <Constraint
+        android:id="@+id/container_action_button"
+        android:visibility="gone" />
+</ConstraintSet>

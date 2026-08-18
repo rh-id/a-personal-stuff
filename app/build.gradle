@@ -65,6 +65,7 @@ dependencies {
     implementation project(path: ':item-purchase')
     implementation project(path: ':item-maintenance')
     implementation project(path: ':item-reminder')
+    implementation project(path: ':item-checklist')
     implementation project(path: ':settings')
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 

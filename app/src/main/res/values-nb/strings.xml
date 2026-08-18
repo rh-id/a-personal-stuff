@@ -33,6 +33,9 @@
     <string name="success_duplicate_">Gjenstand duplisert: %s</string>
     <string name="progress_duplicate">Dupliserer…</string>
     <string name="title_items">Gjenstander</string>
+    <string name="title_checklists">Sjekklister</string>
+    <string name="title_add_item_checklist">Legg til sjekkliste</string>
+    <string name="success_add_checklist_">Sjekkliste lagt til: %s</string>
     <string name="title_add">Legg til</string>
     <string name="success_update_item_">Gjenstand oppdatert: %s</string>
     <string name="title_update_item">Oppdater gjenstand</string>

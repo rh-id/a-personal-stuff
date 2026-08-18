@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Checklists</string>
+    <string name="title_checklists_with_">Checklists with %s</string>
+    <string name="title_add_to_checklist">Add to Checklist</string>
+    <string name="title_rename_checklist">Rename Checklist</string>
+    <string name="checklist_title_required">Checklist title is required</string>
+    <string name="title_add">Add</string>
+    <string name="add_items">Add Items</string>
+    <string name="rename">Rename</string>
+    <string name="remove_from_checklist">Remove from checklist</string>
+    <string name="checklist_progress">Checked %1$d/%2$d</string>
+    <string name="updated_date_time">Updated: %1$s</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
+    <string name="success_update_checklist_">Checklist updated: %s</string>
+    <string name="success_delete_checklist_">Checklist deleted: %s</string>
+    <string name="success_add_items">%1$d items added</string>
+    <string name="success_add_item_to_checklist_">Item added to checklist: %s</string>
+    <string name="success_remove_item_">Item removed from checklist: %s</string>
+    <string name="hint_checklist_title">Checklist title</string>
+    <string name="hint_checklist_description">Description</string>
+    <string name="title_edit_checklist_description">Edit Description</string>
+    <string name="hint_type_to_search">Type to search</string>
+    <string name="title_view_mode">View mode</string>
+    <string name="title_view_mode_detailed">Switch to detailed view</string>
+    <string name="title_view_mode_compact">Switch to compact view</string>
+</resources>

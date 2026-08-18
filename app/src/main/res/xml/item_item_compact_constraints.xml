@@ -70,6 +70,9 @@
         android:id="@+id/button_usage_count"
         android:visibility="gone" />
     <Constraint
+        android:id="@+id/button_checklist_count"
+        android:visibility="gone" />
+    <Constraint
         android:id="@+id/text_price"
         android:visibility="gone" />
     <Constraint

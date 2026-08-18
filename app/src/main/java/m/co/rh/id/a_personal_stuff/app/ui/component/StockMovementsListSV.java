@@ -210,7 +210,6 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
         Context context = mSvProvider.getContext();
         mRxDisposer.add("loadMovements",
                 mQueryItemCmd.findItemStateByItemId(mItemId)
-                        .subscribeOn(Schedulers.from(mExecutorService))
                             .flatMap(itemState -> {
                                 if (itemState == null) {
                                     return Single.just(new Pair<List<StockMovement>, ItemState>(new ArrayList<>(), itemState));

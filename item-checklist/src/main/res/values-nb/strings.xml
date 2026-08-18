@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Sjekklister</string>
+    <string name="title_checklists_with_">Sjekklister med %s</string>
+    <string name="title_add_to_checklist">Legg til i sjekkliste</string>
+    <string name="title_rename_checklist">Endre navn på sjekkliste</string>
+    <string name="checklist_title_required">Tittel på sjekkliste er påkrevd</string>
+    <string name="title_add">Legg til</string>
+    <string name="add_items">Legg til gjenstander</string>
+    <string name="rename">Endre navn</string>
+    <string name="remove_from_checklist">Fjern fra sjekkliste</string>
+    <string name="checklist_progress">Avkrysset %1$d/%2$d</string>
+    <string name="updated_date_time">Oppdatert: %1$s</string>
+    <string name="title_confirm_delete">Bekreft sletting</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="success_update_checklist_">Sjekkliste oppdatert: %s</string>
+    <string name="success_delete_checklist_">Sjekkliste slettet: %s</string>
+    <string name="success_add_items">%1$d gjenstander lagt til</string>
+    <string name="success_add_item_to_checklist_">Gjenstand lagt til i sjekklisten: %s</string>
+    <string name="success_remove_item_">Gjenstand fjernet fra sjekkliste: %s</string>
+    <string name="hint_checklist_title">Tittel på sjekkliste</string>
+    <string name="hint_checklist_description">Beskrivelse</string>
+    <string name="title_edit_checklist_description">Rediger beskrivelse</string>
+    <string name="hint_type_to_search">Skriv for å søke</string>
+    <string name="title_view_mode">Visningsmodus</string>
+    <string name="title_view_mode_detailed">Bytt til detaljert visning</string>
+    <string name="title_view_mode_compact">Bytt til kompakt visning</string>
+</resources>

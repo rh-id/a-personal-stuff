@@ -38,6 +38,7 @@ import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
+import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.aprovider.Provider;
 
 public class ExportCmd {
@@ -53,6 +54,7 @@ public class ExportCmd {
     private final ItemUsageDao mItemUsageDao;
     private final ItemPurchaseDao mItemPurchaseDao;
     private final ItemReminderDao mItemReminderDao;
+    private final ItemChecklistDao mItemChecklistDao;
     private final ItemFileHelper mItemFileHelper;
     private final ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
     private final ItemUsageFileHelper mItemUsageFileHelper;
@@ -67,6 +69,7 @@ public class ExportCmd {
         mItemUsageDao = provider.get(ItemUsageDao.class);
         mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
+        mItemChecklistDao = provider.get(ItemChecklistDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
         mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
         mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
@@ -144,6 +147,8 @@ public class ExportCmd {
         data.itemPurchases.addAll(mItemPurchaseDao.findAllItemPurchases());
         data.itemPurchaseImages.addAll(mItemPurchaseDao.findAllItemPurchaseImages());
         data.itemReminders.addAll(mItemReminderDao.findAllItemReminders());
+        data.itemChecklists.addAll(mItemChecklistDao.findAllItemChecklists());
+        data.itemChecklistItems.addAll(mItemChecklistDao.findAllItemChecklistItems());
         return data;
     }
 

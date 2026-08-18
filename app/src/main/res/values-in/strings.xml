@@ -33,6 +33,9 @@
     <string name="success_duplicate_">Item diduplikasi: %s</string>
     <string name="progress_duplicate">Menduplikasi…</string>
     <string name="title_items">Item</string>
+    <string name="title_checklists">Daftar periksa</string>
+    <string name="title_add_item_checklist">Tambah daftar periksa</string>
+    <string name="success_add_checklist_">Daftar periksa ditambahkan: %s</string>
     <string name="title_add">Tambah</string>
     <string name="success_update_item_">Item diperbarui: %s</string>
     <string name="title_update_item">Perbarui Item</string>

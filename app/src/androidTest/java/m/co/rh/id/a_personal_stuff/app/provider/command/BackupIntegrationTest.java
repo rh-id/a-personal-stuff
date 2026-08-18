@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,6 +68,12 @@ import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
+import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
+import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
+import m.co.rh.id.a_personal_stuff.item_checklist.room.ItemChecklistDatabase;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
+import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
@@ -88,6 +95,7 @@ public class BackupIntegrationTest {
     private ItemUsageDatabase mUsageDb;
     private ItemReminderDatabase mReminderDb;
     private ItemPurchaseDatabase mPurchaseDb;
+    private ItemChecklistDatabase mChecklistDb;
     private Provider mProvider;
     private File mTempZipDir;
 
@@ -108,6 +116,9 @@ public class BackupIntegrationTest {
                 .allowMainThreadQueries().build();
 
         mPurchaseDb = Room.inMemoryDatabaseBuilder(mContext, ItemPurchaseDatabase.class)
+                .allowMainThreadQueries().build();
+
+        mChecklistDb = Room.inMemoryDatabaseBuilder(mContext, ItemChecklistDatabase.class)
                 .allowMainThreadQueries().build();
 
         mTempZipDir = new File(mContext.getCacheDir(), "test_zips_" + System.currentTimeMillis());
@@ -148,6 +159,9 @@ public class BackupIntegrationTest {
         if (mPurchaseDb != null) {
             mPurchaseDb.close();
         }
+        if (mChecklistDb != null) {
+            mChecklistDb.close();
+        }
     }
 
     @Test
@@ -170,6 +184,8 @@ public class BackupIntegrationTest {
         assertTrue(data.itemReminders.isEmpty());
         assertTrue(data.itemPurchases.isEmpty());
         assertTrue(data.itemPurchaseImages.isEmpty());
+        assertTrue(data.itemChecklists.isEmpty());
+        assertTrue(data.itemChecklistItems.isEmpty());
 
         Set<String> entries = getZipEntryNames(zipFile);
         assertEquals(1, entries.size());
@@ -962,6 +978,47 @@ public class BackupIntegrationTest {
         reminder.createdDateTime = now;
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
+        // Create item checklist
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.title = "Round trip checklist";
+        checklist.description = "Round trip description";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = now;
+        ItemChecklistState checklistState = new ItemChecklistState();
+        checklistState.updateItemChecklist(checklist);
+        mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
+        long checklistId = checklistState.getChecklistId();
+
+        // Add items to checklist
+        ItemChecklistItem checklistItem1 = new ItemChecklistItem();
+        checklistItem1.itemChecklistId = checklistId;
+        checklistItem1.itemId = itemId;
+        checklistItem1.createdDateTime = now;
+        checklistItem1.checkedDateTime = null; // not checked
+        mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem1));
+
+        // Add a second item to the checklist
+        ItemState itemState2 = new ItemState();
+        Item item2 = new Item();
+        item2.name = "Round Trip Item 2";
+        item2.amount = 3;
+        item2.createdDateTime = now;
+        item2.updatedDateTime = now;
+        itemState2.updateItem(item2);
+        mAppDb.itemDao().insertItem(itemState2);
+        long itemId2 = itemState2.getItemId();
+
+        ItemChecklistItem checklistItem2 = new ItemChecklistItem();
+        checklistItem2.itemChecklistId = checklistId;
+        checklistItem2.itemId = itemId2;
+        checklistItem2.createdDateTime = now;
+        checklistItem2.checkedDateTime = now; // this one is checked
+        mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem2));
+
+        // Update checklist timestamp
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        mChecklistDb.itemChecklistDao().updateItemChecklist(checklist);
+
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
 
         mAppDb.close();
@@ -984,13 +1041,21 @@ public class BackupIntegrationTest {
         mPurchaseDb = Room.inMemoryDatabaseBuilder(mContext, ItemPurchaseDatabase.class)
                 .allowMainThreadQueries().build();
 
+        mChecklistDb.close();
+        mChecklistDb = Room.inMemoryDatabaseBuilder(mContext, ItemChecklistDatabase.class)
+                .allowMainThreadQueries().build();
+
         mProvider = Provider.createProvider(mContext, new TestBackupProviderModule());
 
         new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
         List<ItemState> items = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null);
-        assertEquals(1, items.size());
-        ItemState restoredItemState = items.get(0);
+        assertEquals(2, items.size());
+        ItemState restoredItemState = items.stream()
+                .filter(is -> "Round Trip Item".equals(is.getItem().name))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(restoredItemState);
         Item restoredItem = restoredItemState.getItem();
         assertEquals("Round Trip Item", restoredItem.name);
         assertEquals(8, restoredItem.amount);
@@ -1011,6 +1076,13 @@ public class BackupIntegrationTest {
 
         assertEquals(1, restoredItemState.getItemTags().size());
         assertEquals("roundtrip", restoredItemState.getItemTags().first().tag);
+
+        ItemState restoredItemState2 = items.stream()
+                .filter(is -> "Round Trip Item 2".equals(is.getItem().name))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(restoredItemState2);
+        assertEquals(3, restoredItemState2.getItem().amount);
 
         List<ItemMaintenance> maintenances = mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances();
         assertEquals(1, maintenances.size());
@@ -1062,6 +1134,45 @@ public class BackupIntegrationTest {
         List<ItemReminder> reminders = mReminderDb.itemReminderDao().findAllItemReminders();
         assertEquals(1, reminders.size());
         assertEquals("Round trip reminder", reminders.get(0).message);
+
+        List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
+        assertEquals(1, checklists.size());
+        assertEquals("Round trip checklist", checklists.get(0).title);
+        assertEquals("Round trip description", checklists.get(0).description);
+        assertNotNull(checklists.get(0).createdDateTime);
+        assertNotNull(checklists.get(0).updatedDateTime);
+
+        List<ItemChecklistItem> checklistItems = mChecklistDb.itemChecklistDao().findAllItemChecklistItems();
+        assertEquals(2, checklistItems.size());
+
+        // Verify one item is checked and one is not
+        ItemChecklistItem uncheckedItem = checklistItems.stream()
+                .filter(ci -> ci.checkedDateTime == null)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(uncheckedItem);
+        assertNotNull(uncheckedItem.itemChecklistId);
+        assertNotNull(uncheckedItem.itemId);
+
+        ItemChecklistItem checkedItem = checklistItems.stream()
+                .filter(ci -> ci.checkedDateTime != null)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(checkedItem);
+        assertNotNull(checkedItem.checkedDateTime);
+        assertNotNull(checkedItem.itemChecklistId);
+        assertNotNull(checkedItem.itemId);
+
+        // Verify all checklist items belong to the same checklist
+        assertEquals(1L, checklistItems.stream()
+                .map(ci -> ci.itemChecklistId)
+                .distinct()
+                .count());
+
+        // Verify both items are referenced (both should have valid itemId mappings)
+        assertEquals(2L, checklistItems.stream()
+                .filter(ci -> ci.itemId != null)
+                .count());
 
         zipFile.delete();
     }
@@ -1443,6 +1554,21 @@ public class BackupIntegrationTest {
         reminder.createdDateTime = now;
         original.itemReminders.add(reminder);
 
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.id = 1L;
+        checklist.title = "Test checklist";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        original.itemChecklists.add(checklist);
+
+        ItemChecklistItem checklistItem = new ItemChecklistItem();
+        checklistItem.id = 1L;
+        checklistItem.itemChecklistId = 1L;
+        checklistItem.itemId = 1L;
+        checklistItem.createdDateTime = now;
+        checklistItem.checkedDateTime = now;
+        original.itemChecklistItems.add(checklistItem);
+
         JSONObject json = original.toJson();
         BackupData restored = BackupData.fromJson(json);
 
@@ -1524,6 +1650,21 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).id);
         assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).itemPurchaseId);
         assertEquals("purchase.jpg", restored.itemPurchaseImages.get(0).fileName);
+
+        assertEquals(1, restored.itemChecklists.size());
+        assertEquals(Long.valueOf(1L), restored.itemChecklists.get(0).id);
+        assertEquals("Test checklist", restored.itemChecklists.get(0).title);
+        assertNotNull(restored.itemChecklists.get(0).createdDateTime);
+        assertEquals(now.getTime(), restored.itemChecklists.get(0).createdDateTime.getTime());
+        assertNotNull(restored.itemChecklists.get(0).updatedDateTime);
+        assertEquals(now.getTime() + 1000, restored.itemChecklists.get(0).updatedDateTime.getTime());
+
+        assertEquals(1, restored.itemChecklistItems.size());
+        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).id);
+        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).itemChecklistId);
+        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).itemId);
+        assertNotNull(restored.itemChecklistItems.get(0).checkedDateTime);
+        assertEquals(now.getTime(), restored.itemChecklistItems.get(0).checkedDateTime.getTime());
     }
 
     @Test
@@ -1555,6 +1696,389 @@ public class BackupIntegrationTest {
         assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
         assertNull("Old backups without usageDateTime must deserialize to null",
                 restored.itemUsages.get(0).usageDateTime);
+    }
+
+    @Test
+    public void exportWithItemChecklists() throws Exception {
+        Date now = new Date();
+
+        // Create items
+        ItemState itemState1 = new ItemState();
+        Item item1 = new Item();
+        item1.name = "Item A";
+        item1.amount = 5;
+        item1.createdDateTime = now;
+        item1.updatedDateTime = now;
+        itemState1.updateItem(item1);
+        mAppDb.itemDao().insertItem(itemState1);
+        long itemId1 = itemState1.getItemId();
+
+        ItemState itemState2 = new ItemState();
+        Item item2 = new Item();
+        item2.name = "Item B";
+        item2.amount = 3;
+        item2.createdDateTime = now;
+        item2.updatedDateTime = now;
+        itemState2.updateItem(item2);
+        mAppDb.itemDao().insertItem(itemState2);
+        long itemId2 = itemState2.getItemId();
+
+        // Create item checklist
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.title = "Moving home";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = now;
+        ItemChecklistState checklistState = new ItemChecklistState();
+        checklistState.updateItemChecklist(checklist);
+        mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
+        long checklistId = checklistState.getChecklistId();
+
+        // Add all items to checklist
+        ItemChecklistItem checklistItem1 = new ItemChecklistItem();
+        checklistItem1.itemChecklistId = checklistId;
+        checklistItem1.itemId = itemId1;
+        checklistItem1.createdDateTime = now;
+        checklistItem1.checkedDateTime = null;
+        mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem1));
+
+        ItemChecklistItem checklistItem2 = new ItemChecklistItem();
+        checklistItem2.itemChecklistId = checklistId;
+        checklistItem2.itemId = itemId2;
+        checklistItem2.createdDateTime = now;
+        checklistItem2.checkedDateTime = now; // checked
+        mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem2));
+
+        // Update checklist timestamp
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        mChecklistDb.itemChecklistDao().updateItemChecklist(checklist);
+
+        File zipFile = new ExportCmd(mProvider).execute().blockingGet();
+        BackupData data = extractJsonFromZip(zipFile);
+
+        assertEquals(1, data.itemChecklists.size());
+        assertEquals("Moving home", data.itemChecklists.get(0).title);
+        assertNotNull(data.itemChecklists.get(0).createdDateTime);
+        assertNotNull(data.itemChecklists.get(0).updatedDateTime);
+
+        assertEquals(2, data.itemChecklistItems.size());
+        // Verify one checked and one unchecked
+        boolean hasCheckedItem = false;
+        boolean hasUncheckedItem = false;
+        for (ItemChecklistItem item : data.itemChecklistItems) {
+            if (item.checkedDateTime != null) {
+                hasCheckedItem = true;
+            } else {
+                hasUncheckedItem = true;
+            }
+            assertNotNull(item.itemChecklistId);
+            assertNotNull(item.itemId);
+        }
+        assertTrue(hasCheckedItem);
+        assertTrue(hasUncheckedItem);
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void importItemChecklists() throws Exception {
+        Date now = new Date();
+
+        BackupData data = new BackupData();
+        Item item1 = new Item();
+        item1.id = 1L;
+        item1.name = "Import Item 1";
+        item1.amount = 2;
+        item1.createdDateTime = now;
+        item1.updatedDateTime = now;
+        data.items.add(item1);
+
+        Item item2 = new Item();
+        item2.id = 2L;
+        item2.name = "Import Item 2";
+        item2.amount = 4;
+        item2.createdDateTime = now;
+        item2.updatedDateTime = now;
+        data.items.add(item2);
+
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.id = 1L;
+        checklist.title = "Moving home";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        data.itemChecklists.add(checklist);
+
+        ItemChecklistItem checklistItem1 = new ItemChecklistItem();
+        checklistItem1.id = 1L;
+        checklistItem1.itemChecklistId = 1L;
+        checklistItem1.itemId = 1L;
+        checklistItem1.createdDateTime = now;
+        checklistItem1.checkedDateTime = null;
+        data.itemChecklistItems.add(checklistItem1);
+
+        ItemChecklistItem checklistItem2 = new ItemChecklistItem();
+        checklistItem2.id = 2L;
+        checklistItem2.itemChecklistId = 1L;
+        checklistItem2.itemId = 2L;
+        checklistItem2.createdDateTime = now;
+        checklistItem2.checkedDateTime = now;
+        data.itemChecklistItems.add(checklistItem2);
+
+        File zipFile = createBackupZip(data);
+
+        int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        assertEquals(2, count);
+
+        List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
+        assertEquals(1, checklists.size());
+        assertEquals("Moving home", checklists.get(0).title);
+        assertNotNull(checklists.get(0).createdDateTime);
+        assertNotNull(checklists.get(0).updatedDateTime);
+
+        List<ItemChecklistItem> checklistItems = mChecklistDb.itemChecklistDao().findAllItemChecklistItems();
+        assertEquals(2, checklistItems.size());
+
+        // Verify one checked and one unchecked
+        ItemChecklistItem uncheckedItem = checklistItems.stream()
+                .filter(ci -> ci.checkedDateTime == null)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(uncheckedItem);
+        assertNotNull(uncheckedItem.itemChecklistId);
+        assertNotNull(uncheckedItem.itemId);
+
+        ItemChecklistItem checkedItem = checklistItems.stream()
+                .filter(ci -> ci.checkedDateTime != null)
+                .findFirst()
+                .orElse(null);
+        assertNotNull(checkedItem);
+        assertNotNull(checkedItem.checkedDateTime);
+        assertNotNull(checkedItem.itemChecklistId);
+        assertNotNull(checkedItem.itemId);
+
+        // Verify foreign keys were remapped to the imported rows' new ids
+        List<ItemState> importedItems = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null);
+        assertEquals(2, importedItems.size());
+        Long importedItemId1 = importedItems.stream()
+                .filter(is -> "Import Item 1".equals(is.getItem().name))
+                .findFirst().map(ItemState::getItemId).orElse(null);
+        Long importedItemId2 = importedItems.stream()
+                .filter(is -> "Import Item 2".equals(is.getItem().name))
+                .findFirst().map(ItemState::getItemId).orElse(null);
+        assertNotNull(importedItemId1);
+        assertNotNull(importedItemId2);
+        Long importedChecklistId = checklists.get(0).id;
+        for (ItemChecklistItem ci : checklistItems) {
+            assertEquals(importedChecklistId, ci.itemChecklistId);
+            assertTrue(importedItemId1.equals(ci.itemId) || importedItemId2.equals(ci.itemId));
+        }
+        assertEquals(importedItemId1, uncheckedItem.itemId);
+        assertEquals(importedItemId2, checkedItem.itemId);
+
+        // Verify all items belong to the same checklist
+        assertEquals(1L, checklistItems.stream()
+                .map(ci -> ci.itemChecklistId)
+                .distinct()
+                .count());
+
+        // Verify date preservation
+        assertEquals(now.getTime(), checklists.get(0).createdDateTime.getTime());
+        assertEquals(now.getTime() + 1000, checklists.get(0).updatedDateTime.getTime());
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void importSkipsOrphanItemChecklistItems() throws Exception {
+        Date now = new Date();
+
+        BackupData data = new BackupData();
+
+        // Add items for valid references
+        Item item = new Item();
+        item.id = 1L;
+        item.name = "Valid Item";
+        item.amount = 1;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        data.items.add(item);
+
+        // Orphan checklist item with non-existent checklist
+        ItemChecklistItem orphanChecklistItem = new ItemChecklistItem();
+        orphanChecklistItem.id = 1L;
+        orphanChecklistItem.itemChecklistId = 999L; // non-existent checklist
+        orphanChecklistItem.itemId = 1L;
+        orphanChecklistItem.createdDateTime = now;
+        data.itemChecklistItems.add(orphanChecklistItem);
+
+        // Orphan checklist item with non-existent item
+        ItemChecklistItem orphanItem = new ItemChecklistItem();
+        orphanItem.id = 2L;
+        orphanItem.itemChecklistId = 1L; // this checklist doesn't exist in backup
+        orphanItem.itemId = 888L; // non-existent item
+        orphanItem.createdDateTime = now;
+        data.itemChecklistItems.add(orphanItem);
+
+        File zipFile = createBackupZip(data);
+
+        int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        assertEquals(1, count); // only the item should be imported
+
+        // No checklists should be imported since none were in the backup
+        assertTrue(mChecklistDb.itemChecklistDao().findAllItemChecklists().isEmpty());
+        // No checklist items should be imported since their checklist doesn't exist
+        assertTrue(mChecklistDb.itemChecklistDao().findAllItemChecklistItems().isEmpty());
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void exportChecklistWithZeroItems() throws Exception {
+        Date now = new Date();
+
+        ItemState itemState = new ItemState();
+        Item item = new Item();
+        item.name = "Zero Checklist Item";
+        item.amount = 2;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        itemState.updateItem(item);
+        mAppDb.itemDao().insertItem(itemState);
+
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.title = "Empty checklist";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        ItemChecklistState checklistState = new ItemChecklistState();
+        checklistState.updateItemChecklist(checklist);
+        mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
+
+        File zipFile = new ExportCmd(mProvider).execute().blockingGet();
+        BackupData data = extractJsonFromZip(zipFile);
+
+        assertEquals(1, data.items.size());
+        assertEquals(1, data.itemChecklists.size());
+        assertEquals("Empty checklist", data.itemChecklists.get(0).title);
+        assertNotNull(data.itemChecklists.get(0).createdDateTime);
+        assertNotNull(data.itemChecklists.get(0).updatedDateTime);
+        assertTrue(data.itemChecklistItems.isEmpty());
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void importChecklistWithZeroItems() throws Exception {
+        Date now = new Date();
+
+        BackupData data = new BackupData();
+        Item item = new Item();
+        item.id = 1L;
+        item.name = "Zero Checklist Item";
+        item.amount = 2;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        data.items.add(item);
+
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.id = 1L;
+        checklist.title = "Empty checklist";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        data.itemChecklists.add(checklist);
+
+        File zipFile = createBackupZip(data);
+
+        int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        assertEquals(1, count);
+
+        List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
+        assertEquals(1, checklists.size());
+        assertEquals("Empty checklist", checklists.get(0).title);
+        assertEquals(now.getTime(), checklists.get(0).createdDateTime.getTime());
+        assertEquals(now.getTime() + 1000, checklists.get(0).updatedDateTime.getTime());
+        assertTrue(mChecklistDb.itemChecklistDao().findAllItemChecklistItems().isEmpty());
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void importSameBackupTwiceWithChecklists() throws Exception {
+        Date now = new Date();
+
+        BackupData data = new BackupData();
+        Item item = new Item();
+        item.id = 1L;
+        item.name = "Checklist Duplicate Item";
+        item.amount = 1;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        data.items.add(item);
+
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.id = 1L;
+        checklist.title = "Duplicate checklist";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = now;
+        data.itemChecklists.add(checklist);
+
+        ItemChecklistItem checklistItem = new ItemChecklistItem();
+        checklistItem.id = 1L;
+        checklistItem.itemChecklistId = 1L;
+        checklistItem.itemId = 1L;
+        checklistItem.createdDateTime = now;
+        checklistItem.checkedDateTime = null;
+        data.itemChecklistItems.add(checklistItem);
+
+        File zipFile = createBackupZip(data);
+
+        new ImportCmd(mProvider).execute(zipFile).blockingGet();
+        Long firstPassItemId = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null).get(0).getItemId();
+        Long firstPassChecklistId = mChecklistDb.itemChecklistDao().findAllItemChecklists().get(0).id;
+
+        int count2 = new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        assertEquals(1, count2);
+        List<ItemState> items = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null);
+        assertEquals(2, items.size());
+        Long secondPassItemId = null;
+        for (ItemState itemState : items) {
+            if (!itemState.getItemId().equals(firstPassItemId)) {
+                secondPassItemId = itemState.getItemId();
+            }
+        }
+        assertNotNull(secondPassItemId);
+
+        List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
+        assertEquals(2, checklists.size());
+        Long secondPassChecklistId = null;
+        for (ItemChecklist imported : checklists) {
+            if (!imported.id.equals(firstPassChecklistId)) {
+                secondPassChecklistId = imported.id;
+            }
+        }
+        assertNotNull(secondPassChecklistId);
+        assertEquals(2, checklists.stream().map(c -> c.id).distinct().count());
+
+        List<ItemChecklistItem> checklistItems = mChecklistDb.itemChecklistDao().findAllItemChecklistItems();
+        assertEquals(2, checklistItems.size());
+        ItemChecklistItem firstPassItem = null;
+        ItemChecklistItem secondPassItem = null;
+        for (ItemChecklistItem ci : checklistItems) {
+            if (firstPassChecklistId.equals(ci.itemChecklistId)) {
+                firstPassItem = ci;
+            } else if (secondPassChecklistId.equals(ci.itemChecklistId)) {
+                secondPassItem = ci;
+            }
+        }
+        assertNotNull(firstPassItem);
+        assertNotNull(secondPassItem);
+        assertEquals(firstPassItemId, firstPassItem.itemId);
+        assertEquals(secondPassItemId, secondPassItem.itemId);
+        assertEquals(2, checklistItems.stream().map(ci -> ci.itemId).distinct().count());
+
+        zipFile.delete();
     }
 
     private File createBackupZip(BackupData data) throws Exception {
@@ -1670,6 +2194,8 @@ public class BackupIntegrationTest {
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
             providerRegistry.register(ItemPurchaseChangeNotifier.class, this::getItemPurchaseChangeNotifier);
             providerRegistry.register(WorkManager.class, this::getWorkManager);
+            providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
+            providerRegistry.register(ItemChecklistChangeNotifier.class, this::getItemChecklistChangeNotifier);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
             providerRegistry.registerLazy(ItemFileHelper.class, () -> new ItemFileHelper(provider));
             providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new ItemMaintenanceFileHelper(provider));
@@ -1730,6 +2256,14 @@ public class BackupIntegrationTest {
 
         private WorkManager getWorkManager() {
             return WorkManager.getInstance(mContext);
+        }
+
+        private ItemChecklistDao getItemChecklistDao() {
+            return mChecklistDb.itemChecklistDao();
+        }
+
+        private ItemChecklistChangeNotifier getItemChecklistChangeNotifier() {
+            return new ItemChecklistChangeNotifier();
         }
     }
 

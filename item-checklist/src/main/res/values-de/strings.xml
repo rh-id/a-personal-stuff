@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Checklisten</string>
+    <string name="title_checklists_with_">Checklisten mit %s</string>
+    <string name="title_add_to_checklist">Zur Checkliste hinzufügen</string>
+    <string name="title_rename_checklist">Checkliste umbenennen</string>
+    <string name="checklist_title_required">Checklisten-Titel ist erforderlich</string>
+    <string name="title_add">Hinzufügen</string>
+    <string name="add_items">Artikel hinzufügen</string>
+    <string name="rename">Umbenennen</string>
+    <string name="remove_from_checklist">Aus Checkliste entfernen</string>
+    <string name="checklist_progress">Abgehakt %1$d/%2$d</string>
+    <string name="updated_date_time">Aktualisiert: %1$s</string>
+    <string name="title_confirm_delete">Löschen bestätigen</string>
+    <string name="confirm_delete_">Möchten Sie %s wirklich löschen?</string>
+    <string name="success_update_checklist_">Checkliste aktualisiert: %s</string>
+    <string name="success_delete_checklist_">Checkliste gelöscht: %s</string>
+    <string name="success_add_items">%1$d Artikel hinzugefügt</string>
+    <string name="success_add_item_to_checklist_">Artikel zur Checkliste hinzugefügt: %s</string>
+    <string name="success_remove_item_">Artikel aus Checkliste entfernt: %s</string>
+    <string name="hint_checklist_title">Checklisten-Titel</string>
+    <string name="hint_checklist_description">Beschreibung</string>
+    <string name="title_edit_checklist_description">Beschreibung bearbeiten</string>
+    <string name="hint_type_to_search">Zum Suchen tippen</string>
+    <string name="title_view_mode">Ansichtsmodus</string>
+    <string name="title_view_mode_detailed">Zur Detailansicht wechseln</string>
+    <string name="title_view_mode_compact">Zur kompakten Ansicht wechseln</string>
+</resources>

@@ -1,5 +1,6 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.ItemChecklistCmdProviderModule;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.ItemMaintenanceCmdProviderModule;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.ItemPurchaseCmdProviderModule;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.ItemReminderCmdProviderModule;
@@ -27,5 +28,6 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerModule(new ItemPurchaseCmdProviderModule());
         providerRegistry.registerModule(new ItemMaintenanceCmdProviderModule());
         providerRegistry.registerModule(new ItemReminderCmdProviderModule());
+        providerRegistry.registerModule(new ItemChecklistCmdProviderModule());
     }
 }

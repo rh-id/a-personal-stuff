@@ -32,6 +32,9 @@
     <string name="success_duplicate_">Item duplicated: %s</string>
     <string name="progress_duplicate">Duplicating…</string>
     <string name="title_items">Items</string>
+    <string name="title_checklists">Checklists</string>
+    <string name="title_add_item_checklist">Add Checklist</string>
+    <string name="success_add_checklist_">Checklist added: %s</string>
     <string name="title_add">Add</string>
     <string name="success_update_item_">Item updated: %s</string>
     <string name="title_update_item">Update Item</string>

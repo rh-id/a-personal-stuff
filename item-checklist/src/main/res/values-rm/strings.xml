@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">Glistas da controlla</string>
+    <string name="title_checklists_with_">Glistas da controlla cun %s</string>
+    <string name="title_add_to_checklist">Agiuntar a la glista da controlla</string>
+    <string name="title_rename_checklist">Renumnar la glista da controlla</string>
+    <string name="checklist_title_required">Il titel da la glista da controlla è obligatoric</string>
+    <string name="title_add">Agiuntar</string>
+    <string name="add_items">Agiuntar objects</string>
+    <string name="rename">Renumnar</string>
+    <string name="remove_from_checklist">Allontanar da la glista da controlla</string>
+    <string name="checklist_progress">Controllads %1$d/%2$d</string>
+    <string name="updated_date_time">Actualisà: %1$s</string>
+    <string name="title_confirm_delete">Confermar la stiraziun</string>
+    <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
+    <string name="success_update_checklist_">Glista da controlla actualisada: %s</string>
+    <string name="success_delete_checklist_">Glista da controlla stizzada: %s</string>
+    <string name="success_add_items">%1$d objects agiuntads</string>
+    <string name="success_add_item_to_checklist_">Object agiuntà a la glista da controlla: %s</string>
+    <string name="success_remove_item_">Object allontanà da la glista da controlla: %s</string>
+    <string name="hint_checklist_title">Titel da la glista da controlla</string>
+    <string name="hint_checklist_description">Descripziun</string>
+    <string name="title_edit_checklist_description">Modifitgar la descripziun</string>
+    <string name="hint_type_to_search">Tipisar per tschertgar</string>
+    <string name="title_view_mode">Modus da visualisaziun</string>
+    <string name="title_view_mode_detailed">Midar a la vista detagliada</string>
+    <string name="title_view_mode_compact">Midar a la vista compacta</string>
+</resources>

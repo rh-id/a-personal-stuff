@@ -99,6 +99,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         View rootLayout = activity.getLayoutInflater().inflate(R.layout.page_home, container, false);
         View menuItems = rootLayout.findViewById(R.id.menu_items);
         menuItems.setOnClickListener(this);
+        View menuItemChecklists = rootLayout.findViewById(R.id.menu_item_checklists);
+        menuItemChecklists.setOnClickListener(this);
         View menuSettings = rootLayout.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
         View menuDonation = rootLayout.findViewById(R.id.menu_donation);
@@ -120,6 +122,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addItemMaintenanceButton.setOnClickListener(this);
         Button addItemReminderButton = rootLayout.findViewById(R.id.button_add_item_reminder);
         addItemReminderButton.setOnClickListener(this);
+        Button addItemChecklistButton = rootLayout.findViewById(R.id.button_add_item_checklist);
+        addItemChecklistButton.setOnClickListener(this);
         mButtonExport = rootLayout.findViewById(R.id.button_export);
         mButtonImport = rootLayout.findViewById(R.id.button_import);
         if (mButtonExport != null) {
@@ -220,6 +224,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         int id = view.getId();
         if (id == R.id.menu_items) {
             mNavigator.push(Routes.ITEMS_PAGE);
+        } else if (id == R.id.menu_item_checklists) {
+            mNavigator.push(Routes.ITEM_CHECKLISTS_PAGE);
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_donation) {
@@ -238,6 +244,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_add_item_reminder) {
             mNavigator.push(Routes.ITEM_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> itemSelectedForReminder(navRoute));
+        } else if (id == R.id.button_add_item_checklist) {
+            mNavigator.push(Routes.ITEM_CHECKLIST_ADD_PAGE);
         } else if (id == R.id.button_export) {
             doExport((Activity) view.getContext());
         } else if (id == R.id.button_import) {

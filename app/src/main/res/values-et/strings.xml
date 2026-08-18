@@ -33,6 +33,9 @@
     <string name="success_duplicate_">Ese dubleeritud: %s</string>
     <string name="progress_duplicate">Dubleerimine…</string>
     <string name="title_items">Esemed</string>
+    <string name="title_checklists">Kontroll-loendid</string>
+    <string name="title_add_item_checklist">Lisa kontroll-loend</string>
+    <string name="success_add_checklist_">Kontroll-loend lisatud: %s</string>
     <string name="title_add">Lisa</string>
     <string name="success_update_item_">Ese uuendatud: %s</string>
     <string name="title_update_item">Uuenda ese</string>
