@@ -22,7 +22,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan barcodes for quick input and searching.
 *   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
-*   **Multilingual Support**: Available in 9 languages (German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh).
+*   **Multilingual Support**: Available in 10 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh).
 
 ## User Workflow
 
@@ -728,10 +728,11 @@ This structure allows for version-controlled store presence management.
 
 ## Testing
 
-The project includes testing infrastructure:
+The project includes testing infrastructure. Current test coverage centers on a backup/restore instrumented integration test run on the emulator in CI (app/src/androidTest/.../BackupIntegrationTest.java). Unit tests are not yet implemented, though JUnit is configured.
 - **Unit Tests**: JUnit 4.13.2
-- **Android Instrumented Tests**: AndroidX Test, Espresso 3.5.1
-- **Room Database Testing**: Room Testing 2.5.1 (uses exported schemas in `schemas/` directories)
+- **Android Instrumented Tests**: AndroidX Test, Espresso 3.7.0
+- **AndroidX Test JUnit**: 1.3.0
+- **Room Database Testing**: Room Testing 2.6.1 (uses exported schemas in `schemas/` directories)
 - **Test Runner**: AndroidJUnitRunner
 
 To run tests:
@@ -747,7 +748,8 @@ To run tests:
 
 ### Prerequisites
 - JDK 17 or higher
-- Android SDK 33
+- Android SDK 37
+- Minimum supported Android version: 5.0 Lollipop (API 21)
 - Gradle (via Gradle Wrapper included)
 
 ### Build Commands
