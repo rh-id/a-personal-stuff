@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_permission_denied">错误，权限被拒绝</string>
+    <string name="share_image">分享图片</string>
+    <string name="add_image">添加图片</string>
+    <string name="add_photo">添加照片</string>
+    <string name="title_no_record">无记录</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="log_file">日志文件</string>
+    <string name="share_log_file">分享日志文件</string>
+    <string name="error_sharing_log_file">分享日志文件出错</string>
+    <string name="clear_log_file">清除日志文件</string>
+    <string name="log_file_deleted">日志文件已删除</string>
+    <string name="version_">版本：</string>
+    <string name="licenses">许可证</string>
+    <string name="theme_setting">主题设置</string>
+    <string name="follow_system">跟随系统</string>
+    <string name="light_mode">浅色模式</string>
+    <string name="dark_mode">深色模式</string>
+    <string name="settings">设置</string>
+</resources>

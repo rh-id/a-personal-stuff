@@ -1,0 +1,10 @@
+Release 1.5.0+19
+
+Features:
+* Duplicate an existing item from its more-actions menu
+* Tap a row to edit items, usages, maintenances, and reminders
+* Browse all of an item's images in the full-screen viewer
+* Upgrade to Android SDK 37 (Android 17)
+
+Fixes:
+* Crash when adding a photo to an existing usage (wrong foreign key id)

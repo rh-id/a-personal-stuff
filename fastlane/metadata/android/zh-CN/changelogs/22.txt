@@ -1,0 +1,6 @@
+Release 1.8.0+22
+
+Features:
+* Checklists: build lists of your items, e.g. for packing or moving, and check items off
+* Checklist progress tracking, with compact and detail cards
+* Checklists are included in backup export and restore

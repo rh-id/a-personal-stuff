@@ -1,0 +1,10 @@
+Release 1.4.0+16
+
+Features:
+* Add backup export/import with ZIP format including images and thumbnails
+* Upgrade AGP to 9.2.1
+
+Fixes:
+* Duplicate WorkManager configuration
+* Deprecated locale accessor
+* WorkManagerInitializer lint issue

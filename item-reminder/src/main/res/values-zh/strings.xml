@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="notification_name_item_reminder">条目提醒</string>
+    <string name="notification_description_item_reminder">条目提醒通知渠道</string>
+    <string name="save">保存</string>
+    <string name="form_reminder_date_time">提醒日期时间</string>
+    <string name="form_message">消息</string>
+    <string name="reminder_date_time_is_required">提醒日期时间为必填项</string>
+    <string name="message_is_required">消息为必填项</string>
+    <string name="title_add_item_reminder">添加条目提醒</string>
+    <string name="title_update_item_reminder">更新条目提醒</string>
+    <string name="success_add_item_reminder">条目提醒已添加</string>
+    <string name="success_update_item_reminder">条目提醒已更新</string>
+    <string name="title_reminders">提醒</string>
+    <string name="title_add">添加</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">删除 %s ？</string>
+    <string name="success_delete_item_reminder">条目提醒已删除</string>
+</resources>

@@ -22,7 +22,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan barcodes for quick input and searching.
 *   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
-*   **Multilingual Support**: Available in 10 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh).
+*   **Multilingual Support**: Available in 11 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese).
 
 ## User Workflow
 

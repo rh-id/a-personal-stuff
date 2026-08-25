@@ -1,0 +1,12 @@
+Release 1.7.0+21
+
+Features:
+* Track item purchases/acquisitions
+* New Stock Movements page combining usages and purchases into a single timeline, with per-group totals and an Initial - Used + Bought = Remaining summary
+* Add a user-editable Usage Date Time to usages
+* List-row thumbnails with tap-to-zoom for usages, purchases, and maintenances (also inherited by Stock Movements)
+
+Fixes:
+* Stock Movements rows were missing their images
+* Item list "more actions" popup dividers were invisible on high-density screens
+* Purchases showed the creation time instead of the editable purchase date

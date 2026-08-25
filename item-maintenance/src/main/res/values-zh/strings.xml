@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="maintenance_date_time_is_required">维护日期时间为必填项</string>
+    <string name="description_is_required">描述为必填项</string>
+    <string name="title_add_item_maintenance">添加条目维护</string>
+    <string name="success_add_item_maintenance">条目维护已添加</string>
+    <string name="success_update_item_maintenance">条目维护已更新</string>
+    <string name="save">保存</string>
+    <string name="form_maintenance_date_time">维护日期时间</string>
+    <string name="form_cost">成本</string>
+    <string name="form_description">描述</string>
+    <string name="title_add">添加</string>
+    <string name="title_maintenances">维护</string>
+    <string name="success_delete_item_maintenance_image">条目维护图片已删除</string>
+    <string name="success_add_item_maintenance_image">条目维护图片已添加</string>
+    <string name="cost_">成本：%s</string>
+    <string name="description_">描述：%s</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">删除 \'%s\' ？</string>
+    <string name="success_delete_item_maintenance">条目维护已删除</string>
+    <string name="hint_type_to_search">输入以搜索</string>
+    <string name="title_update_item_maintenance">更新条目维护</string>
+</resources>

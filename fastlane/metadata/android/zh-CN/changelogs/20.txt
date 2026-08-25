@@ -1,0 +1,8 @@
+Release 1.6.0+20
+
+Features:
+* Compact view mode for items, usages, maintenances, and reminders
+
+Fixes:
+* NPE on export/import after screen rotation or state restore
+* Missing translations for delete and view mode strings

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_must_be_positive">数量必须大于0</string>
+    <string name="purchase_date_time_is_required">购买日期时间为必填项</string>
+    <string name="description_is_required">描述为必填项</string>
+    <string name="amount_">数量：%d</string>
+    <string name="cost_">成本：%s</string>
+    <string name="description_">描述：%s</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">确定要删除 %s 吗？</string>
+    <string name="title_purchases">购买记录</string>
+    <string name="title_add_item_purchase">添加购买记录</string>
+    <string name="title_update_item_purchase">更新购买记录</string>
+    <string name="success_add_item_purchase">购买记录已添加</string>
+    <string name="success_update_item_purchase">购买记录已更新</string>
+    <string name="success_delete_item_purchase">购买记录已删除</string>
+    <string name="success_add_item_purchase_image">购买记录图片已添加</string>
+    <string name="success_delete_item_purchase_image">购买记录图片已删除</string>
+    <string name="title_add">添加</string>
+    <string name="save">保存</string>
+    <string name="hint_type_to_search">输入以搜索</string>
+    <string name="form_amount">数量</string>
+    <string name="form_cost">成本</string>
+    <string name="form_description">描述</string>
+    <string name="form_purchase_date_time">购买日期时间</string>
+</resources>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_checklists">核对清单</string>
+    <string name="title_checklists_with_">包含 %s 的核对清单</string>
+    <string name="title_add_to_checklist">添加到核对清单</string>
+    <string name="title_rename_checklist">重命名核对清单</string>
+    <string name="checklist_title_required">核对清单标题为必填项</string>
+    <string name="title_add">添加</string>
+    <string name="add_items">添加条目</string>
+    <string name="rename">重命名</string>
+    <string name="remove_from_checklist">从核对清单中移除</string>
+    <string name="checklist_progress">已勾选 %1$d/%2$d</string>
+    <string name="updated_date_time">更新：%1$s</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">确定要删除 %s 吗？</string>
+    <string name="success_update_checklist_">核对清单已更新：%s</string>
+    <string name="success_delete_checklist_">核对清单已删除：%s</string>
+    <string name="success_add_items">已添加 %1$d 个条目</string>
+    <string name="success_add_item_to_checklist_">条目已添加到核对清单：%s</string>
+    <string name="success_remove_item_">条目已从核对清单移除：%s</string>
+    <string name="hint_checklist_title">核对清单标题</string>
+    <string name="hint_checklist_description">描述</string>
+    <string name="title_edit_checklist_description">编辑描述</string>
+    <string name="hint_type_to_search">输入以搜索</string>
+    <string name="title_view_mode">查看模式</string>
+    <string name="title_view_mode_detailed">切换到详细视图</string>
+    <string name="title_view_mode_compact">切换到紧凑视图</string>
+</resources>

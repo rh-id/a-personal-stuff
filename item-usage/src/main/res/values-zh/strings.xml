@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="amount_cannot_be_0">数量不能为0</string>
+    <string name="usage_date_time_is_required">使用日期时间为必填项</string>
+    <string name="description_is_required">描述为必填项</string>
+    <string name="amount_">数量：%d</string>
+    <string name="description_">描述：%s</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">确定要删除 %s 吗？</string>
+    <string name="success_delete_item_usage">使用记录已删除</string>
+    <string name="title_usages">使用记录</string>
+    <string name="title_update_item_usage">更新使用记录</string>
+    <string name="title_add_item_usage">添加使用记录</string>
+    <string name="success_add_item_usage_image">使用记录图片已添加</string>
+    <string name="success_delete_item_usage_image">使用记录图片已删除</string>
+    <string name="success_add_item_usage">使用记录已添加</string>
+    <string name="success_update_item_usage">使用记录已更新</string>
+    <string name="title_add">添加</string>
+    <string name="save">保存</string>
+    <string name="hint_type_to_search">输入以搜索</string>
+    <string name="form_amount">数量</string>
+    <string name="form_description">描述</string>
+    <string name="form_usage_date_time">使用日期时间</string>
+</resources>
