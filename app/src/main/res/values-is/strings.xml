@@ -84,4 +84,27 @@
     <string name="movement_amount">Magn: %d</string>
     <string name="movement_cost">Kostnaður: %s</string>
     <string name="movement_description">Lýsing: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Flytja út töfluskrá</string>
+    <string name="share_spreadsheet_file">Deila töfluskrá</string>
+    <string name="export_spreadsheet_failed">Útflutningur í töfluskrá mistókst</string>
+    <string name="export_spreadsheet_progress_sheet">Flyt út gögn (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Skrifa töfluskrá…</string>
+    <string name="header_id">Auðkenni</string>
+    <string name="header_tags">Merki</string>
+    <string name="header_images">Myndir</string>
+    <string name="header_item_id">Auðkenni hlutar</string>
+    <string name="header_item_name">Nafn hlutar</string>
+    <string name="header_cost">Kostnaður</string>
+    <string name="header_message">Skilaboð</string>
+    <string name="header_title">Titill</string>
+    <string name="header_created_date_time">Búið til</string>
+    <string name="header_updated_date_time">Uppfært</string>
+    <string name="header_usage_date_time">Notkunartími</string>
+    <string name="header_purchase_date_time">Kauptími</string>
+    <string name="header_maintenance_date_time">Viðhaldstími</string>
+    <string name="header_reminder_date_time">Áminningartími</string>
+    <string name="header_checked_date_time">Hökunartími</string>
+    <string name="header_checklist_id">Auðkenni gátlista</string>
 </resources>

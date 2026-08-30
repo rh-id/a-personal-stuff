@@ -149,6 +149,13 @@ public abstract class ItemUsageDao {
     @Query("SELECT * FROM item_usage")
     public abstract List<ItemUsage> findAllItemUsages();
 
-    @Query("SELECT * FROM item_usage_image")
+    @Query("SELECT * FROM item_usage_image ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemUsageImage> findAllItemUsageImages();
+
+    // keyset pagination for bounded-memory exports
+    @Query("SELECT * FROM item_usage WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
+    public abstract List<ItemUsage> findItemUsagesAfter(long lastId, int limit);
+
+    @Query("SELECT * FROM item_usage_image WHERE item_usage_id IN (:itemUsageIds) ORDER BY created_date_time ASC, id ASC")
+    public abstract List<ItemUsageImage> findItemUsageImagesByItemUsageIds(List<Long> itemUsageIds);
 }

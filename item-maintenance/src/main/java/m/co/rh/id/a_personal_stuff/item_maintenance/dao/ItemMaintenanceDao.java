@@ -156,6 +156,13 @@ public abstract class ItemMaintenanceDao {
     @Query("SELECT * FROM item_maintenance")
     public abstract List<ItemMaintenance> findAllItemMaintenances();
 
-    @Query("SELECT * FROM item_maintenance_image")
+    @Query("SELECT * FROM item_maintenance_image ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemMaintenanceImage> findAllItemMaintenanceImages();
+
+    // keyset pagination for bounded-memory exports
+    @Query("SELECT * FROM item_maintenance WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
+    public abstract List<ItemMaintenance> findItemMaintenancesAfter(long lastId, int limit);
+
+    @Query("SELECT * FROM item_maintenance_image WHERE item_maintenance_id IN (:itemMaintenanceIds) ORDER BY created_date_time ASC, id ASC")
+    public abstract List<ItemMaintenanceImage> findItemMaintenanceImagesByItemMaintenanceIds(List<Long> itemMaintenanceIds);
 }

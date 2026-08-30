@@ -1,12 +1,14 @@
 package m.co.rh.id.a_personal_stuff.app;
 
 import android.app.Activity;
+import android.os.Build;
 
 import m.co.rh.id.a_personal_stuff.app.provider.AppProviderModule;
 import m.co.rh.id.a_personal_stuff.app.provider.NavigatorProvider;
 import m.co.rh.id.a_personal_stuff.base.BaseApplication;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
 import m.co.rh.id.aprovider.Provider;
 
 public class MainApplication extends BaseApplication {
@@ -16,6 +18,9 @@ public class MainApplication extends BaseApplication {
     @Override
     public void onCreate() {
         super.onCreate();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            POISpreadsheetContext.getInstance().setAppContext(this);
+        }
         mProvider = Provider.createProvider(this, new AppProviderModule(this));
         final Thread.UncaughtExceptionHandler defaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {

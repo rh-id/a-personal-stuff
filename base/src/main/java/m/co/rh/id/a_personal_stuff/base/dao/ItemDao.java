@@ -193,7 +193,7 @@ public abstract class ItemDao {
     @Delete
     protected abstract void delete(ItemImage itemImage);
 
-    @Query("SELECT * FROM item_image WHERE item_id = :itemId ORDER BY created_date_time ASC")
+    @Query("SELECT * FROM item_image WHERE item_id = :itemId ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemImage> findItemImagesByItemId(long itemId);
 
     @Transaction

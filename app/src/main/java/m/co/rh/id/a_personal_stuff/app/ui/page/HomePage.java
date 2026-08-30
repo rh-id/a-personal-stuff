@@ -25,6 +25,7 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ExportCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ImportCmd;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
@@ -60,6 +61,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient RxDisposer mRxDisposer;
     private transient QueryItemCmd mQueryItemCmd;
     private transient ExportCmd mExportCmd;
+    private transient ExportSpreadsheetCmd mExportSpreadsheetCmd;
     private transient ImportCmd mImportCmd;
     private transient FileHelper mFileHelper;
     private transient ILogger mLogger;
@@ -69,6 +71,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient View.OnClickListener mOnNavigationClicked;
     private transient Button mButtonExport;
     private transient Button mButtonImport;
+    private transient Button mButtonExportSpreadsheet;
     private transient TextView mTextBackupProgress;
 
     public HomePage() {
@@ -83,6 +86,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
         mExportCmd = mSvProvider.get(ExportCmd.class);
+        mExportSpreadsheetCmd = mSvProvider.get(ExportSpreadsheetCmd.class);
         mImportCmd = mSvProvider.get(ImportCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
         mLogger = mSvProvider.get(ILogger.class);
@@ -132,7 +136,21 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         if (mButtonImport != null) {
             mButtonImport.setOnClickListener(this);
         }
+        mButtonExportSpreadsheet = rootLayout.findViewById(R.id.button_export_spreadsheet);
+        if (mButtonExportSpreadsheet != null) {
+            mButtonExportSpreadsheet.setOnClickListener(this);
+            if (!ExportSpreadsheetCmd.isSupported()) {
+                mButtonExportSpreadsheet.setVisibility(View.GONE);
+            }
+        }
         mTextBackupProgress = rootLayout.findViewById(R.id.text_backup_progress);
+        // A rebuild (rotation/theme change) must never start or re-subscribe an
+        // export: the running export's original subscriptions keep delivering
+        // progress and the result to this view, because rebuilds reuse the same
+        // command, disposers and activity. Only reflect the in-flight state.
+        if (mExportSpreadsheetCmd.isExporting()) {
+            showExportingState();
+        }
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
         mRxDisposer.add("createView_onNotificationEvent",
@@ -172,6 +190,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mOnNavigationClicked = null;
         mButtonExport = null;
         mButtonImport = null;
+        mButtonExportSpreadsheet = null;
         mTextBackupProgress = null;
     }
 
@@ -248,6 +267,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mNavigator.push(Routes.ITEM_CHECKLIST_ADD_PAGE);
         } else if (id == R.id.button_export) {
             doExport((Activity) view.getContext());
+        } else if (id == R.id.button_export_spreadsheet) {
+            doExportSpreadsheet((Activity) view.getContext());
         } else if (id == R.id.button_import) {
             doImport((Activity) view.getContext());
         }
@@ -280,6 +301,55 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                 throwable -> {
                                     setLoading(false);
                                     mLogger.e(TAG, activity.getString(R.string.export_failed), throwable);
+                                }
+                        )
+        );
+    }
+
+    /**
+     * Shows the in-flight export UI: disables the export/import buttons and
+     * restores the last known progress message (null right after a fresh
+     * start, so this simply shows the empty progress view).
+     */
+    private void showExportingState() {
+        setLoading(true);
+        String lastProgress = mExportSpreadsheetCmd.getLastProgress();
+        if (lastProgress != null && mTextBackupProgress != null) {
+            mTextBackupProgress.setVisibility(View.VISIBLE);
+            mTextBackupProgress.setText(lastProgress);
+        }
+    }
+
+    private void doExportSpreadsheet(Activity activity) {
+        showExportingState();
+        // keyed RxDisposer subscriptions: a re-attach replaces the previous
+        // subscription per key instead of stacking duplicates
+        mRxDisposer.add("home_export_spreadsheet_progress",
+                mExportSpreadsheetCmd.getProgressFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                progress -> {
+                                    if (mTextBackupProgress != null) {
+                                        mTextBackupProgress.setText(progress);
+                                    }
+                                },
+                                throwable -> {
+                                }
+                        )
+        );
+        mRxDisposer.add("home_export_spreadsheet_execute",
+                mExportSpreadsheetCmd.execute()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(
+                                file -> {
+                                    setLoading(false);
+                                    UiUtils.shareFile(activity, file,
+                                            activity.getString(R.string.share_spreadsheet_file),
+                                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                                },
+                                throwable -> {
+                                    setLoading(false);
+                                    mLogger.e(TAG, activity.getString(R.string.export_spreadsheet_failed), throwable);
                                 }
                         )
         );
@@ -331,6 +401,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
         if (mButtonImport != null) {
             mButtonImport.setEnabled(!loading);
+        }
+        if (mButtonExportSpreadsheet != null) {
+            mButtonExportSpreadsheet.setEnabled(!loading);
         }
         if (mTextBackupProgress != null) {
             if (loading) {

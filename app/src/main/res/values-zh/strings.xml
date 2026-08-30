@@ -84,4 +84,27 @@
     <string name="movement_amount">数量：%d</string>
     <string name="movement_cost">成本：%s</string>
     <string name="movement_description">描述：%s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">导出电子表格</string>
+    <string name="share_spreadsheet_file">分享电子表格文件</string>
+    <string name="export_spreadsheet_failed">导出到电子表格失败</string>
+    <string name="export_spreadsheet_progress_sheet">正在导出数据（%1$d/%2$d）…</string>
+    <string name="export_spreadsheet_progress_writing">正在写入电子表格…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">标签</string>
+    <string name="header_images">图片</string>
+    <string name="header_item_id">条目ID</string>
+    <string name="header_item_name">条目名称</string>
+    <string name="header_cost">成本</string>
+    <string name="header_message">消息</string>
+    <string name="header_title">标题</string>
+    <string name="header_created_date_time">创建时间</string>
+    <string name="header_updated_date_time">更新时间</string>
+    <string name="header_usage_date_time">使用时间</string>
+    <string name="header_purchase_date_time">购买时间</string>
+    <string name="header_maintenance_date_time">维护时间</string>
+    <string name="header_reminder_date_time">提醒时间</string>
+    <string name="header_checked_date_time">勾选时间</string>
+    <string name="header_checklist_id">核对清单ID</string>
 </resources>

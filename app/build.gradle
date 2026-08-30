@@ -54,6 +54,12 @@ android {
     buildFeatures {
         buildConfig true
     }
+    packaging {
+        resources.pickFirsts += 'META-INF/services/javax.xml.stream.XMLEventFactory'
+        resources.pickFirsts += 'META-INF/LICENSE-a-poi-spreadsheet.txt'
+        resources.pickFirsts += 'META-INF/NOTICE-a-poi-spreadsheet.txt'
+        resources.excludes += 'META-INF/DEPENDENCIES'
+    }
 }
 
 dependencies {
@@ -68,6 +74,9 @@ dependencies {
     implementation project(path: ':item-checklist')
     implementation project(path: ':settings')
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet:v0.0.7'
+    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-base:v0.0.7'
+    implementation 'com.github.rh-id.a-poi-spreadsheet:a-poi-spreadsheet-ooxml:v0.0.7'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.3.0'

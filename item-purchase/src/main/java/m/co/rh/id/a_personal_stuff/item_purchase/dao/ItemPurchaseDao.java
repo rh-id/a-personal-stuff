@@ -149,6 +149,13 @@ public abstract class ItemPurchaseDao {
     @Query("SELECT * FROM item_purchase")
     public abstract List<ItemPurchase> findAllItemPurchases();
 
-    @Query("SELECT * FROM item_purchase_image")
+    @Query("SELECT * FROM item_purchase_image ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemPurchaseImage> findAllItemPurchaseImages();
+
+    // keyset pagination for bounded-memory exports
+    @Query("SELECT * FROM item_purchase WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
+    public abstract List<ItemPurchase> findItemPurchasesAfter(long lastId, int limit);
+
+    @Query("SELECT * FROM item_purchase_image WHERE item_purchase_id IN (:itemPurchaseIds) ORDER BY created_date_time ASC, id ASC")
+    public abstract List<ItemPurchaseImage> findItemPurchaseImagesByItemPurchaseIds(List<Long> itemPurchaseIds);
 }

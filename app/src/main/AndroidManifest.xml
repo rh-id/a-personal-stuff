@@ -6,6 +6,8 @@
         android:name="android.permission.ACCESS_NETWORK_STATE"
         tools:node="remove" />
 
+    <uses-sdk tools:overrideLibrary="m.co.rh.id.apoi_spreadsheet.base,m.co.rh.id.apoi_spreadsheet.poi,m.co.rh.id.apoi_spreadsheet.ooxml" />
+
     <application
         android:name=".app.MainApplication"
         android:allowBackup="true"

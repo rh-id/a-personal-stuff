@@ -76,7 +76,7 @@
     <string name="import_progress_extracting">Extracting backup…</string>
     <string name="import_progress_reading">Reading backup…</string>
     <string name="import_progress_importing">Importing item %d/%d…</string>
-    
+
     <!-- Stock Movements. title_add_item_usage and title_add_item_purchase are
          provided (and translated) by the :item-usage and :item-purchase library
          modules, which are merged into this module's resources. -->
@@ -85,4 +85,27 @@
     <string name="movement_amount">Amount: %d</string>
     <string name="movement_cost">Cost: %s</string>
     <string name="movement_description">Description: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Export Spreadsheet</string>
+    <string name="share_spreadsheet_file">Share spreadsheet file</string>
+    <string name="export_spreadsheet_failed">Export to spreadsheet failed</string>
+    <string name="export_spreadsheet_progress_sheet">Exporting data (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Writing spreadsheet…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Tags</string>
+    <string name="header_images">Images</string>
+    <string name="header_item_id">Item ID</string>
+    <string name="header_item_name">Item name</string>
+    <string name="header_cost">Cost</string>
+    <string name="header_message">Message</string>
+    <string name="header_title">Title</string>
+    <string name="header_created_date_time">Created date time</string>
+    <string name="header_updated_date_time">Updated date time</string>
+    <string name="header_usage_date_time">Usage date time</string>
+    <string name="header_purchase_date_time">Purchase date time</string>
+    <string name="header_maintenance_date_time">Maintenance date time</string>
+    <string name="header_reminder_date_time">Reminder date time</string>
+    <string name="header_checked_date_time">Checked date time</string>
+    <string name="header_checklist_id">Checklist ID</string>
 </resources>

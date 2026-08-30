@@ -84,4 +84,27 @@
     <string name="movement_amount">Quantità: %d</string>
     <string name="movement_cost">Datasplaz: %s</string>
     <string name="movement_description">Descripziun: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Exportar tabella</string>
+    <string name="share_spreadsheet_file">Cundivider la datoteca da tabella</string>
+    <string name="export_spreadsheet_failed">Export en tabella n\'è betg reussì</string>
+    <string name="export_spreadsheet_progress_sheet">Exportond datas (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Scrivend datoteca da tabella…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Tags</string>
+    <string name="header_images">Maletgs</string>
+    <string name="header_item_id">ID da l\'object</string>
+    <string name="header_item_name">Num da l\'object</string>
+    <string name="header_cost">Datasplaz</string>
+    <string name="header_message">Messadi</string>
+    <string name="header_title">Titel</string>
+    <string name="header_created_date_time">Creà il</string>
+    <string name="header_updated_date_time">Actualisà il</string>
+    <string name="header_usage_date_time">Data d\'utilisaziun</string>
+    <string name="header_purchase_date_time">Data da cumpra</string>
+    <string name="header_maintenance_date_time">Data da mantegniment</string>
+    <string name="header_reminder_date_time">Data da promemoria</string>
+    <string name="header_checked_date_time">Data da marcar</string>
+    <string name="header_checklist_id">ID da la glista</string>
 </resources>

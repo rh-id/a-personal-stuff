@@ -173,6 +173,10 @@ public abstract class ItemChecklistDao {
     @Query("SELECT * FROM item_checklist_item")
     public abstract List<ItemChecklistItem> findAllItemChecklistItems();
 
+    // keyset pagination for bounded-memory exports
+    @Query("SELECT * FROM item_checklist_item WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
+    public abstract List<ItemChecklistItem> findItemChecklistItemsAfter(long lastId, int limit);
+
     @Insert
     protected abstract long insert(ItemChecklistItem itemChecklistItem);
 

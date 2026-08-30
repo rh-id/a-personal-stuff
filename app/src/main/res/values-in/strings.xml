@@ -84,4 +84,27 @@
     <string name="movement_amount">Jumlah: %d</string>
     <string name="movement_cost">Biaya: %s</string>
     <string name="movement_description">Deskripsi: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Ekspor Spreadsheet</string>
+    <string name="share_spreadsheet_file">Bagikan file spreadsheet</string>
+    <string name="export_spreadsheet_failed">Ekspor ke spreadsheet gagal</string>
+    <string name="export_spreadsheet_progress_sheet">Mengekspor data (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Menulis spreadsheet…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Tag</string>
+    <string name="header_images">Gambar</string>
+    <string name="header_item_id">ID Item</string>
+    <string name="header_item_name">Nama Item</string>
+    <string name="header_cost">Biaya</string>
+    <string name="header_message">Pesan</string>
+    <string name="header_title">Judul</string>
+    <string name="header_created_date_time">Tanggal dibuat</string>
+    <string name="header_updated_date_time">Tanggal diperbarui</string>
+    <string name="header_usage_date_time">Tanggal pemakaian</string>
+    <string name="header_purchase_date_time">Tanggal pembelian</string>
+    <string name="header_maintenance_date_time">Tanggal perawatan</string>
+    <string name="header_reminder_date_time">Tanggal pengingat</string>
+    <string name="header_checked_date_time">Tanggal dicentang</string>
+    <string name="header_checklist_id">ID Daftar Periksa</string>
 </resources>

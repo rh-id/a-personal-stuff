@@ -84,4 +84,27 @@
     <string name="movement_amount">Kogus: %d</string>
     <string name="movement_cost">Kulu: %s</string>
     <string name="movement_description">Kirjeldus: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Ekspordi arvutustabel</string>
+    <string name="share_spreadsheet_file">Jaga arvutustabelifaili</string>
+    <string name="export_spreadsheet_failed">Arvutustabelisse eksportimine nurjus</string>
+    <string name="export_spreadsheet_progress_sheet">Ekspordin andmeid (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Kirjutan arvutustabelit…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Sildid</string>
+    <string name="header_images">Pildid</string>
+    <string name="header_item_id">Eseme ID</string>
+    <string name="header_item_name">Eseme nimi</string>
+    <string name="header_cost">Kulu</string>
+    <string name="header_message">Sõnum</string>
+    <string name="header_title">Pealkiri</string>
+    <string name="header_created_date_time">Loodud</string>
+    <string name="header_updated_date_time">Uuendatud</string>
+    <string name="header_usage_date_time">Kasutamise aeg</string>
+    <string name="header_purchase_date_time">Ostmise aeg</string>
+    <string name="header_maintenance_date_time">Hooldamise aeg</string>
+    <string name="header_reminder_date_time">Meeldetuletuse aeg</string>
+    <string name="header_checked_date_time">Märkimise aeg</string>
+    <string name="header_checklist_id">Kontroll-loendi ID</string>
 </resources>

@@ -84,4 +84,27 @@
     <string name="movement_amount">Menge: %d</string>
     <string name="movement_cost">Kosten: %s</string>
     <string name="movement_description">Beschreibung: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Tabelle exportieren</string>
+    <string name="share_spreadsheet_file">Tabellendatei teilen</string>
+    <string name="export_spreadsheet_failed">Export in Tabelle fehlgeschlagen</string>
+    <string name="export_spreadsheet_progress_sheet">Daten werden exportiert (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Tabelle wird geschrieben…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Tags</string>
+    <string name="header_images">Bilder</string>
+    <string name="header_item_id">Artikel-ID</string>
+    <string name="header_item_name">Artikelname</string>
+    <string name="header_cost">Kosten</string>
+    <string name="header_message">Nachricht</string>
+    <string name="header_title">Titel</string>
+    <string name="header_created_date_time">Erstellt am</string>
+    <string name="header_updated_date_time">Aktualisiert am</string>
+    <string name="header_usage_date_time">Verwendet am</string>
+    <string name="header_purchase_date_time">Gekauft am</string>
+    <string name="header_maintenance_date_time">Gewartet am</string>
+    <string name="header_reminder_date_time">Erinnert am</string>
+    <string name="header_checked_date_time">Abgehakt am</string>
+    <string name="header_checklist_id">Checklisten-ID</string>
 </resources>

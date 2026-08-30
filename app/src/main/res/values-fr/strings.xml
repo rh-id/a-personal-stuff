@@ -84,4 +84,27 @@
     <string name="movement_amount">Quantité : %d</string>
     <string name="movement_cost">Coût : %s</string>
     <string name="movement_description">Description : %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Exporter le tableur</string>
+    <string name="share_spreadsheet_file">Partager le fichier tableur</string>
+    <string name="export_spreadsheet_failed">Échec de l\'export vers le tableur</string>
+    <string name="export_spreadsheet_progress_sheet">Export des données (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Écriture du tableur…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Étiquettes</string>
+    <string name="header_images">Images</string>
+    <string name="header_item_id">ID de l\'élément</string>
+    <string name="header_item_name">Nom de l\'élément</string>
+    <string name="header_cost">Coût</string>
+    <string name="header_message">Message</string>
+    <string name="header_title">Titre</string>
+    <string name="header_created_date_time">Date de création</string>
+    <string name="header_updated_date_time">Date de mise à jour</string>
+    <string name="header_usage_date_time">Date d\'utilisation</string>
+    <string name="header_purchase_date_time">Date d\'achat</string>
+    <string name="header_maintenance_date_time">Date d\'entretien</string>
+    <string name="header_reminder_date_time">Date de rappel</string>
+    <string name="header_checked_date_time">Date de vérification</string>
+    <string name="header_checklist_id">ID de la liste de contrôle</string>
 </resources>

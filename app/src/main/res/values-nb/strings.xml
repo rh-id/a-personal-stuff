@@ -84,4 +84,27 @@
     <string name="movement_amount">Mengde: %d</string>
     <string name="movement_cost">Kostnad: %s</string>
     <string name="movement_description">Beskrivelse: %s</string>
+
+    <!-- Export Spreadsheet -->
+    <string name="export_spreadsheet">Eksporter regneark</string>
+    <string name="share_spreadsheet_file">Del regnearkfil</string>
+    <string name="export_spreadsheet_failed">Eksport til regneark feilet</string>
+    <string name="export_spreadsheet_progress_sheet">Eksporterer data (%1$d/%2$d)…</string>
+    <string name="export_spreadsheet_progress_writing">Skriver regneark…</string>
+    <string name="header_id">ID</string>
+    <string name="header_tags">Merker</string>
+    <string name="header_images">Bilder</string>
+    <string name="header_item_id">Gjenstand-ID</string>
+    <string name="header_item_name">Gjenstandsnavn</string>
+    <string name="header_cost">Kostnad</string>
+    <string name="header_message">Melding</string>
+    <string name="header_title">Tittel</string>
+    <string name="header_created_date_time">Opprettet</string>
+    <string name="header_updated_date_time">Oppdatert</string>
+    <string name="header_usage_date_time">Brukstidspunkt</string>
+    <string name="header_purchase_date_time">Kjøpstidspunkt</string>
+    <string name="header_maintenance_date_time">Vedlikeholdstidspunkt</string>
+    <string name="header_reminder_date_time">Påminnelsestidspunkt</string>
+    <string name="header_checked_date_time">Avmerkingstidspunkt</string>
+    <string name="header_checklist_id">Sjekkliste-ID</string>
 </resources>
