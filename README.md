@@ -20,8 +20,10 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Stock Movements**: Unified view of item usage and purchase history per item.
 *   **Checklists**: Create checklists over your items (e.g. a packing list when moving home), track progress by checking items off.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
-*   **Barcode Support**: Scan barcodes for quick input and searching.
-*   **Backup & Restore**: Export and import app data as ZIP files, including images and thumbnails.
+*   **Barcode Support**: Scan 1D barcodes using the device camera and the ZXing library for quick input and searching.
+*   **Backup & Restore**: Export and import full app data as ZIP files, including images and thumbnails.
+*   **Spreadsheet Export**: Export all data as sheets of a single .xlsx workbook (Items, Usages, Purchases, Maintenances, Reminders, Checklists and Checklist Items); requires Android 8.0 (API 26)+, the export button is hidden on older devices.
+*   **Item Duplication**: Duplicate an existing item including its images and tags.
 *   **Multilingual Support**: Available in 11 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese).
 
 ## User Workflow
@@ -53,15 +55,15 @@ The codebase is split into feature-centric modules to enforce boundaries:
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD operations |
+| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations |
 | `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, and shared UI components (AppBar, ImageSV, SelectionPage) |
-| `:barcode` | Barcode scanning functionality using Camera2 API with ScanBarcodePage and ScanBarcodePreview components |
+| `:barcode` | Barcode scanning functionality using the camera (Camera1 API) with ZXing barcode decoding, with ScanBarcodePage and ScanBarcodePreview components |
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
 | `:item-purchase` | Item purchase tracking feature with entities (ItemPurchase, ItemPurchaseImage), commands, DAO, event handler for cascade delete, and UI pages (ItemPurchasesPage, ItemPurchaseDetailPage) |
 | `:item-maintenance` | Item maintenance tracking with entities (ItemMaintenance, ItemMaintenanceImage), commands, DAO, and UI pages (ItemMaintenancesPage, ItemMaintenanceDetailPage) |
 | `:item-checklist` | Checklist feature with entities (ItemChecklist, ItemChecklistItem), commands, DAO, and UI pages (ItemChecklistsPage, ItemChecklistDetailPage) |
 | `:item-reminder` | Reminder and alarm scheduling using WorkManager with entities (ItemReminder), commands, DAO, and UI pages (ItemRemindersPage, ItemReminderDetailPage) |
-| `:settings` | App configuration and preferences with SettingsPage, theme management, log viewing, and license display |
+| `:settings` | App configuration and preferences with SettingsPage, theme management (system/light/dark), log viewing, and a licenses page rendered from a licenses.html generated at build time |
 
 ### Database Strategy
 Instead of a monolithic database, the app uses **Multiple Room Databases**, one for each feature module:
@@ -112,7 +114,7 @@ Business logic is encapsulated using the **Command Pattern**:
 - Pattern: `itemAdded()`, `itemUpdated()`, `itemDeleted()` → `getAddedItemFlow()`, `getUpdatedItemFlow()`, `getDeletedItemFlow()`
 - Notifiers also provide convenience methods like `getAnyItemUsageChangeFlow()`, `getAnyItemUsageImageChangeFlow()`, `getAnyItemPurchaseChangeFlow()`, and `getAnyItemPurchaseImageChangeFlow()` for simplified subscriptions
 - Event handlers (`*EventHandler` classes) listen to base module events and trigger feature-specific actions
-- Example: `ItemMaintenanceEventHandler` listens to `ItemChangeNotifier` and handles cascade deletions
+- Example: five handlers subscribed to `ItemChangeNotifier` perform cascade deletions when an item is deleted: `ItemUsageEventHandler`, `ItemPurchaseEventHandler`, `ItemMaintenanceEventHandler`, `ItemChecklistEventHandler` (deletes the item's checklist entries only, not the checklists), and `ItemReminderEventHandler` (deletes reminders and cancels their WorkManager unique work)
 
 #### 5. Repository Pattern
 - Repositories encapsulate data access logic
@@ -195,7 +197,7 @@ graph TB
 ### Logical Flow
 
 #### Startup Sequence
-1.  **MainApplication**: Initializes global `Provider` (DI container) and registers `AppProviderModule` with all feature modules
+1.  **MainApplication**: Initializes global `Provider` (DI container) and registers `AppProviderModule` with all feature modules; initializes the POI spreadsheet context on Android 8.0+ (for XLSX export); installs a default uncaught-exception handler that logs the crash and then disposes the `Provider`
 2.  **MainActivity**:
     *   Creates Activity-scoped Provider with `RxProviderModule`
     *   Retrieves global Provider via `BaseApplication.of(this).getProvider()`
@@ -204,6 +206,8 @@ graph TB
     *   Sets up theme change listener via `SettingsSharedPreferences`
     *   Registers back press handler
     *   Processes any pending notifications
+    *   Forwards `onActivityResult` / `onRequestPermissionsResult` to the `Navigator`
+    *   Re-processes notifications on `onNewIntent`
 3.  **Navigator**:
     *   Loads `SplashPage` as initial route
     *   After initialization (or splash timeout), routes to `HomePage`
@@ -291,6 +295,7 @@ sequenceDiagram
 ```
 a-personal-stuff/
 ├── app/                           # Main application module
+│   ├── licenses.yml               # Manual license metadata overrides (licenses page)
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/app/
 │   │   ├── MainActivity.java      # Single activity hosting all views
 │   │   ├── MainApplication.java   # Application class with global provider
@@ -318,6 +323,7 @@ a-personal-stuff/
 │   │   │   │   ├── DeleteItemImageCmd.java     # Delete item image command
 │   │   │   │   ├── DuplicateItemCmd.java       # Duplicate item command
 │   │   │   │   ├── ExportCmd.java              # Export data command
+│   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export command (Android 8.0+)
 │   │   │   │   └── ImportCmd.java              # Import data command
 │   │   └── ui/
 │   │       ├── page/
@@ -374,17 +380,19 @@ a-personal-stuff/
 │   │   │   ├── BaseProviderModule.java       # Base DI module
 │   │   │   ├── DatabaseProviderModule.java   # Database DI module
 │   │   │   ├── RxProviderModule.java         # RxJava DI module
+│   │   │   ├── FileHelper.java               # Base file helper
 │   │   │   ├── notifier/
 │   │   │   │   └── ItemChangeNotifier.java   # Item change event bus
 │   │   │   ├── component/
-│   │   │   │   ├── ItemFileHelper.java       # File operations
-│   │   │   │   └── FileHelper.java           # Base file helper
+│   │   │   │   └── ItemFileHelper.java       # File operations
 │   │   │   └── IStatefulViewProvider.java    # SV provider interface
 │   │   ├── rx/
 │   │   │   └── RxDisposer.java               # Subscription manager
 │   │   ├── ui/
 │   │   │   ├── component/
-│   │   │   │   └── AppBarSV.java             # App bar StatefulView
+│   │   │   │   ├── AppBarSV.java             # App bar StatefulView
+│   │   │   │   └── adapter/
+│   │   │   │       └── SuggestionAdapter.java
 │   │   │   ├── page/
 │   │   │   │   ├── common/
 │   │   │   │   │   ├── ImageSV.java          # Image viewer SV
@@ -443,7 +451,8 @@ a-personal-stuff/
 │   │   ├── dao/
 │   │   │   └── ItemUsageDao.java                 # Usage DAO
 │   │   ├── room/
-│   │   │   └── ItemUsageDatabase.java            # Usage Room database
+│   │   │   ├── ItemUsageDatabase.java            # Usage Room database
+│   │   │   └── Migration1To2.java                # v1→v2: add usageDateTime column
 │   │   ├── provider/
 │   │   │   ├── ItemUsageProviderModule.java
 │   │   │   ├── ItemUsageDatabaseProviderModule.java
@@ -521,6 +530,7 @@ a-personal-stuff/
 │   │   │   ├── ItemReminderCmdProviderModule.java
 │   │   │   ├── command/
 │   │   │   │   ├── NewItemReminderCmd.java
+│   │   │   │   ├── UpdateItemReminderCmd.java
 │   │   │   │   ├── DeleteItemReminderCmd.java
 │   │   │   │   ├── QueryItemReminderCmd.java
 │   │   │   │   └── PagedItemReminderCmd.java
@@ -573,7 +583,8 @@ a-personal-stuff/
 │   │   └── ui/
 │   │       ├── page/
 │   │       │   ├── ItemChecklistsPage.java
-│   │       │   └── ItemChecklistDetailPage.java
+│   │       │   ├── ItemChecklistDetailPage.java
+│   │       │   └── ItemChecklistSelectPage.java
 │   │       └── component/
 │   │           ├── ItemChecklistListSV.java
 │   │           ├── ItemChecklistItemSV.java
@@ -592,6 +603,8 @@ a-personal-stuff/
 │   │   │       └── ScanBarcodePreview.java  # Camera preview
 │
 ├── settings/                     # Settings module
+│   ├── src/main/assets/
+│   │   └── licenses.html        # Licenses page content (generated at build time)
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/settings/
 │   │   ├── provider/
 │   │   │   ├── SettingsProviderModule.java
@@ -601,7 +614,7 @@ a-personal-stuff/
 │   │       ├── page/
 │   │       │   ├── SettingsPage.java        # Main settings page
 │   │       │   ├── LogPage.java             # Log viewer
-│   │       │   └── LicensesPage.java        # Licenses display
+│   │       │   └── LicensesPage.java        # Renders build-time generated licenses.html in a WebView
 │   │       └── component/
 │   │           ├── ThemeMenuSV.java         # Theme selector
 │   │           ├── VersionMenuSV.java       # Version display
@@ -623,6 +636,8 @@ a-personal-stuff/
 │   ├── android-release.yml      # Release build automation
 │   └── android-emulator-test.yml # Emulator testing
 │
+├── gradle/                       # Gradle build scripts
+│   └── license-html-generator.gradle # Generates licenses.html from app dependencies at build time
 ├── build.gradle                  # Root build configuration
 ├── settings.gradle               # Project module configuration
 ├── gradle.properties            # Gradle properties (room_version, nav_version)
@@ -667,8 +682,8 @@ When an item is deleted:
 1. `DeleteItemCmd.execute()` called with `ItemState`
 2. Command deletes item from `AppDatabase` via `ItemDao`
 3. `ItemChangeNotifier.itemDeleted(itemState)` emits event
-4. `ItemMaintenanceEventHandler`, `ItemUsageEventHandler`, `ItemPurchaseEventHandler`, and `ItemReminderEventHandler` subscribe to `ItemChangeNotifier`
-5. On `itemDeleted` event, each handler deletes related records (maintenance, usage, purchase, reminder)
+4. `ItemUsageEventHandler`, `ItemPurchaseEventHandler`, `ItemMaintenanceEventHandler`, `ItemChecklistEventHandler`, and `ItemReminderEventHandler` subscribe to `ItemChangeNotifier`
+5. On `itemDeleted` event, each handler deletes related records (usage, purchase, maintenance, the item's checklist entries, and reminders — cancelling their WorkManager unique work)
 6. This cascade delete ensures data consistency across modules
 
 #### State Management
@@ -685,6 +700,16 @@ When an item is deleted:
 - `ItemMaintenanceFileHelper`: Manages maintenance-related files
 - File deletion cascades through event handlers
 
+#### Android Manifest Highlights
+The merged manifest is kept minimal; notable declarations:
+- The app manifest itself declares no permissions: `CAMERA`/`FLASHLIGHT` are declared by the `:barcode` module manifest and `POST_NOTIFICATIONS` by `:item-reminder` (WorkManager contributes `WAKE_LOCK` etc.); all sensitive permissions are requested at runtime.
+- `ACCESS_NETWORK_STATE` is explicitly removed from the manifest merge (`tools:node="remove"`) — the app is fully offline and holds no internet permission.
+- Single `MainActivity`: `launchMode="singleTop"` with a broad `android:configChanges` list, so rotation/locale/theme changes are handled by the Navigator (views rebuilt) instead of Activity recreation.
+- A `FileProvider` (authority `m.co.rh.id.a_personal_stuff.fileprovider`, paths in `@xml/filepaths`) backs sharing of exported backups and spreadsheets.
+- `NotificationDeleteReceiver` is registered (not exported) to clean up notification records when the user dismisses a notification.
+- WorkManager's default initializer is removed from `androidx.startup`; `BaseApplication` implements `Configuration.Provider` so WorkManager is created on demand through the app's configuration.
+- `tools:overrideLibrary` allows the a-poi-spreadsheet libraries (which declare a higher minSdk) to merge into the app while minSdk stays 21; the XLSX feature is additionally gated at runtime to Android 8.0+.
+
 ## Automation & CI/CD
 
 The project leverages automation to ensure quality and streamline releases.
@@ -694,24 +719,26 @@ Located in `.github/workflows/`, the project has three main pipelines:
 
 1.  **Android CI (`gradlew-build.yml`)**:
     *   Triggers on push/PR to `master`
+    *   JDK 17 (Temurin)
     *   Runs `./gradlew build` to ensure project builds successfully
-    *   Verifies compilation and basic checks
+    *   All actions are pinned to commit SHAs
 
 2.  **Android Release (`android-release.yml`)**:
     *   Triggers when a tag starting with `v*` is pushed (e.g., `v1.3.0`)
-    *   Builds release APK with signing
+    *   JDK 17 (Temurin)
+    *   Builds debug and release APKs with signing
     *   Uses repository secrets for signing configuration:
         *   `SIGNING_KEY`: Base64-encoded keystore
         *   `KEY_STORE_PASSWORD`: Keystore password
         *   `ALIAS`: Key alias
         *   `KEY_PASSWORD`: Key password
     *   Creates GitHub Release with:
-        *   Release APK artifact
-        *   Changelog from `fastlane/metadata/android/en-US/changelogs/{versionCode}.txt`
+        *   Both `app-debug.apk` and `app-release.apk` uploaded as release assets
+        *   Release body taken from `fastlane/metadata/android/en-US/changelogs/{versionCode}.txt` (the build copies it to `changelog.txt`)
 
 3.  **Emulator Test (`android-emulator-test.yml`)**:
-    *   Runs instrumented tests on Android emulator
-    *   Verifies UI and integration tests pass
+    *   Triggers on push/PR to `master`
+    *   Runs `./gradlew connectedCheck` on an Android emulator matrix — API levels 23 and 29, `default` and `google_apis` targets — with KVM and AVD caching
 
 ### Fastlane
 The `fastlane/` directory contains metadata for store listings:
@@ -724,20 +751,30 @@ The `fastlane/` directory contains metadata for store listings:
   - `title.txt`: App title
   - `changelogs/{versionCode}.txt`: Per-version changelog
 
-This structure allows for version-controlled store presence management.
+This structure allows for version-controlled store presence management. There are 11 locale directories (de-DE, en-US, et, fr-FR, id, is-IS, it-IT, nb-NO, nn-NO, rm, zh-CN), each containing title/short description/full description/changelogs/images.
+
+### Licenses page (build-time generation)
+- `gradle/license-html-generator.gradle` defines the `generateLicenseHtml` task, wired to run before every build and before asset merging for all modules.
+- It resolves `:app` dependencies' POMs, applies manual overrides from `app/licenses.yml`, and writes `settings/src/main/assets/licenses.html`, which the in-app LicensesPage renders in a WebView.
+- The build fails if a dependency lacks license metadata.
 
 ## Testing
 
-The project includes testing infrastructure. Current test coverage centers on a backup/restore instrumented integration test run on the emulator in CI (app/src/androidTest/.../BackupIntegrationTest.java). Unit tests are not yet implemented, though JUnit is configured.
-- **Unit Tests**: JUnit 4.13.2
-- **Android Instrumented Tests**: AndroidX Test, Espresso 3.7.0
-- **AndroidX Test JUnit**: 1.3.0
-- **Room Database Testing**: Room Testing 2.6.1 (uses exported schemas in `schemas/` directories)
-- **Test Runner**: AndroidJUnitRunner
+There are no unit tests (`src/test` does not exist in any module). Testing is covered by exactly two instrumented test suites in `:app/src/androidTest/`, run on the emulator matrix in CI (see Automation & CI/CD above):
+
+- **BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
+- **ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+
+Available tooling:
+- JUnit 4.13.2
+- AndroidX Test / Espresso
+- AndroidX Test JUnit
+- Room Testing 2.6.1 (uses exported schemas in `schemas/` directories)
+- Test Runner: AndroidJUnitRunner
 
 To run tests:
 ```bash
-# Run unit tests
+# Run the unit-test task (no unit tests exist yet, so this is effectively a no-op)
 ./gradlew test
 
 # Run instrumented tests (requires connected device/emulator)
@@ -747,10 +784,13 @@ To run tests:
 ## Building the Project
 
 ### Prerequisites
-- JDK 17 or higher
-- Android SDK 37
+- JDK 17
+- Android SDK with compileSdk 37
 - Minimum supported Android version: 5.0 Lollipop (API 21)
-- Gradle (via Gradle Wrapper included)
+- Gradle wrapper 9.4.1 / Android Gradle Plugin 9.2.1 (via Gradle Wrapper included)
+- Java 17 source/target with core library desugaring enabled
+
+> **Note**: XLSX export requires a device running Android 8.0 (API 26) or newer; the app itself runs on Android 5.0+.
 
 ### Build Commands
 ```bash
