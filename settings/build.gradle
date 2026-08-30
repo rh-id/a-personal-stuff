@@ -1,6 +1,5 @@
 plugins {
     id 'com.android.library'
-    id "com.cookpad.android.plugin.license-tools" version "1.2.8"
 }
 
 android {
