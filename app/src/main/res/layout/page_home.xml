@@ -130,16 +130,6 @@
                         android:text="@string/export_spreadsheet"
                         app:icon="@drawable/ic_table_black" />
                 </GridLayout>
-
-                <TextView
-                    android:id="@+id/text_backup_progress"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:padding="8dp"
-                    android:textColor="?attr/colorOnSurface"
-                    android:visibility="gone"
-                    android:text="" />
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

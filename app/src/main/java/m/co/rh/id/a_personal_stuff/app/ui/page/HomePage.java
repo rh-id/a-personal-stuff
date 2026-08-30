@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -15,7 +14,6 @@ import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
@@ -29,6 +27,7 @@ import m.co.rh.id.a_personal_stuff.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ImportCmd;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
+import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
@@ -65,14 +64,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient ImportCmd mImportCmd;
     private transient FileHelper mFileHelper;
     private transient ILogger mLogger;
-    private transient CompositeDisposable mCompositeDisposable;
 
     private transient DrawerLayout mDrawerLayout;
     private transient View.OnClickListener mOnNavigationClicked;
     private transient Button mButtonExport;
     private transient Button mButtonImport;
     private transient Button mButtonExportSpreadsheet;
-    private transient TextView mTextBackupProgress;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
@@ -90,7 +87,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mImportCmd = mSvProvider.get(ImportCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
         mLogger = mSvProvider.get(ILogger.class);
-        mCompositeDisposable = new CompositeDisposable();
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
@@ -143,11 +139,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                 mButtonExportSpreadsheet.setVisibility(View.GONE);
             }
         }
-        mTextBackupProgress = rootLayout.findViewById(R.id.text_backup_progress);
         // A rebuild (rotation/theme change) must never start or re-subscribe an
         // export: the running export's original subscriptions keep delivering
-        // progress and the result to this view, because rebuilds reuse the same
-        // command, disposers and activity. Only reflect the in-flight state.
+        // progress into the shown dialog's Args subject and the result to this
+        // view, because rebuilds reuse the same command, disposers and
+        // activity, and the dialog re-binds the subject's latest value. Only
+        // reflect the in-flight state.
         if (mExportSpreadsheetCmd.isExporting()) {
             showExportingState();
         }
@@ -178,10 +175,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         super.dispose(activity);
         mAppBarSV.dispose(activity);
         mAppBarSV = null;
-        if (mCompositeDisposable != null) {
-            mCompositeDisposable.dispose();
-            mCompositeDisposable = null;
-        }
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -191,7 +184,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mButtonExport = null;
         mButtonImport = null;
         mButtonExportSpreadsheet = null;
-        mTextBackupProgress = null;
     }
 
     @Override
@@ -276,22 +268,20 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     private void doExport(Activity activity) {
         setLoading(true);
-        mCompositeDisposable.add(
+        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+                activity.getString(R.string.export_data),
+                activity.getString(R.string.export_progress_gathering));
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mRxDisposer.add("home_export_progress",
                 mExportCmd.getProgressFlow()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                progress -> {
-                                    if (mTextBackupProgress != null) {
-                                        mTextBackupProgress.setText(progress);
-                                    }
-                                },
-                                throwable -> {
-                                }
-                        )
+                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        })
         );
-        mCompositeDisposable.add(
+        mRxDisposer.add("home_export_execute",
                 mExportCmd.execute()
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(() -> mNavigator.pop())
                         .subscribe(
                                 zipFile -> {
                                     setLoading(false);
@@ -306,40 +296,28 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         );
     }
 
-    /**
-     * Shows the in-flight export UI: disables the export/import buttons and
-     * restores the last known progress message (null right after a fresh
-     * start, so this simply shows the empty progress view).
-     */
     private void showExportingState() {
         setLoading(true);
-        String lastProgress = mExportSpreadsheetCmd.getLastProgress();
-        if (lastProgress != null && mTextBackupProgress != null) {
-            mTextBackupProgress.setVisibility(View.VISIBLE);
-            mTextBackupProgress.setText(lastProgress);
-        }
     }
 
     private void doExportSpreadsheet(Activity activity) {
         showExportingState();
+        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+                activity.getString(R.string.export_spreadsheet),
+                activity.getString(R.string.export_spreadsheet_progress_writing));
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
         // keyed RxDisposer subscriptions: a re-attach replaces the previous
         // subscription per key instead of stacking duplicates
         mRxDisposer.add("home_export_spreadsheet_progress",
                 mExportSpreadsheetCmd.getProgressFlow()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                progress -> {
-                                    if (mTextBackupProgress != null) {
-                                        mTextBackupProgress.setText(progress);
-                                    }
-                                },
-                                throwable -> {
-                                }
-                        )
+                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        })
         );
         mRxDisposer.add("home_export_spreadsheet_execute",
                 mExportSpreadsheetCmd.execute()
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(() -> mNavigator.pop())
                         .subscribe(
                                 file -> {
                                     setLoading(false);
@@ -364,24 +342,22 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     private void performImport(Activity activity, Uri uri) {
         setLoading(true);
-        mCompositeDisposable.add(
+        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+                activity.getString(R.string.import_data),
+                activity.getString(R.string.import_progress_extracting));
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mRxDisposer.add("home_import_progress",
                 mImportCmd.getProgressFlow()
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(
-                                progress -> {
-                                    if (mTextBackupProgress != null) {
-                                        mTextBackupProgress.setText(progress);
-                                    }
-                                },
-                                throwable -> {
-                                }
-                        )
+                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        })
         );
-        mCompositeDisposable.add(
+        mRxDisposer.add("home_import_execute",
                 Single.fromCallable(() -> mFileHelper.createTempFile("backup_import.aps_backup", uri))
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .flatMap(tempFile -> mImportCmd.execute(tempFile))
                         .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(() -> mNavigator.pop())
                         .subscribe(
                                 count -> {
                                     setLoading(false);
@@ -404,14 +380,6 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
         if (mButtonExportSpreadsheet != null) {
             mButtonExportSpreadsheet.setEnabled(!loading);
-        }
-        if (mTextBackupProgress != null) {
-            if (loading) {
-                mTextBackupProgress.setVisibility(View.VISIBLE);
-                mTextBackupProgress.setText("");
-            } else {
-                mTextBackupProgress.setVisibility(View.GONE);
-            }
         }
     }
 
