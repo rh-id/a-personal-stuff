@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Novas funcziuns:
+* Nova lingua: chinais simplifitgà
+* Exportar tut las datas sco ina tabella XLSX cun pliras folias (dovra Android 8.0+)
+* Dialog da progress mussà durant export ed import
+* Nova pagina da licenzas en l'app cun las bibliotecas open source
+
+Corecziuns:
+* La restauraziun dal backup pudeva en tscherts cas stizzar maletgs restaurads

@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Nýir eiginleikar:
+* Nýtt tungumál: einfölduð kínverska
+* Flytja út öll gögn sem XLSX-töflu með mörgum blöðum (krefst Android 8.0+)
+* Framvindugluggi birtist við útflutning og innflutning
+* Ný leyfissíða í appinu sem sýnir lista yfir opna hugbúnaðarsöfn
+
+Villuleiðréttingar:
+* Endurheimt öryggisafrits gæti í sumum tilfellum eytt endurheimtum myndum

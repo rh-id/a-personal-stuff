@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Nye funksjonar:
+* Nytt språk: forenkla kinesisk
+* Eksporter alle data som eit XLSX-rekneark med fleire ark (krev Android 8.0+)
+* Framdriftsvising visast under eksport og import
+* Ny lisensside i appen som lister opp open kjeldekode-bibliotek
+
+Feilrettingar:
+* Gjenoppretting av tryggleikskopi kunne i nokre høve sletta gjenoppretta bilete

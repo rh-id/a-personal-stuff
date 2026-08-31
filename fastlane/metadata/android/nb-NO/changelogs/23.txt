@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Nye funksjoner:
+* Nytt språk: forenklet kinesisk
+* Eksporter alle data som et XLSX-regneark med flere ark (krever Android 8.0+)
+* Fremdriftsvisning vises under eksport og import
+* Ny lisensside i appen som lister opp åpen kildekode-biblioteker
+
+Feilrettinger:
+* Gjenoppretting av sikkerhetskopi kunne i noen tilfeller slette gjenopprettede bilder

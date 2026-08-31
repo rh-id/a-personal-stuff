@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Uued funktsioonid:
+* Uus keel: lihtsustatud hiina keel
+* Kõigi andmete eksportimine mitme töölehega XLSX-tabelina (nõuab Android 8.0+)
+* Eksportimise ja impordi ajal kuvatakse edenemise dialoogi
+* Uus rakendusesisene litsentside leht avatud lähtekoodiga teekide loendiga
+
+Veaparandused:
+* Varunduse taastamine võis mõnel juhul kustutada taastatud pildid

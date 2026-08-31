@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Fitur Baru:
+* Bahasa baru: Mandarin Sederhana
+* Ekspor semua data sebagai spreadsheet XLSX multi-lembar (membutuhkan Android 8.0+)
+* Dialog progres ditampilkan selama ekspor dan impor
+* Halaman lisensi baru dalam aplikasi yang mencantumkan pustaka open source
+
+Perbaikan:
+* Pemulihan backup dapat menghapus gambar yang dipulihkan dalam beberapa kasus

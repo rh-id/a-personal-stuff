@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Nouvelles fonctionnalités :
+* Nouvelle langue : chinois simplifié
+* Exportation de toutes les données dans un classeur XLSX multi-feuilles (nécessite Android 8.0+)
+* Boîte de dialogue de progression affichée pendant l'exportation et l'importation
+* Nouvelle page de licences dans l'application listant les bibliothèques open source
+
+Corrections :
+* La restauration d'une sauvegarde pouvait supprimer les images restaurées dans certains cas

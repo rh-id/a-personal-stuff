@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Neue Funktionen:
+* Neue Sprache: Vereinfachtes Chinesisch
+* Alle Daten als XLSX-Tabelle mit mehreren Blättern exportieren (erfordert Android 8.0+)
+* Fortschrittsdialog wird während Export und Import angezeigt
+* Neue Lizenzseite in der App, die Open-Source-Bibliotheken auflistet
+
+Fehlerbehebungen:
+* Backup-Restore konnte in einigen Fällen wiederhergestellte Bilder löschen

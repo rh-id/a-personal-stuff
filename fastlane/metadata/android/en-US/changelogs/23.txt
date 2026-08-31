@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Features:
+* New language: Simplified Chinese
+* Export all data as a multi-sheet XLSX spreadsheet (requires Android 8.0+)
+* Live progress dialog shown during export and import
+* New in-app licenses page listing open-source libraries
+
+Fixes:
+* Backup restore could delete restored images in some cases

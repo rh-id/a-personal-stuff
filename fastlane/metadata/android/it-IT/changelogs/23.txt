@@ -1,0 +1,10 @@
+Release 1.9.0+23
+
+Nuove funzionalità:
+* Nuova lingua: cinese semplificato
+* Esportazione di tutti i dati in un foglio di calcolo XLSX multi-foglio (richiede Android 8.0+)
+* Finestra di dialogo di avanzamento mostrata durante esportazione e importazione
+* Nuova pagina delle licenze nell'app che elenca le librerie open source
+
+Correzioni:
+* Il ripristino del backup poteva eliminare le immagini ripristinate in alcuni casi
