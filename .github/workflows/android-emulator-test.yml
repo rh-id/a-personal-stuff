@@ -40,7 +40,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-default-v3
+          key: avd-${{ matrix.api-level }}-default-v4
 
       - name: create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -58,8 +58,9 @@ jobs:
             adb shell setprop dalvik.vm.heapgrowthlimit 256m
             adb shell setprop dalvik.vm.heapsize 512m
             adb shell stop
-            adb shell start
+            adb shell start || true
             n=0; until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done
+            [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]
             echo "Generated AVD snapshot for caching with raised dalvik heap."
 
       - name: run tests
@@ -74,5 +75,5 @@ jobs:
           script: |
             adb shell getprop dalvik.vm.heapgrowthlimit
             adb shell getprop dalvik.vm.heapsize
-            if [ "$(adb shell getprop dalvik.vm.heapgrowthlimit | tr -d '\r')" != "256m" ]; then echo "heap props missing (snapshot load fallback) - re-raising dalvik heap"; adb root; adb wait-for-device; adb shell setprop dalvik.vm.heapgrowthlimit 256m; adb shell setprop dalvik.vm.heapsize 512m; adb shell stop; adb shell start; n=0; until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done; fi
+            if [ "$(adb shell getprop dalvik.vm.heapgrowthlimit | tr -d '\r')" != "256m" ]; then echo "heap props missing (snapshot load fallback) - re-raising dalvik heap"; adb root; adb wait-for-device; adb shell setprop dalvik.vm.heapgrowthlimit 256m; adb shell setprop dalvik.vm.heapsize 512m; adb shell stop; adb shell start || true; n=0; until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done; [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; fi
             ./gradlew connectedCheck
