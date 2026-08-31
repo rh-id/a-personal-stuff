@@ -64,8 +64,8 @@ jobs:
             [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]
             echo "Generated AVD snapshot for caching with raised dalvik heap."
             adb -s emulator-5554 emu kill
-            n=0; until [ -z "$(pgrep -f qemu-system)" ] || [ "$n" -ge 60 ]; do sleep 2; n=$((n+1)); done
-            pkill -9 -f crashpad_handler || true
+            n=0; until [ -z "$(pgrep -f '[q]emu-system')" ] || [ "$n" -ge 60 ]; do sleep 2; n=$((n+1)); done
+            pkill -9 -f '[c]rashpad_handler' || true
 
       - name: run tests
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
@@ -82,5 +82,5 @@ jobs:
             if [ "$(adb shell getprop dalvik.vm.heapgrowthlimit | tr -d '\r')" != "256m" ]; then echo "heap props missing (snapshot load fallback) - re-raising dalvik heap"; n=0; until adb root || [ "$n" -ge 15 ]; do sleep 2; n=$((n+1)); done; adb wait-for-device; adb shell setprop dalvik.vm.heapgrowthlimit 256m; adb shell setprop dalvik.vm.heapsize 512m; adb shell stop; n=0; until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" != "running" ]; do sleep 1; n=$((n+1)); [ "$n" -ge 30 ] && break; done; adb shell start || true; n=0; until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done; [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ]; fi
             ./gradlew connectedCheck
             adb -s emulator-5554 emu kill
-            n=0; until [ -z "$(pgrep -f qemu-system)" ] || [ "$n" -ge 60 ]; do sleep 2; n=$((n+1)); done
-            pkill -9 -f crashpad_handler || true
+            n=0; until [ -z "$(pgrep -f '[q]emu-system')" ] || [ "$n" -ge 60 ]; do sleep 2; n=$((n+1)); done
+            pkill -9 -f '[c]rashpad_handler' || true
