@@ -257,14 +257,19 @@ public class ImportCmd {
             for (ItemMaintenanceImage ie : relatedImages) {
                 ie.id = null;
                 ie.itemMaintenanceId = newId;
+                String oldFileName = null;
+                String newFileName = null;
                 if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    String oldFileName = ie.fileName;
-                    String newFileName = mFileHelper.generateImageFileName();
+                    oldFileName = ie.fileName;
+                    newFileName = mFileHelper.generateImageFileName();
                     ie.fileName = newFileName;
+                }
+                // insert row before copying image files so file helper cleanUp passes never see an orphan file
+                ie.id = mItemMaintenanceDao.insert(ie);
+                if (oldFileName != null) {
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE, oldFileName, newFileName, mItemMaintenanceFileHelper.getItemMaintenanceImageParent());
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnailParent());
                 }
-                ie.id = mItemMaintenanceDao.insert(ie);
                 maintImages.add(ie);
             }
             ItemMaintenanceState maintState = new ItemMaintenanceState();
@@ -292,14 +297,19 @@ public class ImportCmd {
             for (ItemUsageImage ie : relatedImages) {
                 ie.id = null;
                 ie.itemUsageId = newId;
+                String oldFileName = null;
+                String newFileName = null;
                 if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    String oldFileName = ie.fileName;
-                    String newFileName = mFileHelper.generateImageFileName();
+                    oldFileName = ie.fileName;
+                    newFileName = mFileHelper.generateImageFileName();
                     ie.fileName = newFileName;
+                }
+                // insert row before copying image files so file helper cleanUp passes never see an orphan file
+                ie.id = mItemUsageDao.insert(ie);
+                if (oldFileName != null) {
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_USAGE_IMAGE, oldFileName, newFileName, mItemUsageFileHelper.getItemUsageImageParent());
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemUsageFileHelper.getItemUsageImageThumbnailParent());
                 }
-                ie.id = mItemUsageDao.insert(ie);
                 usageImages.add(ie);
             }
             ItemUsageState usageState = new ItemUsageState();
@@ -323,14 +333,19 @@ public class ImportCmd {
             for (ItemPurchaseImage ie : relatedImages) {
                 ie.id = null;
                 ie.itemPurchaseId = newId;
+                String oldFileName = null;
+                String newFileName = null;
                 if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    String oldFileName = ie.fileName;
-                    String newFileName = mFileHelper.generateImageFileName();
+                    oldFileName = ie.fileName;
+                    newFileName = mFileHelper.generateImageFileName();
                     ie.fileName = newFileName;
+                }
+                // insert row before copying image files so file helper cleanUp passes never see an orphan file
+                ie.id = mItemPurchaseDao.insert(ie);
+                if (oldFileName != null) {
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageParent());
                     copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageThumbnailParent());
                 }
-                ie.id = mItemPurchaseDao.insert(ie);
                 purchaseImages.add(ie);
             }
             ItemPurchaseState purchaseState = new ItemPurchaseState();
