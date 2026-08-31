@@ -40,7 +40,7 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ matrix.target }}-v2
+          key: avd-${{ matrix.api-level }}-${{ matrix.target }}-v3
 
       - name: create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
@@ -48,18 +48,38 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -prop dalvik.vm.heapgrowthlimit=256m -prop dalvik.vm.heapsize=512m
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
+          script: |
+            adb root
+            adb wait-for-device
+            adb shell setprop dalvik.vm.heapgrowthlimit 256m
+            adb shell setprop dalvik.vm.heapsize 512m
+            adb shell stop
+            adb shell start
+            n=0
+            until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done
+            echo "Generated AVD snapshot for caching with raised dalvik heap."
 
       - name: run tests
         uses: reactivecircus/android-emulator-runner@a421e43855164a8197daf9d8d40fe71c6996bb0d # v2.38.0
         with:
           api-level: ${{ matrix.api-level }}
           force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -prop dalvik.vm.heapgrowthlimit=256m -prop dalvik.vm.heapsize=512m
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
           script: |
             adb shell getprop dalvik.vm.heapgrowthlimit
             adb shell getprop dalvik.vm.heapsize
+            if [ "$(adb shell getprop dalvik.vm.heapgrowthlimit | tr -d '\r')" != "256m" ]; then
+              echo "heap props missing (snapshot load fallback) - re-raising dalvik heap"
+              adb root
+              adb wait-for-device
+              adb shell setprop dalvik.vm.heapgrowthlimit 256m
+              adb shell setprop dalvik.vm.heapsize 512m
+              adb shell stop
+              adb shell start
+              n=0
+              until [ "$(adb shell getprop init.svc.zygote | tr -d '\r')" = "running" ] && [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = "1" ] && [ -n "$(adb shell pm path android | tr -d '\r')" ] || [ "$n" -ge 60 ]; do sleep 5; n=$((n+1)); done
+            fi
             ./gradlew connectedCheck
