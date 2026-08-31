@@ -697,6 +697,15 @@ public class ExportSpreadsheetIntegrationTest {
             second.assertNoErrors();
             // same File instance — no second run of the export
             assertSame(first.values().get(0), second.values().get(0));
+            // clearInFlight() runs on the POI thread after the terminal event
+            // is delivered (doFinally sits upstream of cache()), so the await
+            // above can win the race against the cleanup: wait for the
+            // in-flight state to clear before asserting (same pattern as
+            // exportProgressFlowAndLastProgress).
+            long deadline = System.currentTimeMillis() + 10_000;
+            while (cmd.isExporting() && System.currentTimeMillis() < deadline) {
+                Thread.sleep(10);
+            }
             assertFalse(cmd.isExporting());
         } finally {
             // cleanup must not depend on the assertions above passing: delete
