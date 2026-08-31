@@ -42,7 +42,7 @@ public class ItemMaintenanceFileHelper {
         cleanUp();
     }
 
-    private void cleanUp() {
+    protected void cleanUp() {
         Future<List<String>> itemMaintenanceImageFileList = mExecutorService.submit(
                 () -> {
                     File imageParent = getItemMaintenanceImageParent();

@@ -100,6 +100,7 @@ public class BackupIntegrationTest {
     private ItemChecklistDatabase mChecklistDb;
     private Provider mProvider;
     private File mTempZipDir;
+    private ExecutorService mExecutorService;
 
     @Before
     public void setUp() {
@@ -132,6 +133,9 @@ public class BackupIntegrationTest {
         }
 
         mProvider = Provider.createProvider(mContext, new TestBackupProviderModule());
+        // capture the provider's executor (a fresh WeightedThreadPool per test)
+        // so tearDown can shut it down
+        mExecutorService = mProvider.get(ExecutorService.class);
     }
 
     @After
@@ -145,6 +149,23 @@ public class BackupIntegrationTest {
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE));
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL));
         deleteRecursive(mTempZipDir);
+        // also wipe the FileHelper cache temp root (<cacheDir>/tmp) where exported
+        // and imported zips live, covering leaked zips and empty temp dirs
+        deleteRecursive(new File(mContext.getCacheDir(), "tmp"));
+
+        // best-effort shared-state reset: cancel WorkManager jobs (process-shared
+        // instance) and stop this test's own executor pool, each guarded so
+        // teardown can never fail a test
+        try {
+            WorkManager.getInstance(mContext).cancelAllWork();
+        } catch (Exception ignored) {
+        }
+        if (mExecutorService != null) {
+            try {
+                mExecutorService.shutdownNow();
+            } catch (Exception ignored) {
+            }
+        }
 
         if (mAppDb != null) {
             mAppDb.close();
@@ -460,7 +481,8 @@ public class BackupIntegrationTest {
         boolean hasReferencedImage = false;
         boolean hasOrphanImage = false;
         for (String entry : entries) {
-            if (entry.startsWith(Constants.FILE_DIR_ITEM_IMAGE) && entry.endsWith("referenced.jpg")) {
+            // exclude the thumbnail subpath since FILE_DIR_ITEM_IMAGE_THUMBNAIL extends FILE_DIR_ITEM_IMAGE
+            if (entry.startsWith(Constants.FILE_DIR_ITEM_IMAGE + "/") && entry.endsWith("referenced.jpg") && !entry.contains("thumbnail")) {
                 hasReferencedImage = true;
             }
             if (entry.startsWith(Constants.FILE_DIR_ITEM_IMAGE) && entry.endsWith("orphan.jpg")) {
@@ -1067,6 +1089,7 @@ public class BackupIntegrationTest {
         mChecklistDb = Room.inMemoryDatabaseBuilder(mContext, ItemChecklistDatabase.class)
                 .allowMainThreadQueries().build();
 
+        // note: this second provider lazily creates its own executor pool which tearDown does not track; the leak is accepted (bounded to one pool per roundTrip run)
         mProvider = Provider.createProvider(mContext, new TestBackupProviderModule());
 
         new ImportCmd(mProvider).execute(zipFile).blockingGet();
@@ -2230,6 +2253,48 @@ public class BackupIntegrationTest {
         file.delete();
     }
 
+    // no-op cleanUp() file helpers: the real helpers fire an async cleanup from
+    // their constructor that can outlive the test, so skip it entirely during tests
+    private static class NoOpCleanUpItemFileHelper extends ItemFileHelper {
+        public NoOpCleanUpItemFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
+    private static class NoOpCleanUpItemMaintenanceFileHelper extends ItemMaintenanceFileHelper {
+        public NoOpCleanUpItemMaintenanceFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
+    private static class NoOpCleanUpItemUsageFileHelper extends ItemUsageFileHelper {
+        public NoOpCleanUpItemUsageFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
+    private static class NoOpCleanUpItemPurchaseFileHelper extends ItemPurchaseFileHelper {
+        public NoOpCleanUpItemPurchaseFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
     private class TestBackupProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
@@ -2249,10 +2314,10 @@ public class BackupIntegrationTest {
             providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
             providerRegistry.register(ItemChecklistChangeNotifier.class, this::getItemChecklistChangeNotifier);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
-            providerRegistry.registerLazy(ItemFileHelper.class, () -> new ItemFileHelper(provider));
-            providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new ItemMaintenanceFileHelper(provider));
-            providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new ItemUsageFileHelper(provider));
-            providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new ItemPurchaseFileHelper(provider));
+            providerRegistry.registerLazy(ItemFileHelper.class, () -> new NoOpCleanUpItemFileHelper(provider));
+            providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new NoOpCleanUpItemMaintenanceFileHelper(provider));
+            providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new NoOpCleanUpItemUsageFileHelper(provider));
+            providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new NoOpCleanUpItemPurchaseFileHelper(provider));
         }
 
         private ExecutorService getExecutorService() {
