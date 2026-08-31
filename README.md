@@ -738,7 +738,7 @@ Located in `.github/workflows/`, the project has three main pipelines:
 
 3.  **Emulator Test (`android-emulator-test.yml`)**:
     *   Triggers on push/PR to `master`
-    *   Runs `./gradlew connectedCheck` on an Android emulator matrix — API levels 23 and 29, `default` and `google_apis` targets — with KVM and AVD caching
+    *   Runs `./gradlew connectedCheck` on an Android emulator matrix — API levels 23, 26, 31 and 36 on the `default` target (x86_64) — with KVM and AVD caching (snapshot pre-warmed with a raised dalvik heap, hard-gated emulator readiness checks, and emulator/`crashpad_handler` processes killed after runs to prevent runner pipe hangs)
 
 ### Fastlane
 The `fastlane/` directory contains metadata for store listings:
