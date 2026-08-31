@@ -14,6 +14,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -81,6 +82,7 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 import androidx.work.WorkManager;
 import androidx.work.testing.WorkManagerTestInitHelper;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
@@ -858,45 +860,65 @@ public class BackupIntegrationTest {
     public void roundTrip() throws Exception {
         Date now = new Date();
 
+        // capture every payload written below so that the files restored by
+        // ImportCmd can be byte-compared against the originals after import
+        Map<File, byte[]> originalPayloads = new HashMap<>();
+
         File itemImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_IMAGE);
         itemImageDir.mkdirs();
         File itemImageFile = new File(itemImageDir, "roundtrip.jpg");
-        writeBytes(itemImageFile, "roundtrip-item-data".getBytes());
+        byte[] itemImagePayload = "roundtrip-item-data".getBytes();
+        originalPayloads.put(itemImageFile, itemImagePayload);
+        writeBytes(itemImageFile, itemImagePayload);
 
         File itemThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL);
         itemThumbDir.mkdirs();
         File itemThumbFile = new File(itemThumbDir, "roundtrip.jpg");
-        writeBytes(itemThumbFile, "roundtrip-item-thumb".getBytes());
+        byte[] itemThumbPayload = "roundtrip-item-thumb".getBytes();
+        originalPayloads.put(itemThumbFile, itemThumbPayload);
+        writeBytes(itemThumbFile, itemThumbPayload);
 
         File maintImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE);
         maintImageDir.mkdirs();
         File maintImageFile = new File(maintImageDir, "roundtrip_maint.jpg");
-        writeBytes(maintImageFile, "roundtrip-maint-data".getBytes());
+        byte[] maintImagePayload = "roundtrip-maint-data".getBytes();
+        originalPayloads.put(maintImageFile, maintImagePayload);
+        writeBytes(maintImageFile, maintImagePayload);
 
         File maintThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL);
         maintThumbDir.mkdirs();
         File maintThumbFile = new File(maintThumbDir, "roundtrip_maint.jpg");
-        writeBytes(maintThumbFile, "roundtrip-maint-thumb".getBytes());
+        byte[] maintThumbPayload = "roundtrip-maint-thumb".getBytes();
+        originalPayloads.put(maintThumbFile, maintThumbPayload);
+        writeBytes(maintThumbFile, maintThumbPayload);
 
         File usageImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE);
         usageImageDir.mkdirs();
         File usageImageFile = new File(usageImageDir, "roundtrip_usage.jpg");
-        writeBytes(usageImageFile, "roundtrip-usage-data".getBytes());
+        byte[] usageImagePayload = "roundtrip-usage-data".getBytes();
+        originalPayloads.put(usageImageFile, usageImagePayload);
+        writeBytes(usageImageFile, usageImagePayload);
 
         File usageThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL);
         usageThumbDir.mkdirs();
         File usageThumbFile = new File(usageThumbDir, "roundtrip_usage.jpg");
-        writeBytes(usageThumbFile, "roundtrip-usage-thumb".getBytes());
+        byte[] usageThumbPayload = "roundtrip-usage-thumb".getBytes();
+        originalPayloads.put(usageThumbFile, usageThumbPayload);
+        writeBytes(usageThumbFile, usageThumbPayload);
 
         File purchaseImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE);
         purchaseImageDir.mkdirs();
         File purchaseImageFile = new File(purchaseImageDir, "roundtrip_purchase.jpg");
-        writeBytes(purchaseImageFile, "roundtrip-purchase-data".getBytes());
+        byte[] purchaseImagePayload = "roundtrip-purchase-data".getBytes();
+        originalPayloads.put(purchaseImageFile, purchaseImagePayload);
+        writeBytes(purchaseImageFile, purchaseImagePayload);
 
         File purchaseThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL);
         purchaseThumbDir.mkdirs();
         File purchaseThumbFile = new File(purchaseThumbDir, "roundtrip_purchase.jpg");
-        writeBytes(purchaseThumbFile, "roundtrip-purchase-thumb".getBytes());
+        byte[] purchaseThumbPayload = "roundtrip-purchase-thumb".getBytes();
+        originalPayloads.put(purchaseThumbFile, purchaseThumbPayload);
+        writeBytes(purchaseThumbFile, purchaseThumbPayload);
 
         ItemState itemState = new ItemState();
         Item item = new Item();
@@ -1074,6 +1096,9 @@ public class BackupIntegrationTest {
         File restoredItemThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL), restoredItemState.getItemImages().get(0).fileName);
         assertTrue(restoredItemThumb.exists());
 
+        assertRestoredFileMatches(originalPayloads.get(itemImageFile), restoredItemImage);
+        assertRestoredFileMatches(originalPayloads.get(itemThumbFile), restoredItemThumb);
+
         assertEquals(1, restoredItemState.getItemTags().size());
         assertEquals("roundtrip", restoredItemState.getItemTags().first().tag);
 
@@ -1097,6 +1122,8 @@ public class BackupIntegrationTest {
         assertTrue(restoredMaintImage.exists());
         File restoredMaintThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL), maintImages.get(0).fileName);
         assertTrue(restoredMaintThumb.exists());
+        assertRestoredFileMatches(originalPayloads.get(maintImageFile), restoredMaintImage);
+        assertRestoredFileMatches(originalPayloads.get(maintThumbFile), restoredMaintThumb);
 
         List<ItemUsage> usages = mUsageDb.itemUsageDao().findAllItemUsages();
         assertEquals(1, usages.size());
@@ -1115,6 +1142,8 @@ public class BackupIntegrationTest {
         assertTrue(restoredUsageImage.exists());
         File restoredUsageThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL), usageImages.get(0).fileName);
         assertTrue(restoredUsageThumb.exists());
+        assertRestoredFileMatches(originalPayloads.get(usageImageFile), restoredUsageImage);
+        assertRestoredFileMatches(originalPayloads.get(usageThumbFile), restoredUsageThumb);
 
         List<ItemPurchase> purchases = mPurchaseDb.itemPurchaseDao().findAllItemPurchases();
         assertEquals(1, purchases.size());
@@ -1130,6 +1159,8 @@ public class BackupIntegrationTest {
         assertTrue(restoredPurchaseImage.exists());
         File restoredPurchaseThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL), purchaseImages.get(0).fileName);
         assertTrue(restoredPurchaseThumb.exists());
+        assertRestoredFileMatches(originalPayloads.get(purchaseImageFile), restoredPurchaseImage);
+        assertRestoredFileMatches(originalPayloads.get(purchaseThumbFile), restoredPurchaseThumb);
 
         List<ItemReminder> reminders = mReminderDb.itemReminderDao().findAllItemReminders();
         assertEquals(1, reminders.size());
@@ -2157,6 +2188,21 @@ public class BackupIntegrationTest {
         return entries;
     }
 
+    private byte[] readBytes(File file) throws Exception {
+        FileInputStream fis = new FileInputStream(file);
+        try {
+            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+            byte[] chunk = new byte[4096];
+            int read;
+            while ((read = fis.read(chunk)) != -1) {
+                buffer.write(chunk, 0, read);
+            }
+            return buffer.toByteArray();
+        } finally {
+            fis.close();
+        }
+    }
+
     private void writeBytes(File file, byte[] data) throws Exception {
         FileOutputStream fos = new FileOutputStream(file);
         try {
@@ -2164,6 +2210,12 @@ public class BackupIntegrationTest {
         } finally {
             fos.close();
         }
+    }
+
+    private void assertRestoredFileMatches(byte[] expectedPayload, File restoredFile) throws Exception {
+        assertTrue("Restored file not found: " + restoredFile.getAbsolutePath(), restoredFile.exists());
+        assertArrayEquals("Restored file content mismatch: " + restoredFile.getAbsolutePath(),
+                expectedPayload, readBytes(restoredFile));
     }
 
     private void deleteRecursive(File file) {
