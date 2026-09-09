@@ -1,15 +1,14 @@
 package m.co.rh.id.a_personal_stuff.item_reminder.workmanager.worker;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.PackageManager;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.work.Worker;
 import androidx.work.WorkerParameters;
 
 import m.co.rh.id.a_personal_stuff.base.BaseApplication;
+import m.co.rh.id.a_personal_stuff.base.util.NotificationPermissionHelper;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.IItemReminderNotificationHandler;
@@ -23,6 +22,7 @@ public class ItemReminderNotificationWorker extends Worker {
     }
 
     @NonNull
+    @SuppressLint("MissingPermission") // NotificationPermissionHelper.canPostNotifications is the permission check
     @Override
     public Result doWork() {
         try {
@@ -32,7 +32,7 @@ public class ItemReminderNotificationWorker extends Worker {
             IItemReminderNotificationHandler notificationHandler = provider.get(IItemReminderNotificationHandler.class);
             ItemReminder itemReminder = itemReminderDao.findItemReminderById(itemReminderId);
             if (itemReminder != null) {
-                if (ActivityCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                if (NotificationPermissionHelper.canPostNotifications(getApplicationContext())) {
                     notificationHandler.postItemReminderNotification(itemReminder);
                 }
             }

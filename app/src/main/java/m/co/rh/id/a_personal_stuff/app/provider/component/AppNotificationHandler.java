@@ -1,14 +1,13 @@
 package m.co.rh.id.a_personal_stuff.app.provider.component;
 
-import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
@@ -28,6 +27,7 @@ import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.AndroidNotification;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.repository.AndroidNotificationRepo;
+import m.co.rh.id.a_personal_stuff.base.util.NotificationPermissionHelper;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.IItemReminderNotificationHandler;
@@ -99,9 +99,10 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
         return null;
     }
 
+    @SuppressLint("MissingPermission") // NotificationPermissionHelper.canPostNotifications is the permission check
     @Override
     public void postItemReminderNotification(ItemReminder itemReminder) {
-        if (ActivityCompat.checkSelfPermission(mAppContext, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+        if (!NotificationPermissionHelper.canPostNotifications(mAppContext)) {
             return;
         }
         mLock.lock();
