@@ -37,7 +37,7 @@ public class BackupData {
     private static final String KEY_ITEM_CHECKLISTS = "itemChecklists";
     private static final String KEY_ITEM_CHECKLIST_ITEMS = "itemChecklistItems";
 
-    private static final int CURRENT_VERSION = 1;
+    private static final int CURRENT_VERSION = 2;
 
     public int version;
     public long exportedAt;
@@ -116,6 +116,7 @@ public class BackupData {
             obj.put("id", item.id);
             obj.put("name", item.name);
             obj.put("amount", item.amount);
+            obj.put("minAmount", item.minAmount != null ? item.minAmount : JSONObject.NULL);
             obj.put("price", item.price != null ? item.price.toString() : JSONObject.NULL);
             obj.put("description", item.description);
             obj.put("barcode", item.barcode);
@@ -136,6 +137,7 @@ public class BackupData {
             item.id = obj.optLong("id", 0);
             item.name = obj.optString("name", null);
             item.amount = obj.optInt("amount", 0);
+            item.minAmount = obj.isNull("minAmount") ? null : obj.optInt("minAmount");
             String priceStr = obj.isNull("price") ? null : obj.optString("price", null);
             item.price = priceStr != null && !priceStr.isEmpty() ? new BigDecimal(priceStr) : null;
             item.description = obj.optString("description", null);

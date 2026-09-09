@@ -9,6 +9,7 @@ import m.co.rh.id.a_personal_stuff.base.dao.AndroidNotificationDao;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.base.room.DbMigration;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
@@ -34,6 +35,7 @@ public class DatabaseProviderModule implements ProviderModule {
         providerRegistry.registerAsync(AppDatabase.class, () ->
                 Room.databaseBuilder(appContext,
                                 AppDatabase.class, mDbName)
+                        .addMigrations(DbMigration.getAllMigrations())
                         .build());
         // register Dao separately to decouple from AppDatabase
         providerRegistry.registerAsync(AndroidNotificationDao.class, () -> provider.get(AppDatabase.class)

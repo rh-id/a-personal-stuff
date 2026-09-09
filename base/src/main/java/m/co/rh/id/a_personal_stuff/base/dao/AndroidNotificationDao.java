@@ -5,6 +5,8 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 
+import java.util.List;
+
 import m.co.rh.id.a_personal_stuff.base.entity.AndroidNotification;
 
 @Dao
@@ -16,11 +18,17 @@ public abstract class AndroidNotificationDao {
     @Query("SELECT * FROM android_notification WHERE group_key=:groupKey AND ref_id=:refId")
     public abstract AndroidNotification findByGroupTagAndRefId(String groupKey, Long refId);
 
+    @Query("SELECT * FROM android_notification WHERE group_key=:groupKey AND ref_id=:refId")
+    public abstract List<AndroidNotification> findAllByGroupTagAndRefId(String groupKey, Long refId);
+
     @Query("SELECT COUNT(id) FROM android_notification")
     public abstract long count();
 
     @Query("DELETE FROM android_notification WHERE request_id = :requestId")
     public abstract void deleteByRequestId(int requestId);
+
+    @Query("DELETE FROM android_notification WHERE group_key = :groupKey AND ref_id = :refId")
+    public abstract int deleteByGroupTagAndRefId(String groupKey, Long refId);
 
     @Insert
     public abstract long insert(AndroidNotification androidNotification);

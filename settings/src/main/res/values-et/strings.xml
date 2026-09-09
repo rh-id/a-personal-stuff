@@ -11,5 +11,12 @@
     <string name="follow_system">Järgi süsteemi</string>
     <string name="light_mode">Hele režiim</string>
     <string name="dark_mode">Tume režiim</string>
+    <string name="alert_settings">Hoiatused</string>
+    <string name="expiry_date_alerts">Aegumiskuupäeva hoiatused</string>
+    <string name="low_stock_alerts">Madala laoseisu hoiatused</string>
+    <string name="alert_lead_days_3">3 päeva</string>
+    <string name="alert_lead_days_7">7 päeva</string>
+    <string name="alert_lead_days_14">14 päeva</string>
+    <string name="alert_notify_within">Teavita ajavahemikus</string>
     <string name="settings">Seaded</string>
 </resources>

@@ -1,24 +1,36 @@
 package m.co.rh.id.a_personal_stuff.app.ui.page;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.os.ConfigurationCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.provider.command.DashboardCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_personal_stuff.app.ui.model.DashboardData;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
+import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -31,6 +43,7 @@ import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
+import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsageDetailPage;
 import m.co.rh.id.alogger.ILogger;
@@ -59,6 +72,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient AppNotificationHandler mAppNotificationHandler;
     private transient RxDisposer mRxDisposer;
     private transient QueryItemCmd mQueryItemCmd;
+    private transient DashboardCmd mDashboardCmd;
     private transient ExportCmd mExportCmd;
     private transient ExportSpreadsheetCmd mExportSpreadsheetCmd;
     private transient ImportCmd mImportCmd;
@@ -70,6 +84,25 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient Button mButtonExport;
     private transient Button mButtonImport;
     private transient Button mButtonExportSpreadsheet;
+    private transient View mCardDashboardInventory;
+    private transient View mCardDashboardReminders;
+    private transient TextView mTextDashboardInventoryCount;
+    private transient TextView mTextDashboardInventoryValue;
+    private transient View mContainerDashboardLowStock;
+    private transient View mContainerDashboardExpiring;
+    private transient View mContainerDashboardExpiredGroup;
+    private transient View mContainerDashboardExpiringGroup;
+    private transient View mDividerDashboardLowStock;
+    private transient View mDividerDashboardExpiring;
+    private transient TextView mTextDashboardExpiringSummary;
+    private transient TextView mTextDashboardExpiredSamples;
+    private transient TextView mTextDashboardExpiringSoonSummary;
+    private transient TextView mTextDashboardExpiringSamples;
+    private transient TextView mTextDashboardLowStockSummary;
+    private transient TextView mTextDashboardLowStockSamples;
+    private transient TextView mTextDashboardRemindersSummary;
+    private transient TextView mTextDashboardRemindersSamples;
+    private transient Locale mLocale;
 
     public HomePage() {
         mAppBarSV = new AppBarSV();
@@ -82,6 +115,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mAppNotificationHandler = mSvProvider.get(AppNotificationHandler.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
+        mDashboardCmd = mSvProvider.get(DashboardCmd.class);
         mExportCmd = mSvProvider.get(ExportCmd.class);
         mExportSpreadsheetCmd = mSvProvider.get(ExportSpreadsheetCmd.class);
         mImportCmd = mSvProvider.get(ImportCmd.class);
@@ -148,8 +182,34 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         if (mExportSpreadsheetCmd.isExporting()) {
             showExportingState();
         }
+        mLocale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
+        mCardDashboardInventory = rootLayout.findViewById(R.id.card_dashboard_inventory);
+        mCardDashboardInventory.setOnClickListener(this);
+        mCardDashboardReminders = rootLayout.findViewById(R.id.card_dashboard_reminders);
+        mCardDashboardReminders.setOnClickListener(this);
+        mTextDashboardInventoryCount = rootLayout.findViewById(R.id.text_dashboard_inventory_count);
+        mTextDashboardInventoryValue = rootLayout.findViewById(R.id.text_dashboard_inventory_value);
+        mContainerDashboardLowStock = rootLayout.findViewById(R.id.container_dashboard_low_stock);
+        mContainerDashboardLowStock.setOnClickListener(this);
+        mContainerDashboardExpiring = rootLayout.findViewById(R.id.container_dashboard_expiring);
+        mContainerDashboardExpiring.setOnClickListener(this);
+        mContainerDashboardExpiredGroup = rootLayout.findViewById(R.id.container_dashboard_expired_group);
+        mContainerDashboardExpiringGroup = rootLayout.findViewById(R.id.container_dashboard_expiring_group);
+        mDividerDashboardLowStock = rootLayout.findViewById(R.id.divider_dashboard_low_stock);
+        mDividerDashboardExpiring = rootLayout.findViewById(R.id.divider_dashboard_expiring);
+        mTextDashboardExpiringSummary = rootLayout.findViewById(R.id.text_dashboard_expiring_summary);
+        mTextDashboardExpiredSamples = rootLayout.findViewById(R.id.text_dashboard_expired_samples);
+        mTextDashboardExpiringSoonSummary = rootLayout.findViewById(R.id.text_dashboard_expiring_soon_summary);
+        mTextDashboardExpiringSamples = rootLayout.findViewById(R.id.text_dashboard_expiring_samples);
+        mTextDashboardLowStockSummary = rootLayout.findViewById(R.id.text_dashboard_low_stock_summary);
+        mTextDashboardLowStockSamples = rootLayout.findViewById(R.id.text_dashboard_low_stock_samples);
+        mTextDashboardRemindersSummary = rootLayout.findViewById(R.id.text_dashboard_reminders_summary);
+        mTextDashboardRemindersSamples = rootLayout.findViewById(R.id.text_dashboard_reminders_samples);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, container));
+        // An item can cross its expiry boundary (or a reminder pass) while the
+        // process is alive without a notifier event, so recompute on each attach
+        mDashboardCmd.refresh();
         mRxDisposer.add("createView_onNotificationEvent",
                 mAppNotificationHandler.getItemReminderFlow()
                         .map(itemReminder -> mQueryItemCmd
@@ -167,6 +227,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         ItemsPage.Args.showItem(itemState.getItemId()));
                             }
                         }));
+        mRxDisposer.add("createView_onInventoryAlert",
+                mAppNotificationHandler.getInventoryAlertFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(requestId -> {
+                            NavRoute currentRoute = mNavigator.getCurrentRoute();
+                            if (!Routes.ITEMS_PAGE.equals(currentRoute.getRouteName())) {
+                                mNavigator.push(Routes.ITEMS_PAGE);
+                            }
+                        }));
+        mRxDisposer.add("createView_onDashboardData",
+                mDashboardCmd.getDashboardFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(this::renderDashboard));
         return rootLayout;
     }
 
@@ -184,6 +257,25 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mButtonExport = null;
         mButtonImport = null;
         mButtonExportSpreadsheet = null;
+        mCardDashboardInventory = null;
+        mCardDashboardReminders = null;
+        mTextDashboardInventoryCount = null;
+        mTextDashboardInventoryValue = null;
+        mContainerDashboardLowStock = null;
+        mContainerDashboardExpiring = null;
+        mContainerDashboardExpiredGroup = null;
+        mContainerDashboardExpiringGroup = null;
+        mDividerDashboardLowStock = null;
+        mDividerDashboardExpiring = null;
+        mTextDashboardExpiringSummary = null;
+        mTextDashboardExpiredSamples = null;
+        mTextDashboardExpiringSoonSummary = null;
+        mTextDashboardExpiringSamples = null;
+        mTextDashboardLowStockSummary = null;
+        mTextDashboardLowStockSamples = null;
+        mTextDashboardRemindersSummary = null;
+        mTextDashboardRemindersSamples = null;
+        mLocale = null;
     }
 
     @Override
@@ -263,7 +355,130 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             doExportSpreadsheet((Activity) view.getContext());
         } else if (id == R.id.button_import) {
             doImport((Activity) view.getContext());
+        } else if (id == R.id.card_dashboard_inventory
+                || id == R.id.container_dashboard_low_stock
+                || id == R.id.container_dashboard_expiring) {
+            mNavigator.push(Routes.ITEMS_PAGE);
+        } else if (id == R.id.card_dashboard_reminders) {
+            mNavigator.push(Routes.ITEM_REMINDERS_PAGE);
         }
+    }
+
+    private void renderDashboard(DashboardData dashboardData) {
+        // the flow may still deliver after this view is disposed (the
+        // subscription is only replaced on the next createView)
+        if (mCardDashboardInventory == null) {
+            return;
+        }
+        Context context = mCardDashboardInventory.getContext();
+        mTextDashboardInventoryCount.setText(String.valueOf(dashboardData.totalItems));
+        if (dashboardData.inventoryValue != null) {
+            NumberFormat numberFormat = NumberFormat.getNumberInstance(mLocale);
+            numberFormat.setMaximumFractionDigits(2);
+            mTextDashboardInventoryValue.setText(
+                    numberFormat.format(dashboardData.inventoryValue));
+        } else {
+            mTextDashboardInventoryValue.setText("-");
+        }
+        int expiringTotal = dashboardData.expiredCount + dashboardData.expiringCount;
+        if (expiringTotal > 0) {
+            mTextDashboardExpiringSummary.setText(
+                    String.valueOf(dashboardData.expiredCount));
+            mTextDashboardExpiredSamples.setText(
+                    joinExpiringSamples(dashboardData.expiredSamples));
+            mTextDashboardExpiringSoonSummary.setText(
+                    String.valueOf(dashboardData.expiringCount));
+            mTextDashboardExpiringSamples.setText(
+                    joinExpiringSamples(dashboardData.expiringSamples));
+            mContainerDashboardExpiring.setVisibility(View.VISIBLE);
+        } else {
+            mContainerDashboardExpiring.setVisibility(View.GONE);
+        }
+        if (dashboardData.expiredCount > 0) {
+            mContainerDashboardExpiredGroup.setVisibility(View.VISIBLE);
+        } else {
+            mContainerDashboardExpiredGroup.setVisibility(View.GONE);
+        }
+        if (dashboardData.expiringCount > 0) {
+            mContainerDashboardExpiringGroup.setVisibility(View.VISIBLE);
+        } else {
+            mContainerDashboardExpiringGroup.setVisibility(View.GONE);
+        }
+        if (dashboardData.lowStockCount > 0) {
+            mTextDashboardLowStockSummary.setText(
+                    String.valueOf(dashboardData.lowStockCount));
+            mTextDashboardLowStockSamples.setText(
+                    joinLowStockSamples(context, dashboardData.lowStockSamples));
+            mContainerDashboardLowStock.setVisibility(View.VISIBLE);
+            mDividerDashboardLowStock.setVisibility(View.VISIBLE);
+        } else {
+            mContainerDashboardLowStock.setVisibility(View.GONE);
+            mDividerDashboardLowStock.setVisibility(View.GONE);
+        }
+        if (dashboardData.lowStockCount > 0 && expiringTotal > 0) {
+            mDividerDashboardExpiring.setVisibility(View.VISIBLE);
+        } else {
+            mDividerDashboardExpiring.setVisibility(View.GONE);
+        }
+        if (dashboardData.upcomingReminders.isEmpty()) {
+            mTextDashboardRemindersSummary.setText(
+                    context.getString(R.string.dashboard_no_upcoming_reminders));
+            mTextDashboardRemindersSamples.setText("");
+            mCardDashboardReminders.setVisibility(View.GONE);
+        } else {
+            mTextDashboardRemindersSummary.setText(context.getString(
+                    R.string.dashboard_upcoming_reminders_,
+                    dashboardData.upcomingReminderCount));
+            mTextDashboardRemindersSamples.setText(
+                    joinReminderSamples(dashboardData.upcomingReminders));
+            mCardDashboardReminders.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private String joinExpiringSamples(List<Item> items) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", mLocale);
+        List<String> samples = new ArrayList<>();
+        if (items != null) {
+            for (Item item : items) {
+                if (item.expiredDateTime != null) {
+                    samples.add(item.name + " — " + dateFormat.format(item.expiredDateTime));
+                } else {
+                    samples.add(item.name);
+                }
+            }
+        }
+        return TextUtils.join("\n", samples);
+    }
+
+    private String joinLowStockSamples(Context context, List<Item> items) {
+        List<String> samples = new ArrayList<>();
+        if (items != null) {
+            for (Item item : items) {
+                if (item.minAmount != null) {
+                    samples.add(context.getString(R.string.dashboard_low_stock_item_,
+                            item.name, item.minAmount));
+                } else {
+                    samples.add(item.name);
+                }
+            }
+        }
+        return TextUtils.join("\n", samples);
+    }
+
+    private String joinReminderSamples(List<ItemReminder> itemReminders) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM", mLocale);
+        List<String> samples = new ArrayList<>();
+        if (itemReminders != null) {
+            for (ItemReminder itemReminder : itemReminders) {
+                if (itemReminder.reminderDateTime != null) {
+                    samples.add(itemReminder.message + " — "
+                            + dateFormat.format(itemReminder.reminderDateTime));
+                } else {
+                    samples.add(itemReminder.message);
+                }
+            }
+        }
+        return TextUtils.join("\n", samples);
     }
 
     private void doExport(Activity activity) {

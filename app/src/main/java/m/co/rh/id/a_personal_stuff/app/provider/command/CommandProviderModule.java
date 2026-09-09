@@ -12,6 +12,12 @@ import m.co.rh.id.aprovider.ProviderRegistry;
 public class CommandProviderModule implements ProviderModule {
     @Override
     public void provides(ProviderRegistry providerRegistry, Provider provider) {
+        // Page-scoped lazy creation (the PagedItemCmd pattern): this shared module is
+        // registered into every nested provider (including every item card's), so
+        // registerAsync here would eagerly instantiate a full-stats DashboardCmd — with its
+        // DB reads and notifier subscriptions — once per provider. Lazy defers creation
+        // until a page actually requests it (currently only HomePage).
+        providerRegistry.registerLazy(DashboardCmd.class, () -> new DashboardCmd(provider));
         providerRegistry.registerLazy(NewItemCmd.class, () -> new NewItemCmd(provider));
         providerRegistry.registerLazy(UpdateItemCmd.class, () -> new UpdateItemCmd(provider));
         providerRegistry.registerLazy(DeleteItemCmd.class, () -> new DeleteItemCmd(provider));

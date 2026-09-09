@@ -55,6 +55,14 @@ public class ItemState implements Serializable, Cloneable {
         return getItem().amount;
     }
 
+    public void setItemMinAmount(Integer minAmount) {
+        getItem().minAmount = minAmount;
+    }
+
+    public Integer getItemMinAmount() {
+        return getItem().minAmount;
+    }
+
     public void updateItemExpiredDateTime(Date selectedDate) {
         Item item = getItem();
         item.expiredDateTime = selectedDate;
@@ -106,10 +114,10 @@ public class ItemState implements Serializable, Cloneable {
      * (item id, image id/itemId, tag id/itemId) so that re-inserting produces
      * brand-new rows instead of colliding with the source rows (Room's
      * autoGenerate inserts a provided id as-is). The created/updated timestamps
-     * are reset to now as well, so the new item is distinguishable from the
-     * source in lists that key on createdDateTime. Field values such as
-     * barcode, name, amount, price, description and expiredDateTime are copied
-     * as-is for the user to review and edit before saving.
+      * are reset to now as well, so the new item is distinguishable from the
+      * source in lists that key on createdDateTime. Field values such as
+      * barcode, name, amount, minAmount, price, description and expiredDateTime
+      * are copied as-is for the user to review and edit before saving.
      */
     public ItemState cloneForDuplicate() {
         ItemState clone = new ItemState();

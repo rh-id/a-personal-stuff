@@ -3,6 +3,7 @@ package m.co.rh.id.a_personal_stuff.base.repository;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import m.co.rh.id.a_personal_stuff.base.dao.AndroidNotificationDao;
@@ -36,6 +37,10 @@ public class AndroidNotificationRepo {
         return mAndroidNotificationDao.findByGroupTagAndRefId(groupKey, refId);
     }
 
+    public synchronized List<AndroidNotification> findAllByGroupTagAndRefId(String groupKey, Long refId) {
+        return mAndroidNotificationDao.findAllByGroupTagAndRefId(groupKey, refId);
+    }
+
     public synchronized void insertNotification(AndroidNotification androidNotification) {
         androidNotification.requestId = mRequestId.getAndIncrement();
         androidNotification.id = mAndroidNotificationDao.insert(androidNotification);
@@ -45,6 +50,10 @@ public class AndroidNotificationRepo {
 
     public synchronized void deleteNotificationByRequestId(int requestId) {
         mAndroidNotificationDao.deleteByRequestId(requestId);
+    }
+
+    public synchronized int deleteByGroupTagAndRefId(String groupKey, Long refId) {
+        return mAndroidNotificationDao.deleteByGroupTagAndRefId(groupKey, refId);
     }
 
     public synchronized void deleteNotification(AndroidNotification androidNotification) {

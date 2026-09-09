@@ -105,8 +105,10 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     private ItemState mItemState;
 
     private DateFormat mDateFormat;
+    private transient EditText mInputMinAmount;
     private transient TextWatcher mNameTextWatcher;
     private transient TextWatcher mAmountTextWatcher;
+    private transient TextWatcher mMinAmountTextWatcher;
     private transient TextWatcher mPriceTextWatcher;
     private transient TextWatcher mDescriptionTextWatcher;
     private transient TextWatcher mBarcodeTextWatcher;
@@ -186,6 +188,44 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                 }
                 mItemState.setItemAmount(amount);
                 mNewItemCmd.valid(mItemState);
+            }
+        };
+        mMinAmountTextWatcher = new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // leave blank
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                String s = editable.toString();
+                Integer minAmount = null;
+                boolean parseFailed = false;
+                if (!s.trim().isEmpty()) {
+                    try {
+                        minAmount = Integer.parseInt(s.trim());
+                    } catch (NumberFormatException e) {
+                        parseFailed = true;
+                        mLogger.d(TAG, "Failed to set min amount, string val: " + s, e);
+                    }
+                }
+                mItemState.setItemMinAmount(minAmount);
+                if (parseFailed) {
+                    // valid() treats a null min amount as valid and would clear
+                    // the error, so surface the parse failure here until the
+                    // value parses again and valid() runs
+                    if (mInputMinAmount != null) {
+                        mInputMinAmount.setError(mSvProvider.getContext()
+                                .getString(R.string.min_amount_must_be_zero_or_more));
+                    }
+                } else {
+                    mNewItemCmd.valid(mItemState);
+                }
             }
         };
         mPriceTextWatcher = new TextWatcher() {
@@ -289,6 +329,9 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         inputName.addTextChangedListener(mNameTextWatcher);
         EditText inputAmount = rootLayout.findViewById(R.id.input_text_amount);
         inputAmount.addTextChangedListener(mAmountTextWatcher);
+        EditText inputMinAmount = rootLayout.findViewById(R.id.input_text_min_amount);
+        mInputMinAmount = inputMinAmount;
+        inputMinAmount.addTextChangedListener(mMinAmountTextWatcher);
         EditText inputPrice = rootLayout.findViewById(R.id.input_text_price);
         inputPrice.addTextChangedListener(mPriceTextWatcher);
         EditText inputDescription = rootLayout.findViewById(R.id.input_text_description);
@@ -333,6 +376,14 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                         .subscribe(item -> {
                             inputName.setText(item.name);
                             inputAmount.setText(String.valueOf(item.amount));
+                            if (item.minAmount != null) {
+                                String minAmount = String.valueOf(item.minAmount);
+                                if (!minAmount.contentEquals(inputMinAmount.getText())) {
+                                    inputMinAmount.setText(minAmount);
+                                }
+                            } else if (inputMinAmount.getText().length() > 0) {
+                                inputMinAmount.setText(null);
+                            }
                             if (item.price != null) {
                                 inputPrice.setText(NumberFormat.getInstance(locale)
                                         .format(item.price));
@@ -477,6 +528,15 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                                 inputAmount.setError(null);
                             }
                         }));
+        mRxDisposer.add("createView_onItemMinAmountValid",
+                mNewItemCmd.getMinAmountValidFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(s -> {
+                            if (!s.isEmpty()) {
+                                inputMinAmount.setError(s);
+                            } else {
+                                inputMinAmount.setError(null);
+                            }
+                        }));
         return rootLayout;
     }
 
@@ -490,6 +550,7 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         mAppBarSV = null;
         mImageSV.dispose(activity);
         mImageSV = null;
+        mInputMinAmount = null;
         if (mCompositeDisposable != null) {
             mCompositeDisposable.dispose();
             mCompositeDisposable = null;

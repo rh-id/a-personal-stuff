@@ -12,7 +12,7 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 
 @Database(entities = {AndroidNotification.class,
         Item.class, ItemImage.class, ItemTag.class},
-        version = 1)
+        version = 2)
 public abstract class AppDatabase extends RoomDatabase {
     public abstract AndroidNotificationDao androidNotificationDao();
 

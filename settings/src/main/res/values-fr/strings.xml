@@ -11,5 +11,12 @@
     <string name="follow_system">Suivre le système</string>
     <string name="light_mode">Mode clair</string>
     <string name="dark_mode">Mode sombre</string>
+    <string name="alert_settings">Alertes</string>
+    <string name="expiry_date_alerts">Alertes de date d\'expiration</string>
+    <string name="low_stock_alerts">Alertes de stock faible</string>
+    <string name="alert_lead_days_3">3 jours</string>
+    <string name="alert_lead_days_7">7 jours</string>
+    <string name="alert_lead_days_14">14 jours</string>
+    <string name="alert_notify_within">Alerter sous</string>
     <string name="settings">Paramètres</string>
 </resources>

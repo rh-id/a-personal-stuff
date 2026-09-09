@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Tanggal pengingat</string>
     <string name="header_checked_date_time">Tanggal dicentang</string>
     <string name="header_checklist_id">ID Daftar Periksa</string>
+
+    <string name="min_amount_must_be_zero_or_more">Ambang batas harus 0 atau lebih</string>
+    <string name="form_min_amount">Ambang batas peringatan stok menipis</string>
+    <string name="form_min_amount_helper">Beri tahu ketika stok tersisa (saat ini - terpakai + dibeli) mencapai atau berada di bawah angka ini. Biarkan kosong untuk menonaktifkan.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Inventaris</string>
+    <string name="title_dashboard_expiring">Segera kedaluwarsa</string>
+    <string name="title_dashboard_low_stock">Stok menipis</string>
+    <string name="title_dashboard_reminders">Pengingat</string>
+    <string name="dashboard_items_count_">Item: %1$d</string>
+    <string name="dashboard_total_value_">Total nilai: %1$s</string>
+    <string name="dashboard_expired_">Kedaluwarsa: %1$d</string>
+    <string name="dashboard_expiring_soon_">Segera kedaluwarsa: %1$d</string>
+    <string name="dashboard_low_stock_count_">Stok menipis: %1$d</string>
+    <string name="dashboard_items_label">Item</string>
+    <string name="dashboard_total_value_label">Total nilai</string>
+    <string name="dashboard_low_stock_label">Stok menipis</string>
+    <string name="dashboard_expired_label">Kedaluwarsa</string>
+    <string name="dashboard_expiring_soon_label">Segera kedaluwarsa</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Tidak ada pengingat mendatang</string>
+    <string name="dashboard_upcoming_reminders_">%1$d mendatang</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Peringatan inventaris</string>
+    <string name="notification_description_inventory_alert">Kanal notifikasi peringatan inventaris</string>
+    <string name="notification_title_inventory_alert_">Inventaris perlu diperhatikan (%1$d)</string>
+    <string name="notification_expired_">Kedaluwarsa: %1$s</string>
+    <string name="notification_expiring_soon_">Segera kedaluwarsa: %1$s</string>
+    <string name="notification_low_stock_">Stok menipis: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

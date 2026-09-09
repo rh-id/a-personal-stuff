@@ -11,5 +11,12 @@
     <string name="follow_system">Fylgja kerfi</string>
     <string name="light_mode">Ljóshamur</string>
     <string name="dark_mode">Dökkt hamur</string>
+    <string name="alert_settings">Viðvaranir</string>
+    <string name="expiry_date_alerts">Viðvaranir um gildistíma</string>
+    <string name="low_stock_alerts">Viðvaranir um lágbirgðir</string>
+    <string name="alert_lead_days_3">3 dagar</string>
+    <string name="alert_lead_days_7">7 dagar</string>
+    <string name="alert_lead_days_14">14 dagar</string>
+    <string name="alert_notify_within">Tilkynna innan</string>
     <string name="settings">Stillingar</string>
 </resources>

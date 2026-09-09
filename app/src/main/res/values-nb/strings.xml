@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Påminnelsestidspunkt</string>
     <string name="header_checked_date_time">Avmerkingstidspunkt</string>
     <string name="header_checklist_id">Sjekkliste-ID</string>
+
+    <string name="min_amount_must_be_zero_or_more">Terskel må være 0 eller mer</string>
+    <string name="form_min_amount">Terskel for varsel ved lavt lager</string>
+    <string name="form_min_amount_helper">Varsle når gjenværende lagerbeholdning (nåværende - brukt + kjøpt) faller til eller under dette tallet. La stå tomt for å deaktivere.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Beholdning</string>
+    <string name="title_dashboard_expiring">Utløper snart</string>
+    <string name="title_dashboard_low_stock">Lavt lager</string>
+    <string name="title_dashboard_reminders">Påminnelser</string>
+    <string name="dashboard_items_count_">Gjenstander: %1$d</string>
+    <string name="dashboard_total_value_">Totalverdi: %1$s</string>
+    <string name="dashboard_expired_">Utløpt: %1$d</string>
+    <string name="dashboard_expiring_soon_">Utløper snart: %1$d</string>
+    <string name="dashboard_low_stock_count_">Lavt lager: %1$d</string>
+    <string name="dashboard_items_label">Gjenstander</string>
+    <string name="dashboard_total_value_label">Totalverdi</string>
+    <string name="dashboard_low_stock_label">Lavt lager</string>
+    <string name="dashboard_expired_label">Utløpt</string>
+    <string name="dashboard_expiring_soon_label">Utløper snart</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Ingen kommende påminnelser</string>
+    <string name="dashboard_upcoming_reminders_">%1$d kommende</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Beholdningsvarsler</string>
+    <string name="notification_description_inventory_alert">Varslingskanal for beholdningsvarsler</string>
+    <string name="notification_title_inventory_alert_">Beholdning trenger oppmerksomhet (%1$d)</string>
+    <string name="notification_expired_">Utløpt: %1$s</string>
+    <string name="notification_expiring_soon_">Utløper snart: %1$s</string>
+    <string name="notification_low_stock_">Lavt lager: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

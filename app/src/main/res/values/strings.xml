@@ -10,9 +10,12 @@
     <string name="title_add_item">Add Item</string>
     <string name="name_is_required">Name is required</string>
     <string name="amount_must_be_positive">Amount must be more than 0</string>
+    <string name="min_amount_must_be_zero_or_more">Threshold must be zero or more</string>
     <string name="expired_date_time_is_required">Expired date time is required</string>
     <string name="form_name">Name</string>
     <string name="form_amount">Amount</string>
+    <string name="form_min_amount">Low stock alert threshold</string>
+    <string name="form_min_amount_helper">Notify when remaining stock (current - used + bought) falls to or below this number. Leave empty to disable.</string>
     <string name="form_price">Price</string>
     <string name="form_description">Description</string>
     <string name="form_barcode">Barcode</string>
@@ -108,4 +111,32 @@
     <string name="header_reminder_date_time">Reminder date time</string>
     <string name="header_checked_date_time">Checked date time</string>
     <string name="header_checklist_id">Checklist ID</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Inventory</string>
+    <string name="title_dashboard_expiring">Expiring soon</string>
+    <string name="title_dashboard_low_stock">Low stock</string>
+    <string name="title_dashboard_reminders">Reminders</string>
+    <string name="dashboard_items_count_">Items: %1$d</string>
+    <string name="dashboard_total_value_">Total value: %1$s</string>
+    <string name="dashboard_expired_">Expired: %1$d</string>
+    <string name="dashboard_expiring_soon_">Expiring soon: %1$d</string>
+    <string name="dashboard_low_stock_count_">Low stock: %1$d</string>
+    <string name="dashboard_items_label">Items</string>
+    <string name="dashboard_total_value_label">Total value</string>
+    <string name="dashboard_low_stock_label">Low stock</string>
+    <string name="dashboard_expired_label">Expired</string>
+    <string name="dashboard_expiring_soon_label">Expiring soon</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">No upcoming reminders</string>
+    <string name="dashboard_upcoming_reminders_">%1$d upcoming</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Inventory alerts</string>
+    <string name="notification_description_inventory_alert">Inventory alert notification channel</string>
+    <string name="notification_title_inventory_alert_">Inventory needs attention (%1$d)</string>
+    <string name="notification_expired_">Expired: %1$s</string>
+    <string name="notification_expiring_soon_">Expiring soon: %1$s</string>
+    <string name="notification_low_stock_">Low stock: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

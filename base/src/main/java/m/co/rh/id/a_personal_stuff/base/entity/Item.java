@@ -22,6 +22,9 @@ public class Item implements Serializable, Cloneable {
     @ColumnInfo(name = "amount")
     public int amount;
 
+    @ColumnInfo(name = "min_amount")
+    public Integer minAmount;
+
     @TypeConverters({Converter.class})
     @ColumnInfo(name = "price")
     public BigDecimal price;

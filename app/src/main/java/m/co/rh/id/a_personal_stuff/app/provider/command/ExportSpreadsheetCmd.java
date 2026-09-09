@@ -412,6 +412,21 @@ public class ExportSpreadsheetCmd {
     }
 
     /**
+     * Writes a nullable integer amount cell: null writes a blank cell,
+     * otherwise the cell stays a true numeric cell, tracking the column width
+     * like {@link #writeAmountCell(Row, int, int)}.
+     *
+     * @return the display length of the written value, 0 when null.
+     */
+    private int writeNullableAmountCell(Row row, int column, Integer value) {
+        if (value == null) {
+            return 0;
+        }
+        row.createCell(column).setCellValue(value.doubleValue());
+        return String.valueOf(value).length();
+    }
+
+    /**
      * @return the approximate display length of the written value, 0 when null.
      */
     private int writeDecimalCell(Row row, int column, BigDecimal value) {
@@ -476,6 +491,7 @@ public class ExportSpreadsheetCmd {
                 mAppContext.getString(R.string.header_id),
                 mAppContext.getString(R.string.form_name),
                 mAppContext.getString(R.string.form_amount),
+                mAppContext.getString(R.string.form_min_amount),
                 mAppContext.getString(R.string.form_price),
                 mAppContext.getString(R.string.form_description),
                 mAppContext.getString(R.string.form_barcode),
@@ -492,19 +508,21 @@ public class ExportSpreadsheetCmd {
             columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, item.id));
             columnChars[1] = Math.max(columnChars[1], writeStringCell(row, 1, item.name));
             columnChars[2] = Math.max(columnChars[2], writeAmountCell(row, 2, item.amount));
-            columnChars[3] = Math.max(columnChars[3], writeDecimalCell(row, 3, item.price));
-            columnChars[4] = Math.max(columnChars[4], writeStringCell(row, 4, item.description));
-            columnChars[5] = Math.max(columnChars[5], writeStringCell(row, 5, item.barcode));
-            columnChars[6] = Math.max(columnChars[6],
-                    writeDateCell(row, 6, item.expiredDateTime, dateStyle));
+            columnChars[3] = Math.max(columnChars[3],
+                    writeNullableAmountCell(row, 3, item.minAmount));
+            columnChars[4] = Math.max(columnChars[4], writeDecimalCell(row, 4, item.price));
+            columnChars[5] = Math.max(columnChars[5], writeStringCell(row, 5, item.description));
+            columnChars[6] = Math.max(columnChars[6], writeStringCell(row, 6, item.barcode));
             columnChars[7] = Math.max(columnChars[7],
-                    writeDateCell(row, 7, item.createdDateTime, dateStyle));
+                    writeDateCell(row, 7, item.expiredDateTime, dateStyle));
             columnChars[8] = Math.max(columnChars[8],
-                    writeDateCell(row, 8, item.updatedDateTime, dateStyle));
+                    writeDateCell(row, 8, item.createdDateTime, dateStyle));
             columnChars[9] = Math.max(columnChars[9],
-                    writeStringCell(row, 9, itemTagsMap.get(item.id)));
+                    writeDateCell(row, 9, item.updatedDateTime, dateStyle));
             columnChars[10] = Math.max(columnChars[10],
-                    writeStringCell(row, 10, itemImagesByItemId.get(item.id)));
+                    writeStringCell(row, 10, itemTagsMap.get(item.id)));
+            columnChars[11] = Math.max(columnChars[11],
+                    writeStringCell(row, 11, itemImagesByItemId.get(item.id)));
         }
         applyColumnWidths(sheet, columnChars);
     }

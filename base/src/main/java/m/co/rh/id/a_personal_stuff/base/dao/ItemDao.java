@@ -5,6 +5,7 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
+import androidx.room.TypeConverters;
 import androidx.room.Update;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
+import m.co.rh.id.a_personal_stuff.base.room.converter.Converter;
 
 @Dao
 public abstract class ItemDao {
@@ -282,4 +284,25 @@ public abstract class ItemDao {
 
     @Query("SELECT * FROM item WHERE id = :itemId")
     public abstract Item findItemById(long itemId);
+
+    @Query("SELECT COUNT(*) FROM item")
+    public abstract int countItems();
+
+    @Query("SELECT SUM(price * amount) FROM item")
+    public abstract Double sumInventoryValue();
+
+    @TypeConverters({Converter.class})
+    @Query("SELECT * FROM item WHERE expired_date_time IS NOT NULL" +
+            " AND expired_date_time <= :to" +
+            " ORDER BY expired_date_time ASC")
+    public abstract List<Item> findItemsExpiringBefore(Date to);
+
+    @TypeConverters({Converter.class})
+    @Query("SELECT COUNT(*) FROM item WHERE expired_date_time IS NOT NULL" +
+            " AND expired_date_time <= :to")
+    public abstract int countItemsExpiringBefore(Date to);
+
+    @Query("SELECT * FROM item WHERE min_amount IS NOT NULL" +
+            " AND min_amount > 0")
+    public abstract List<Item> findItemsWithMinAmount();
 }

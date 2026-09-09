@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">提醒时间</string>
     <string name="header_checked_date_time">勾选时间</string>
     <string name="header_checklist_id">核对清单ID</string>
+
+    <string name="min_amount_must_be_zero_or_more">阈值必须大于或等于0</string>
+    <string name="form_min_amount">低库存提醒阈值</string>
+    <string name="form_min_amount_helper">当剩余库存（当前 - 已使用 + 已购买）达到或低于此数字时通知。留空表示禁用。</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">库存</string>
+    <string name="title_dashboard_expiring">即将过期</string>
+    <string name="title_dashboard_low_stock">库存不足</string>
+    <string name="title_dashboard_reminders">提醒</string>
+    <string name="dashboard_items_count_">条目：%1$d</string>
+    <string name="dashboard_total_value_">总价值：%1$s</string>
+    <string name="dashboard_expired_">已过期：%1$d</string>
+    <string name="dashboard_expiring_soon_">即将过期：%1$d</string>
+    <string name="dashboard_low_stock_count_">库存不足：%1$d</string>
+    <string name="dashboard_items_label">条目</string>
+    <string name="dashboard_total_value_label">总价值</string>
+    <string name="dashboard_low_stock_label">库存不足</string>
+    <string name="dashboard_expired_label">已过期</string>
+    <string name="dashboard_expiring_soon_label">即将过期</string>
+    <string name="dashboard_low_stock_item_">%1$s（最少 %2$d）</string>
+    <string name="dashboard_no_upcoming_reminders">没有即将到来的提醒</string>
+    <string name="dashboard_upcoming_reminders_">%1$d 个即将到来</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">库存提醒</string>
+    <string name="notification_description_inventory_alert">库存提醒通知渠道</string>
+    <string name="notification_title_inventory_alert_">库存需要关注（%1$d）</string>
+    <string name="notification_expired_">已过期：%1$s</string>
+    <string name="notification_expiring_soon_">即将过期：%1$s</string>
+    <string name="notification_low_stock_">库存不足：%1$s</string>
+    <string name="notification_low_stock_item_">%1$s（最少 %2$d）</string>
 </resources>

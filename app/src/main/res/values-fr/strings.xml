@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Date de rappel</string>
     <string name="header_checked_date_time">Date de vérification</string>
     <string name="header_checklist_id">ID de la liste de contrôle</string>
+
+    <string name="min_amount_must_be_zero_or_more">Le seuil doit être supérieur ou égal à 0</string>
+    <string name="form_min_amount">Seuil d\'alerte de stock faible</string>
+    <string name="form_min_amount_helper">Notifie lorsque le stock restant (actuel - utilisé + acheté) atteint ou descend sous ce nombre. Laisser vide pour désactiver.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Inventaire</string>
+    <string name="title_dashboard_expiring">Expire bientôt</string>
+    <string name="title_dashboard_low_stock">Stock faible</string>
+    <string name="title_dashboard_reminders">Rappels</string>
+    <string name="dashboard_items_count_">Éléments : %1$d</string>
+    <string name="dashboard_total_value_">Valeur totale : %1$s</string>
+    <string name="dashboard_expired_">Expirés : %1$d</string>
+    <string name="dashboard_expiring_soon_">Expirent bientôt : %1$d</string>
+    <string name="dashboard_low_stock_count_">Stock faible : %1$d</string>
+    <string name="dashboard_items_label">Éléments</string>
+    <string name="dashboard_total_value_label">Valeur totale</string>
+    <string name="dashboard_low_stock_label">Stock faible</string>
+    <string name="dashboard_expired_label">Expirés</string>
+    <string name="dashboard_expiring_soon_label">Expirent bientôt</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Aucun rappel à venir</string>
+    <string name="dashboard_upcoming_reminders_">%1$d à venir</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Alertes d\'inventaire</string>
+    <string name="notification_description_inventory_alert">Canal de notification des alertes d\'inventaire</string>
+    <string name="notification_title_inventory_alert_">L\'inventaire nécessite une attention (%1$d)</string>
+    <string name="notification_expired_">Expirés : %1$s</string>
+    <string name="notification_expiring_soon_">Expirent bientôt : %1$s</string>
+    <string name="notification_low_stock_">Stock faible : %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

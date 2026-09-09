@@ -11,5 +11,12 @@
     <string name="follow_system">Ikuti Sistem</string>
     <string name="light_mode">Mode Terang</string>
     <string name="dark_mode">Mode Gelap</string>
+    <string name="alert_settings">Peringatan</string>
+    <string name="expiry_date_alerts">Peringatan tanggal kedaluwarsa</string>
+    <string name="low_stock_alerts">Peringatan stok menipis</string>
+    <string name="alert_lead_days_3">3 hari</string>
+    <string name="alert_lead_days_7">7 hari</string>
+    <string name="alert_lead_days_14">14 hari</string>
+    <string name="alert_notify_within">Beri tahu dalam</string>
     <string name="settings">Pengaturan</string>
 </resources>

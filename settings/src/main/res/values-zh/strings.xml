@@ -11,5 +11,12 @@
     <string name="follow_system">跟随系统</string>
     <string name="light_mode">浅色模式</string>
     <string name="dark_mode">深色模式</string>
+    <string name="alert_settings">提醒</string>
+    <string name="expiry_date_alerts">到期提醒</string>
+    <string name="low_stock_alerts">低库存提醒</string>
+    <string name="alert_lead_days_3">3 天</string>
+    <string name="alert_lead_days_7">7 天</string>
+    <string name="alert_lead_days_14">14 天</string>
+    <string name="alert_notify_within">提前提醒</string>
     <string name="settings">设置</string>
 </resources>

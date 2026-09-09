@@ -195,7 +195,7 @@ public class BackupIntegrationTest {
         assertTrue(zipFile.exists());
 
         BackupData data = extractJsonFromZip(zipFile);
-        assertEquals(1, data.version);
+        assertEquals(2, data.version);
         assertTrue(data.exportedAt > 0);
         assertTrue(data.items.isEmpty());
         assertTrue(data.itemImages.isEmpty());
@@ -225,6 +225,7 @@ public class BackupIntegrationTest {
         Item item1 = new Item();
         item1.name = "Item A";
         item1.amount = 5;
+        item1.minAmount = 2;
         item1.price = new BigDecimal("19.99");
         item1.description = "Test item A";
         item1.barcode = "111222333";
@@ -277,6 +278,7 @@ public class BackupIntegrationTest {
 
         assertEquals("Item A", data.items.get(0).name);
         assertEquals(5, data.items.get(0).amount);
+        assertEquals(Integer.valueOf(2), data.items.get(0).minAmount);
         assertEquals(new BigDecimal("19.99"), data.items.get(0).price);
         assertEquals("Test item A", data.items.get(0).description);
         assertEquals("111222333", data.items.get(0).barcode);
@@ -285,6 +287,7 @@ public class BackupIntegrationTest {
 
         assertEquals("Item B", data.items.get(1).name);
         assertEquals(10, data.items.get(1).amount);
+        assertNull(data.items.get(1).minAmount);
         assertNull(data.items.get(1).price);
         assertNull(data.items.get(1).description);
         assertNull(data.items.get(1).barcode);
@@ -946,6 +949,7 @@ public class BackupIntegrationTest {
         Item item = new Item();
         item.name = "Round Trip Item";
         item.amount = 8;
+        item.minAmount = 5;
         item.price = new BigDecimal("123.45");
         item.description = "Round trip test";
         item.barcode = "1234567890";
@@ -1104,6 +1108,7 @@ public class BackupIntegrationTest {
         Item restoredItem = restoredItemState.getItem();
         assertEquals("Round Trip Item", restoredItem.name);
         assertEquals(8, restoredItem.amount);
+        assertEquals(Integer.valueOf(5), restoredItem.minAmount);
         assertEquals(new BigDecimal("123.45"), restoredItem.price);
         assertEquals("Round trip test", restoredItem.description);
         assertEquals("1234567890", restoredItem.barcode);
@@ -1131,6 +1136,7 @@ public class BackupIntegrationTest {
                 .orElse(null);
         assertNotNull(restoredItemState2);
         assertEquals(3, restoredItemState2.getItem().amount);
+        assertNull(restoredItemState2.getItem().minAmount);
 
         List<ItemMaintenance> maintenances = mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances();
         assertEquals(1, maintenances.size());
@@ -1521,13 +1527,14 @@ public class BackupIntegrationTest {
         Date now = new Date();
 
         BackupData original = new BackupData();
-        original.version = 1;
+        original.version = 2;
         original.exportedAt = now.getTime();
 
         Item item = new Item();
         item.id = 1L;
         item.name = "Test Item";
         item.amount = 10;
+        item.minAmount = 7;
         item.price = new BigDecimal("99.99");
         item.description = "Test description";
         item.barcode = "9876543210";
@@ -1633,6 +1640,7 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(1L), restored.items.get(0).id);
         assertEquals("Test Item", restored.items.get(0).name);
         assertEquals(10, restored.items.get(0).amount);
+        assertEquals(Integer.valueOf(7), restored.items.get(0).minAmount);
         assertEquals(new BigDecimal("99.99"), restored.items.get(0).price);
         assertEquals("Test description", restored.items.get(0).description);
         assertEquals("9876543210", restored.items.get(0).barcode);
@@ -1750,6 +1758,34 @@ public class BackupIntegrationTest {
         assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
         assertNull("Old backups without usageDateTime must deserialize to null",
                 restored.itemUsages.get(0).usageDateTime);
+    }
+
+    @Test
+    public void backupDataJsonRoundTripOldBackupWithoutMinAmount() throws Exception {
+        // Simulates a v1 backup (pre min_amount) where the item entry omits the
+        // minAmount key entirely. BackupData.fromJson must yield minAmount == null
+        // so ImportCmd imports the item with no threshold set.
+        Date now = new Date();
+        JSONObject itemObj = new JSONObject();
+        itemObj.put("id", 1L);
+        itemObj.put("name", "Old backup item");
+        itemObj.put("amount", 4);
+        itemObj.put("createdDateTime", now.getTime());
+        // intentionally NO minAmount key
+        JSONArray items = new JSONArray();
+        items.put(itemObj);
+
+        JSONObject json = new JSONObject();
+        json.put("version", 1);
+        json.put("exportedAt", now.getTime());
+        json.put("items", items);
+
+        BackupData restored = BackupData.fromJson(json);
+        assertEquals(1, restored.items.size());
+        assertEquals("Old backup item", restored.items.get(0).name);
+        assertEquals(4, restored.items.get(0).amount);
+        assertNull("Old backups without minAmount must deserialize to null",
+                restored.items.get(0).minAmount);
     }
 
     @Test

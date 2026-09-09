@@ -15,6 +15,7 @@ import java.util.List;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseState;
+import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseTotal;
 
 @Dao
 public abstract class ItemPurchaseDao {
@@ -158,4 +159,7 @@ public abstract class ItemPurchaseDao {
 
     @Query("SELECT * FROM item_purchase_image WHERE item_purchase_id IN (:itemPurchaseIds) ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemPurchaseImage> findItemPurchaseImagesByItemPurchaseIds(List<Long> itemPurchaseIds);
+
+    @Query("SELECT item_id AS itemId, SUM(amount) AS total FROM item_purchase GROUP BY item_id")
+    public abstract List<ItemPurchaseTotal> sumAmountGroupByItem();
 }

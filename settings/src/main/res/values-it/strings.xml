@@ -11,5 +11,12 @@
     <string name="follow_system">Segui sistema</string>
     <string name="light_mode">Modalità chiara</string>
     <string name="dark_mode">Modalità scura</string>
+    <string name="alert_settings">Avvisi</string>
+    <string name="expiry_date_alerts">Avvisi di scadenza</string>
+    <string name="low_stock_alerts">Avvisi di scorta bassa</string>
+    <string name="alert_lead_days_3">3 giorni</string>
+    <string name="alert_lead_days_7">7 giorni</string>
+    <string name="alert_lead_days_14">14 giorni</string>
+    <string name="alert_notify_within">Avvisa entro</string>
     <string name="settings">Impostazioni</string>
 </resources>

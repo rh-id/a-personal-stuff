@@ -5,10 +5,13 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
 import androidx.room.Transaction;
+import androidx.room.TypeConverters;
 import androidx.room.Update;
 
+import java.util.Date;
 import java.util.List;
 
+import m.co.rh.id.a_personal_stuff.base.room.converter.Converter;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 
 @Dao
@@ -50,4 +53,13 @@ public abstract class ItemReminderDao {
     // keyset pagination for bounded-memory exports
     @Query("SELECT * FROM item_reminder WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
     public abstract List<ItemReminder> findItemRemindersAfter(long lastId, int limit);
+
+    @TypeConverters({Converter.class})
+    @Query("SELECT * FROM item_reminder WHERE reminder_date_time >= :from" +
+            " ORDER BY reminder_date_time ASC LIMIT :limit")
+    public abstract List<ItemReminder> findNextReminders(Date from, int limit);
+
+    @TypeConverters({Converter.class})
+    @Query("SELECT COUNT(*) FROM item_reminder WHERE reminder_date_time >= :from")
+    public abstract int countUpcomingReminders(Date from);
 }

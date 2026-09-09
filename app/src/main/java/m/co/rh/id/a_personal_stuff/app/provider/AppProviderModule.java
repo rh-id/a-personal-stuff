@@ -4,6 +4,8 @@ import android.app.Application;
 
 import m.co.rh.id.a_personal_stuff.app.provider.command.CommandProviderModule;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryAlertScheduler;
+import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
 import m.co.rh.id.a_personal_stuff.barcode.provider.BarcodeProviderModule;
 import m.co.rh.id.a_personal_stuff.base.provider.BaseProviderModule;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -40,6 +42,8 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new SettingsProviderModule());
 
         providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
+        providerRegistry.registerLazy(InventoryStatsCalculator.class, () -> new InventoryStatsCalculator(provider));
+        providerRegistry.registerAsync(InventoryAlertScheduler.class, () -> new InventoryAlertScheduler(provider));
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here

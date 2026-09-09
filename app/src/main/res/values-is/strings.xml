@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Áminningartími</string>
     <string name="header_checked_date_time">Hökunartími</string>
     <string name="header_checklist_id">Auðkenni gátlista</string>
+
+    <string name="min_amount_must_be_zero_or_more">Viðmið verður að vera 0 eða meira</string>
+    <string name="form_min_amount">Viðvörunarmörk fyrir lágar birgðir</string>
+    <string name="form_min_amount_helper">Láttu vita þegar birgðir sem eftir eru (núverandi - notað + keypt) falla á eða niður fyrir þessa tölu. Skildu eftir tómt til að slökkva.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Birgðir</string>
+    <string name="title_dashboard_expiring">Rennur út fljótlega</string>
+    <string name="title_dashboard_low_stock">Lágar birgðir</string>
+    <string name="title_dashboard_reminders">Áminningar</string>
+    <string name="dashboard_items_count_">Hlutir: %1$d</string>
+    <string name="dashboard_total_value_">Heildarverðmæti: %1$s</string>
+    <string name="dashboard_expired_">Útrunnið: %1$d</string>
+    <string name="dashboard_expiring_soon_">Rennur út fljótlega: %1$d</string>
+    <string name="dashboard_low_stock_count_">Lágar birgðir: %1$d</string>
+    <string name="dashboard_items_label">Hlutir</string>
+    <string name="dashboard_total_value_label">Heildarverðmæti</string>
+    <string name="dashboard_low_stock_label">Lágar birgðir</string>
+    <string name="dashboard_expired_label">Útrunnið</string>
+    <string name="dashboard_expiring_soon_label">Rennur út fljótlega</string>
+    <string name="dashboard_low_stock_item_">%1$s (lágmark %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Engar væntanlegar áminningar</string>
+    <string name="dashboard_upcoming_reminders_">%1$d væntanleg</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Birgðaviðvaranir</string>
+    <string name="notification_description_inventory_alert">Tilkynningarrás fyrir birgðaviðvaranir</string>
+    <string name="notification_title_inventory_alert_">Birgðir þurfa athygli (%1$d)</string>
+    <string name="notification_expired_">Útrunnið: %1$s</string>
+    <string name="notification_expiring_soon_">Rennur út fljótlega: %1$s</string>
+    <string name="notification_low_stock_">Lágar birgðir: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (lágmark %2$d)</string>
 </resources>

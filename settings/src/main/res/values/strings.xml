@@ -11,5 +11,12 @@
     <string name="follow_system">Follow System</string>
     <string name="light_mode">Light Mode</string>
     <string name="dark_mode">Dark Mode</string>
+    <string name="alert_settings">Alerts</string>
+    <string name="expiry_date_alerts">Expiry date alerts</string>
+    <string name="low_stock_alerts">Low stock alerts</string>
+    <string name="alert_lead_days_3">3 days</string>
+    <string name="alert_lead_days_7">7 days</string>
+    <string name="alert_lead_days_14">14 days</string>
+    <string name="alert_notify_within">Notify within</string>
     <string name="settings">Settings</string>
 </resources>

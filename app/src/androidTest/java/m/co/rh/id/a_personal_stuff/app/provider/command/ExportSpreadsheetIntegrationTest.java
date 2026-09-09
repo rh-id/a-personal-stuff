@@ -175,6 +175,7 @@ public class ExportSpreadsheetIntegrationTest {
         Item item = new Item();
         item.name = "Full Item";
         item.amount = 3;
+        item.minAmount = 5;
         item.price = new BigDecimal("29.99");
         item.description = "Complete test item";
         item.expiredDateTime = new Date(now.getTime() + 2592000000L);
@@ -321,7 +322,11 @@ public class ExportSpreadsheetIntegrationTest {
                 Sheet itemsSheet = workbook.getSheet("Items");
                 assertNotNull(itemsSheet);
                 assertEquals(3, itemsSheet.getPhysicalNumberOfRows());
-                assertEquals(11, itemsSheet.getRow(0).getPhysicalNumberOfCells());
+                assertEquals(12, itemsSheet.getRow(0).getPhysicalNumberOfCells());
+                // the new Min Amount column sits right after Amount, mirroring
+                // the item detail form's field order
+                assertEquals(mContext.getString(R.string.form_min_amount),
+                        itemsSheet.getRow(0).getCell(3).getStringCellValue());
                 // Item rows are ordered by the export's expired_date_time DESC sort
                 // (NULLs last), not insertion order: "Full Item" (future expiry) is
                 // row 1, tagless "Full Item 2" (null expiry) is row 2.
@@ -333,35 +338,37 @@ public class ExportSpreadsheetIntegrationTest {
                 assertEquals("1", itemRow.getCell(0).getStringCellValue());
                 assertEquals("Full Item", itemRow.getCell(1).getStringCellValue());
                 assertEquals(3, itemRow.getCell(2).getNumericCellValue(), 0);
-                assertEquals(29.99, itemRow.getCell(3).getNumericCellValue(), 0.001);
-                assertTrue(!isCellBlank(itemRow.getCell(6)));
+                assertEquals(5, itemRow.getCell(3).getNumericCellValue(), 0);
+                assertEquals(29.99, itemRow.getCell(4).getNumericCellValue(), 0.001);
                 assertTrue(!isCellBlank(itemRow.getCell(7)));
-                // expiredDateTime (cell 6) round-trips the Excel date serial:
+                assertTrue(!isCellBlank(itemRow.getCell(8)));
+                // expiredDateTime (cell 7) round-trips the Excel date serial:
                 // Room stores the Date as epoch millis, the serial is a double,
                 // so a 1s tolerance covers the conversion precision.
                 Date expectedExpiry = item.expiredDateTime;
-                Date actualExpiry = DateUtil.getJavaDate(itemRow.getCell(6).getNumericCellValue());
+                Date actualExpiry = DateUtil.getJavaDate(itemRow.getCell(7).getNumericCellValue());
                 assertTrue(Math.abs(actualExpiry.getTime() - expectedExpiry.getTime()) <= 1000);
-                assertEquals("another, fulltest", itemRow.getCell(9).getStringCellValue());
-                assertEquals("img1.jpg, img2.jpg", itemRow.getCell(10).getStringCellValue());
+                assertEquals("another, fulltest", itemRow.getCell(10).getStringCellValue());
+                assertEquals("img1.jpg, img2.jpg", itemRow.getCell(11).getStringCellValue());
                 assertEquals("Full Item 2", itemsSheet.getRow(2).getCell(1).getStringCellValue());
-                assertTrue(isCellBlank(itemsSheet.getRow(2).getCell(9)));
+                assertTrue(isCellBlank(itemsSheet.getRow(2).getCell(3)));
                 assertTrue(isCellBlank(itemsSheet.getRow(2).getCell(10)));
+                assertTrue(isCellBlank(itemsSheet.getRow(2).getCell(11)));
 
                 // Column widths are auto-computed from content length
                 // (POI width unit is 1/256 of a character width):
                 // - the 300-char description caps the description column at
                 //   MAX_CHARS (100) and still reads back intact
                 assertEquals(longDescription,
-                        itemsSheet.getRow(2).getCell(4).getStringCellValue());
-                assertEquals(100 * 256, itemsSheet.getColumnWidth(4));
+                        itemsSheet.getRow(2).getCell(5).getStringCellValue());
+                assertEquals(100 * 256, itemsSheet.getColumnWidth(5));
                 // - the name column fits its longest content ("Full Item 2")
                 assertTrue(itemsSheet.getColumnWidth(1) >= ("Full Item 2".length() + 2) * 256);
                 // - single-char TEXT ids get the 10-char width floor
                 assertTrue(itemsSheet.getColumnWidth(0)
                         >= Math.min(Math.max("1".length() + 2, 10), 100) * 256);
                 // - the joined tags column fits its longest content
-                assertTrue(itemsSheet.getColumnWidth(9)
+                assertTrue(itemsSheet.getColumnWidth(10)
                         >= ("another, fulltest".length() + 2) * 256);
 
                 Sheet usagesSheet = workbook.getSheet("Usages");
@@ -497,7 +504,8 @@ public class ExportSpreadsheetIntegrationTest {
                 assertTrue(isCellBlank(itemRow.getCell(4)));
                 assertTrue(isCellBlank(itemRow.getCell(5)));
                 assertTrue(isCellBlank(itemRow.getCell(6)));
-                assertTrue(isCellBlank(itemRow.getCell(10)));
+                assertTrue(isCellBlank(itemRow.getCell(7)));
+                assertTrue(isCellBlank(itemRow.getCell(11)));
             } finally {
                 workbook.close();
             }

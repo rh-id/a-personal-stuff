@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Data da promemoria</string>
     <string name="header_checked_date_time">Data da marcar</string>
     <string name="header_checklist_id">ID da la glista</string>
+
+    <string name="min_amount_must_be_zero_or_more">La siena sto esser 0 u pli</string>
+    <string name="form_min_amount">Siena d\'alerta per provisiun bassa</string>
+    <string name="form_min_amount_helper">Anunziar cur la provisiun restanta (actuala - duvrada + cumprada) croda a u sut quest numer. Laschar vid per deactivar.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Provisiun</string>
+    <string name="title_dashboard_expiring">Scaden prest</string>
+    <string name="title_dashboard_low_stock">Provisiun bassa</string>
+    <string name="title_dashboard_reminders">Promemorias</string>
+    <string name="dashboard_items_count_">Objects: %1$d</string>
+    <string name="dashboard_total_value_">Valur totala: %1$s</string>
+    <string name="dashboard_expired_">Scadì: %1$d</string>
+    <string name="dashboard_expiring_soon_">Scaden prest: %1$d</string>
+    <string name="dashboard_low_stock_count_">Provisiun bassa: %1$d</string>
+    <string name="dashboard_items_label">Objects</string>
+    <string name="dashboard_total_value_label">Valur totala</string>
+    <string name="dashboard_low_stock_label">Provisiun bassa</string>
+    <string name="dashboard_expired_label">Scadì</string>
+    <string name="dashboard_expiring_soon_label">Scaden prest</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Naginas promemorias che vegnan</string>
+    <string name="dashboard_upcoming_reminders_">%1$d che vegnan</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Alertas da provisiun</string>
+    <string name="notification_description_inventory_alert">Chanal d\'avis per alertas da provisiun</string>
+    <string name="notification_title_inventory_alert_">La provisiun basegna attenziun (%1$d)</string>
+    <string name="notification_expired_">Scadì: %1$s</string>
+    <string name="notification_expiring_soon_">Scaden prest: %1$s</string>
+    <string name="notification_low_stock_">Provisiun bassa: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

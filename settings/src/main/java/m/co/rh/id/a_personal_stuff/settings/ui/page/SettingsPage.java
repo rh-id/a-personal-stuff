@@ -9,6 +9,7 @@ import java.util.ArrayList;
 
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.settings.R;
+import m.co.rh.id.a_personal_stuff.settings.ui.component.AlertSettingsMenuSV;
 import m.co.rh.id.a_personal_stuff.settings.ui.component.LicensesMenuSV;
 import m.co.rh.id.a_personal_stuff.settings.ui.component.LogMenuSV;
 import m.co.rh.id.a_personal_stuff.settings.ui.component.ThemeMenuSV;
@@ -29,6 +30,8 @@ public class SettingsPage extends StatefulView<Activity> {
         mStatefulViews = new ArrayList<>();
         ThemeMenuSV themeMenuSV = new ThemeMenuSV();
         mStatefulViews.add(themeMenuSV);
+        AlertSettingsMenuSV alertSettingsMenuSV = new AlertSettingsMenuSV();
+        mStatefulViews.add(alertSettingsMenuSV);
         LogMenuSV logMenuSV = new LogMenuSV();
         mStatefulViews.add(logMenuSV);
         LicensesMenuSV licensesMenuSV = new LicensesMenuSV();

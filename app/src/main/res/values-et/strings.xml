@@ -107,4 +107,36 @@
     <string name="header_reminder_date_time">Meeldetuletuse aeg</string>
     <string name="header_checked_date_time">Märkimise aeg</string>
     <string name="header_checklist_id">Kontroll-loendi ID</string>
+
+    <string name="min_amount_must_be_zero_or_more">Lävi peab olema 0 või suurem</string>
+    <string name="form_min_amount">Madala laoseisu hoiatuse lävi</string>
+    <string name="form_min_amount_helper">Teavita, kui järelejäänud laoseis (praegune - kasutatud + ostetud) langeb sellele arvule või alla selle. Keelamiseks jäta tühjaks.</string>
+
+    <!-- Dashboard cards -->
+    <string name="title_dashboard_inventory">Laoseis</string>
+    <string name="title_dashboard_expiring">Aegub peagi</string>
+    <string name="title_dashboard_low_stock">Madal laoseis</string>
+    <string name="title_dashboard_reminders">Meeldetuletused</string>
+    <string name="dashboard_items_count_">Esemed: %1$d</string>
+    <string name="dashboard_total_value_">Koguväärtus: %1$s</string>
+    <string name="dashboard_expired_">Aegunud: %1$d</string>
+    <string name="dashboard_expiring_soon_">Aegub peagi: %1$d</string>
+    <string name="dashboard_low_stock_count_">Madal laoseis: %1$d</string>
+    <string name="dashboard_items_label">Esemed</string>
+    <string name="dashboard_total_value_label">Koguväärtus</string>
+    <string name="dashboard_low_stock_label">Madal laoseis</string>
+    <string name="dashboard_expired_label">Aegunud</string>
+    <string name="dashboard_expiring_soon_label">Aegub peagi</string>
+    <string name="dashboard_low_stock_item_">%1$s (min %2$d)</string>
+    <string name="dashboard_no_upcoming_reminders">Tulevasi meeldetuletusi pole</string>
+    <string name="dashboard_upcoming_reminders_">%1$d tulemas</string>
+
+    <!-- Inventory alert digest notification -->
+    <string name="notification_name_inventory_alert">Laoseisu hoiatused</string>
+    <string name="notification_description_inventory_alert">Laoseisu hoiatuste teavituskanal</string>
+    <string name="notification_title_inventory_alert_">Laoseis vajab tähelepanu (%1$d)</string>
+    <string name="notification_expired_">Aegunud: %1$s</string>
+    <string name="notification_expiring_soon_">Aegub peagi: %1$s</string>
+    <string name="notification_low_stock_">Madal laoseis: %1$s</string>
+    <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
 </resources>

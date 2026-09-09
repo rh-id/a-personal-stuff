@@ -24,8 +24,10 @@ public class NewItemCmd {
 
     protected BehaviorSubject<String> mNameValidSubject;
     protected BehaviorSubject<String> mAmountValidSubject;
+    protected BehaviorSubject<String> mMinAmountValidSubject;
     protected Subject<String> mNameValidEmitter;
     protected Subject<String> mAmountValidEmitter;
+    protected Subject<String> mMinAmountValidEmitter;
 
     public NewItemCmd(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
@@ -36,6 +38,8 @@ public class NewItemCmd {
         mNameValidEmitter = mNameValidSubject.toSerialized();
         mAmountValidSubject = BehaviorSubject.create();
         mAmountValidEmitter = mAmountValidSubject.toSerialized();
+        mMinAmountValidSubject = BehaviorSubject.create();
+        mMinAmountValidEmitter = mMinAmountValidSubject.toSerialized();
     }
 
     public boolean valid(ItemState itemState) {
@@ -43,8 +47,10 @@ public class NewItemCmd {
         if (itemState != null) {
             boolean nameValid = false;
             boolean amountValid = false;
+            boolean minAmountValid = false;
             String itemName = itemState.getItemName();
             int itemAmount = itemState.getItemAmount();
+            Integer itemMinAmount = itemState.getItemMinAmount();
             if (itemName != null && !itemName.isEmpty()) {
                 nameValid = true;
                 mNameValidEmitter.onNext("");
@@ -57,7 +63,13 @@ public class NewItemCmd {
             } else {
                 mAmountValidEmitter.onNext(mAppContext.getString(R.string.amount_must_be_positive));
             }
-            isValid = nameValid && amountValid;
+            if (itemMinAmount == null || itemMinAmount >= 0) {
+                minAmountValid = true;
+                mMinAmountValidEmitter.onNext("");
+            } else {
+                mMinAmountValidEmitter.onNext(mAppContext.getString(R.string.min_amount_must_be_zero_or_more));
+            }
+            isValid = nameValid && amountValid && minAmountValid;
         }
         return isValid;
     }
@@ -79,6 +91,10 @@ public class NewItemCmd {
         if (amountValid != null && !amountValid.isEmpty()) {
             return amountValid;
         }
+        String minAmountValid = mMinAmountValidSubject.getValue();
+        if (minAmountValid != null && !minAmountValid.isEmpty()) {
+            return minAmountValid;
+        }
         return "";
     }
 
@@ -88,5 +104,9 @@ public class NewItemCmd {
 
     public Flowable<String> getAmountValidFlow() {
         return Flowable.fromObservable(mAmountValidEmitter, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<String> getMinAmountValidFlow() {
+        return Flowable.fromObservable(mMinAmountValidEmitter, BackpressureStrategy.BUFFER);
     }
 }
