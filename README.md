@@ -452,7 +452,7 @@ a-personal-stuff/
 │   │   │   └── ItemUsageDao.java                 # Usage DAO
 │   │   ├── room/
 │   │   │   ├── ItemUsageDatabase.java            # Usage Room database
-│   │   │   └── Migration1To2.java                # v1→v2: add usageDateTime column
+│   │   │   └── DbMigration.java                 # v1→v2: add usageDateTime column
 │   │   ├── provider/
 │   │   │   ├── ItemUsageProviderModule.java
 │   │   │   ├── ItemUsageDatabaseProviderModule.java
