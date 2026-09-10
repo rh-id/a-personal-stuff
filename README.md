@@ -14,6 +14,9 @@ The app is designed to track, manage, and remind you of your personal belongings
 
 ## Features
 *   **Item Management**: Easily add, edit, and organize items.
+*   **Dashboard Overview Card**: The dashboard leads with an inventory overview — total item count, total inventory value (Σ price × amount), expired and expiring-soon counts with sample items, low-stock items, and an upcoming-reminders card; tapping a card jumps to the item list or reminders, and the card live-refreshes on data changes.
+*   **Daily Inventory Alert Digest**: A periodic WorkManager job (24 h cycle) posts a single self-replacing "Inventory needs attention (N)" notification listing up to 5 expired, 5 expiring-soon, and 5 low-stock items; expiry alerts use a configurable lead time (3/7/14 days, default 7) and both alert types can be toggled in Settings → Alerts (both default on).
+*   **Per-Item Low Stock Threshold**: Optionally set a "low stock alert threshold" on the item form; low stock is computed from derived remaining stock (amount − Σ usage + Σ purchases) compared against the threshold, and it surfaces in the dashboard card, the daily digest, and the spreadsheet export.
 *   **Smart Reminders**: Set up notifications for expiration dates or custom events.
 *   **Usage Tracking**: Log when and how much of an item is used.
 *   **Purchase Tracking**: Track when items are purchased or acquired.
@@ -21,8 +24,8 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Checklists**: Create checklists over your items (e.g. a packing list when moving home), track progress by checking items off.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan 1D barcodes using the device camera and the ZXing library for quick input and searching.
-*   **Backup & Restore**: Export and import full app data as ZIP files, including images and thumbnails.
-*   **Spreadsheet Export**: Export all data as sheets of a single .xlsx workbook (Items, Usages, Purchases, Maintenances, Reminders, Checklists and Checklist Items); requires Android 8.0 (API 26)+, the export button is hidden on older devices.
+*   **Backup & Restore**: Export and import full app data as ZIP files, including images and thumbnails (backup format version 2, which adds the low stock threshold; version 1 backups still import).
+*   **Spreadsheet Export**: Export all data as sheets of a single .xlsx workbook (Items, Usages, Purchases, Maintenances, Reminders, Checklists and Checklist Items) — the Items sheet now includes a low stock alert threshold column; requires Android 8.0 (API 26)+, the export button is hidden on older devices.
 *   **Item Duplication**: Duplicate an existing item including its images and tags.
 *   **Multilingual Support**: Available in 11 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese).
 
@@ -30,7 +33,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 
 The application is designed around a central Dashboard (`HomePage`) that provides quick access to all major functions.
 
-1.  **Dashboard**: The entry point where you can navigate to different lists or quickly add new entries.
+1.  **Dashboard**: The entry point: presents an inventory overview card (counts, inventory value, expired/expiring, low stock, upcoming reminders) and lets you navigate to different lists or quickly add new entries.
 2.  **Adding an Item**:
     *   Click "Add Item" on the dashboard.
     *   Fill in details (Name, Image, Tags).
@@ -55,15 +58,15 @@ The codebase is split into feature-centric modules to enforce boundaries:
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations |
-| `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, and shared UI components (AppBar, ImageSV, SelectionPage) |
+| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations, the dashboard overview card (DashboardCmd, InventoryStatsCalculator), and the daily inventory alert digest (InventoryAlertScheduler, AlertDigestWorker) |
+| `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, Room migrations (DbMigration), and shared UI components (AppBar, ImageSV, SelectionPage) |
 | `:barcode` | Barcode scanning functionality using the camera (Camera1 API) with ZXing barcode decoding, with ScanBarcodePage and ScanBarcodePreview components |
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
 | `:item-purchase` | Item purchase tracking feature with entities (ItemPurchase, ItemPurchaseImage), commands, DAO, event handler for cascade delete, and UI pages (ItemPurchasesPage, ItemPurchaseDetailPage) |
 | `:item-maintenance` | Item maintenance tracking with entities (ItemMaintenance, ItemMaintenanceImage), commands, DAO, and UI pages (ItemMaintenancesPage, ItemMaintenanceDetailPage) |
 | `:item-checklist` | Checklist feature with entities (ItemChecklist, ItemChecklistItem), commands, DAO, and UI pages (ItemChecklistsPage, ItemChecklistDetailPage) |
 | `:item-reminder` | Reminder and alarm scheduling using WorkManager with entities (ItemReminder), commands, DAO, and UI pages (ItemRemindersPage, ItemReminderDetailPage) |
-| `:settings` | App configuration and preferences with SettingsPage, theme management (system/light/dark), log viewing, and a licenses page rendered from a licenses.html generated at build time |
+| `:settings` | App configuration and preferences with SettingsPage, theme management (system/light/dark), alert settings (expiry/low-stock toggles, lead time), log viewing, and a licenses page rendered from a licenses.html generated at build time |
 
 ### Database Strategy
 Instead of a monolithic database, the app uses **Multiple Room Databases**, one for each feature module:
@@ -77,7 +80,7 @@ Instead of a monolithic database, the app uses **Multiple Room Databases**, one 
 | `ItemPurchaseDatabase` | item-purchase | ItemPurchase, ItemPurchaseImage |
 | `ItemReminderDatabase` | item-reminder | ItemReminder |
 
-This ensures that modules remain decoupled and can be maintained or extracted independently. Each database has its own DAO registered separately to decouple from the database instance.
+This ensures that modules remain decoupled and can be maintained or extracted independently. Each database has its own DAO registered separately to decouple from the database instance. Schemas are exported per module (`schemas/` directories) and versioned with explicit Room migrations registered in each database's provider module: `AppDatabase` is at version 2 (`DbMigration.MIGRATION_1_2` adds the `item.min_amount` low stock threshold column) and `ItemUsageDatabase` is at version 2 (adds `usage_date_time`).
 
 ### Architectural Patterns
 
@@ -197,7 +200,7 @@ graph TB
 ### Logical Flow
 
 #### Startup Sequence
-1.  **MainApplication**: Initializes global `Provider` (DI container) and registers `AppProviderModule` with all feature modules; initializes the POI spreadsheet context on Android 8.0+ (for XLSX export); installs a default uncaught-exception handler that logs the crash and then disposes the `Provider`
+1.  **MainApplication**: Initializes global `Provider` (DI container) and registers `AppProviderModule` with all feature modules; registers `InventoryAlertScheduler` (async), which enqueues the unique daily periodic `AlertDigestWorker` work so the inventory alert digest is scheduled on every app start; initializes the POI spreadsheet context on Android 8.0+ (for XLSX export); installs a default uncaught-exception handler that logs the crash and then disposes the `Provider`
 2.  **MainActivity**:
     *   Creates Activity-scoped Provider with `RxProviderModule`
     *   Retrieves global Provider via `BaseApplication.of(this).getProvider()`
@@ -213,9 +216,10 @@ graph TB
     *   After initialization (or splash timeout), routes to `HomePage`
 4.  **HomePage**:
     *   Creates nested Provider for StatefulView scope
-    *   Injects required dependencies (`ExecutorService`, `AppNotificationHandler`, `RxDisposer`, `QueryItemCmd`)
+    *   Injects required dependencies (`ExecutorService`, `AppNotificationHandler`, `RxDisposer`, `QueryItemCmd`, `DashboardCmd`)
     *   Sets up drawer navigation and button click handlers
     *   Subscribes to notification events to navigate to appropriate pages
+    *   Renders the inventory overview card from `DashboardCmd` (debounced refresh on data/setting changes) and navigates to `ItemsPage` when the daily digest notification is tapped
 
 ```mermaid
 sequenceDiagram
@@ -309,7 +313,9 @@ a-personal-stuff/
 │   │   │   ├── StatefulViewProvider.java       # StatefulView-scoped provider
 │   │   │   ├── StatefulViewProviderModule.java
 │   │   │   ├── component/
-│   │   │   │   └── AppNotificationHandler.java # Notification processing
+│   │   │   │   ├── AppNotificationHandler.java   # Notification processing
+│   │   │   │   ├── InventoryAlertScheduler.java  # Schedules the daily alert digest work
+│   │   │   │   └── InventoryStatsCalculator.java # Shared inventory/expiry/low-stock aggregation
 │   │   │   ├── command/
 │   │   │   │   ├── CommandProviderModule.java
 │   │   │   │   ├── NewItemCmd.java             # Create item command
@@ -322,9 +328,14 @@ a-personal-stuff/
 │   │   │   │   ├── NewItemImageCmd.java        # Create item image command
 │   │   │   │   ├── DeleteItemImageCmd.java     # Delete item image command
 │   │   │   │   ├── DuplicateItemCmd.java       # Duplicate item command
+│   │   │   │   ├── DashboardCmd.java           # Dashboard overview card computation and refresh
 │   │   │   │   ├── ExportCmd.java              # Export data command
 │   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export command (Android 8.0+)
 │   │   │   │   └── ImportCmd.java              # Import data command
+│   │   ├── workmanager/
+│   │   │   ├── WorkManagerConstants.java      # Unique work name constants
+│   │   │   └── worker/
+│   │   │       └── AlertDigestWorker.java     # Daily inventory alert digest worker
 │   │   └── ui/
 │   │       ├── page/
 │   │       │   ├── SplashPage.java             # Splash screen
@@ -338,7 +349,8 @@ a-personal-stuff/
 │   │       │   ├── AppItemChecklistDetailPage.java # Checklist detail (app wiring for item picker)
 │   │       │   └── DonationsPage.java         # Donation page
 │   │       ├── model/
-│   │       │   └── StockMovement.java         # Stock movement model (usage/purchase entry)
+│   │       │   ├── StockMovement.java         # Stock movement model (usage/purchase entry)
+│   │       │   └── DashboardData.java         # Dashboard overview card model
 │   │       └── component/
 │   │           ├── StockMovementsListSV.java  # Stock movements list StatefulView
 │   │           ├── StockMovementRecyclerViewAdapter.java
@@ -373,7 +385,8 @@ a-personal-stuff/
 │   │   │   └── AndroidNotificationDao.java  # Notification DAO
 │   │   ├── room/
 │   │   │   ├── AppDatabase.java              # Main Room database
-│   │   │   └── converter/Converter.java       # Type converters
+│   │   │   ├── DbMigration.java              # Room migrations (MIGRATION_1_2: item.min_amount)
+│   │   │   └── converter/Converter.java      # Type converters
 │   │   ├── repository/
 │   │   │   └── AndroidNotificationRepo.java  # Notification repository
 │   │   ├── provider/
@@ -403,7 +416,8 @@ a-personal-stuff/
 │   │   │   └── recyclerview/
 │   │   │       └── CustomLinearLayoutManager.java
 │   │   └── util/
-│   │       └── UiUtils.java                  # UI utilities
+│   │       ├── NotificationPermissionHelper.java # Notification permission checks
+│   │       └── UiUtils.java                      # UI utilities
 │
 ├── item-maintenance/             # Item maintenance feature module
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_maintenance/
@@ -439,7 +453,8 @@ a-personal-stuff/
 │   │       │   └── ItemMaintenanceDetailPage.java
 │   │       └── component/
 │   │           ├── ItemMaintenanceListSV.java
-│   │           └── ItemMaintenanceItemSV.java
+│   │           ├── ItemMaintenanceItemSV.java
+│   │           └── ItemMaintenanceRecyclerViewAdapter.java # Maintenance list adapter
 │
 ├── item-usage/                  # Item usage tracking module
 │   ├── src/main/java/m/co/rh/id/a_personal_stuff/item_usage/
@@ -447,12 +462,13 @@ a-personal-stuff/
 │   │   │   ├── ItemUsage.java                    # Usage entity
 │   │   │   └── ItemUsageImage.java               # Usage image entity
 │   │   ├── model/
-│   │   │   └── ItemUsageState.java                # Usage state model
+│   │   │   ├── ItemUsageState.java                # Usage state model
+│   │   │   └── ItemUsageTotal.java                # Usage total per item (aggregate POJO)
 │   │   ├── dao/
 │   │   │   └── ItemUsageDao.java                 # Usage DAO
 │   │   ├── room/
 │   │   │   ├── ItemUsageDatabase.java            # Usage Room database
-│   │   │   └── DbMigration.java                 # v1→v2: add usageDateTime column
+│   │   │   └── DbMigration.java                  # v1→v2: add usageDateTime column
 │   │   ├── provider/
 │   │   │   ├── ItemUsageProviderModule.java
 │   │   │   ├── ItemUsageDatabaseProviderModule.java
@@ -485,7 +501,8 @@ a-personal-stuff/
 │   │   │   ├── ItemPurchase.java                   # Purchase entity
 │   │   │   └── ItemPurchaseImage.java              # Purchase image entity
 │   │   ├── model/
-│   │   │   └── ItemPurchaseState.java              # Purchase state model
+│   │   │   ├── ItemPurchaseState.java              # Purchase state model
+│   │   │   └── ItemPurchaseTotal.java              # Purchase total per item (aggregate POJO)
 │   │   ├── dao/
 │   │   │   └── ItemPurchaseDao.java                # Purchase DAO
 │   │   ├── room/
@@ -545,7 +562,8 @@ a-personal-stuff/
 │   │   │   │   └── ItemReminderDetailPage.java
 │   │   │   └── component/
 │   │   │       ├── ItemReminderListSV.java
-│   │   │       └── ItemReminderItemSV.java
+│   │   │       ├── ItemReminderItemSV.java
+│   │   │       └── ItemReminderRecyclerViewAdapter.java # Reminders list adapter
 │   │   └── workmanager/
 │   │       ├── WorkManagerConstants.java
 │   │       └── worker/
@@ -620,6 +638,7 @@ a-personal-stuff/
 │   │           ├── VersionMenuSV.java       # Version display
 │   │           ├── LogMenuSV.java           # Log menu
 │   │           ├── LicensesMenuSV.java      # Licenses menu
+│   │           ├── AlertSettingsMenuSV.java # Alert settings (expiry/low-stock toggles)
 │   │           └── LogLineAdapter.java      # Log line adapter
 │
 ├── graphics/                     # App graphics (launcher icon, etc.)
@@ -638,9 +657,9 @@ a-personal-stuff/
 │
 ├── gradle/                       # Gradle build scripts
 │   └── license-html-generator.gradle # Generates licenses.html from app dependencies at build time
-├── build.gradle                  # Root build configuration
+├── build.gradle                  # Root build configuration (room_version, nav_version ext properties)
 ├── settings.gradle               # Project module configuration
-├── gradle.properties            # Gradle properties (room_version, nav_version)
+├── gradle.properties            # Gradle build flags (JVM args, AndroidX settings)
 └── README.md                     # This file
 ```
 
@@ -733,7 +752,7 @@ Located in `.github/workflows/`, the project has three main pipelines:
         *   `ALIAS`: Key alias
         *   `KEY_PASSWORD`: Key password
     *   Creates GitHub Release with:
-        *   Both `app-debug.apk` and `app-release.apk` uploaded as release assets
+        *   Both `app-debug.apk` and `app-release.apk` uploaded as release assets, plus the changelog copy `changelog.txt` as a third asset
         *   Release body taken from `fastlane/metadata/android/en-US/changelogs/{versionCode}.txt` (the build copies it to `changelog.txt`)
 
 3.  **Emulator Test (`android-emulator-test.yml`)**:
