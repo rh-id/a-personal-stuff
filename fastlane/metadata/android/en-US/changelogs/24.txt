@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Features:
+* New dashboard overview card: total items, inventory value, expired and expiring-soon items, low stock, and upcoming reminders
+* Daily inventory alert digest notification listing up to 5 expired, expiring-soon, and low-stock items
+* Per-item low stock alert threshold on the item form
+
+Fixes:
+* Reminder notifications can now post on Android 12L and below
+* Reduced excessive radio button spacing in the theme settings menu

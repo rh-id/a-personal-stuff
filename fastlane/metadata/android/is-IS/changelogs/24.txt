@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Nýir eiginleikar:
+* Nýtt yfirlitsspjald á stjórnborði: heildarfjöldi hluta, verðmæti birgða, útrunnir og fljótlega útrunnir hlutir, lágar birgðir og væntanlegar áminningar
+* Dagleg birgðaviðvörunasamantekt sem telur upp allt að 5 útrunna, fljótlega útrunna og hluti með lágar birgðir
+* Stillanleg viðvörunarmörk lágra birgða fyrir hvern hlut í eyðublaði hluts
+
+Villuleiðréttingar:
+* Áminningartilkynningar birtast nú á Android 12L og eldri útgáfum
+* Minnkað of mikið bil milli útvarpshnappa í þemavalmyndinni

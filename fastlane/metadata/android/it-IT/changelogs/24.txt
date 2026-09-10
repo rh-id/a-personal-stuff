@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Nuove funzionalità:
+* Nuova scheda di panoramica nella dashboard: numero totale di articoli, valore dell'inventario, articoli scaduti e in scadenza, scorte basse e promemoria in arrivo
+* Riepilogo giornaliero degli avvisi di inventario con fino a 5 articoli scaduti, in scadenza e a scorta bassa
+* Soglia di avviso per scorte basse configurabile per ogni articolo nel modulo articolo
+
+Correzioni:
+* Le notifiche dei promemoria ora vengono visualizzate su Android 12L e versioni precedenti
+* Ridotta l'eccessiva spaziatura dei pulsanti di opzione nel menu delle impostazioni del tema

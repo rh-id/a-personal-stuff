@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Nye funksjoner:
+* Nytt oversiktskort på dashbordet: totalt antall gjenstander, lagerverdi, utgåtte og snart utgåtte gjenstander, lav beholdning og kommende påminnelser
+* Daglig lagervarseloppsummering som viser opptil 5 utgåtte, snart utgåtte og gjenstander med lav beholdning
+* Justerbar varslerskel for lav beholdning per gjenstand i gjenstandsskjemaet
+
+Feilrettinger:
+* Påminnelsesvarsler vises nå på Android 12L og eldre
+* Redusert overdreven mellomrom mellom radioknapper i temainnstillingsmenyen

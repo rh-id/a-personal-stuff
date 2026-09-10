@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Neue Funktionen:
+* Neue Übersichtskarte im Dashboard: Gesamtanzahl der Artikel, Inventarwert, abgelaufene und bald ablaufende Artikel, niedriger Bestand und bevorstehende Erinnerungen
+* Tägliche Inventar-Warnungsübersicht mit bis zu 5 abgelaufenen, bald ablaufenden und Artikeln mit niedrigem Bestand
+* Individueller Warnschwellenwert für niedrigen Bestand pro Artikel im Artikel-Formular
+
+Fehlerbehebungen:
+* Erinnerungsbenachrichtigungen können jetzt unter Android 12L und darunter angezeigt werden
+* Übermäßiger Abstand der Optionsfelder im Design-Einstellungsmenü reduziert

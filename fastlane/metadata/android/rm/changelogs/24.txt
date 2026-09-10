@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Novas funcziuns:
+* Nova carta da survista en il dashboard: dumber total d'objects, valur da l'inventari, objects expirads ed objects che expiran prest, depot bass e promemorias che vegnan
+* Resumà quotidian d'avertaments da l'inventari che enumera fin a 5 objects expirads, che expiran prest u cun depot bass
+* Limita d'avertiment dal depot bass configurabla per mintga object en il formular da l'object
+
+Corecziuns:
+* Las promemorias pon ussa vegnir mussadas era sin Android 12L u pli vegl
+* Reducì il spazi excessiv tranter ils buttuns radio en il menu da las preferenzas dal tema

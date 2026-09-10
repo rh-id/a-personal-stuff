@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Nouvelles fonctionnalités :
+* Nouvelle carte d'aperçu sur le tableau de bord : nombre total d'articles, valeur de l'inventaire, articles expirés et expirant bientôt, stock faible et rappels à venir
+* Résumé quotidien des alertes d'inventaire listant jusqu'à 5 articles expirés, expirant bientôt ou en stock faible
+* Seuil d'alerte de stock faible configurable par article dans le formulaire d'article
+
+Corrections :
+* Les notifications de rappel s'affichent désormais sur Android 12L et versions antérieures
+* Réduction de l'espacement excessif des boutons radio dans le menu des paramètres de thème

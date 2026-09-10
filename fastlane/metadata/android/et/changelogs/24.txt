@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Uued funktsioonid:
+* Uus armatuuri ülevaatekaart: esemete koguarv, laoväärtus, aegunud ja peagi aeguvad esemed, madal laovaru ning tulevased meeldetuletused
+* Igapäevane laoseisu teavituste kokkuvõte, mis loetleb kuni 5 aegunud, peagi aeguvat ja madala laovaruga eset
+* Iga eseme jaoks seadistatav madala laovaru hoiatuslävi esemevormil
+
+Veaparandused:
+* Meeldetuletused kuvatakse nüüd ka Android 12L ja vanematel versioonidel
+* Vähendatud liigset raadionuppude vahet teemavaliku menüüs

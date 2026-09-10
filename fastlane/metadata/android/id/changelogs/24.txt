@@ -1,0 +1,10 @@
+Release 2.0.0+24
+
+Fitur Baru:
+* Kartu ringkasan dasbor baru: jumlah total barang, nilai inventaris, barang kedaluwarsa dan akan kedaluwarsa, stok rendah, dan pengingat mendatang
+* Ringkasan peringatan inventaris harian yang mencantumkan hingga 5 barang kedaluwarsa, akan kedaluwarsa, dan stok rendah
+* Ambang batas peringatan stok rendah per barang pada formulir barang
+
+Perbaikan:
+* Notifikasi pengingat kini dapat muncul di Android 12L dan yang lebih lama
+* Mengurangi jarak tombol radio yang berlebihan di menu pengaturan tema
