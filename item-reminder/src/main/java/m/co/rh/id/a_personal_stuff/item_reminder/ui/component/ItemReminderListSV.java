@@ -17,6 +17,7 @@ import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
+import m.co.rh.id.a_personal_stuff.base.provider.component.ItemNavigation;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_reminder.R;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
@@ -35,7 +36,7 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class ItemReminderListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, ItemReminderItemSV.OnItemReminderEditClicked, ItemReminderItemSV.OnItemReminderDeleteClicked {
+public class ItemReminderListSV extends StatefulView<Activity> implements RequireComponent<Provider>, SwipeRefreshLayout.OnRefreshListener, ItemReminderItemSV.OnItemReminderEditClicked, ItemReminderItemSV.OnItemReminderDeleteClicked, ItemReminderItemSV.OnItemNameChipClicked {
     private static final String TAG = ItemReminderListSV.class.getName();
 
     @NavInject
@@ -92,7 +93,7 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
                 mSearchString.onNext(editable.toString());
             }
         };
-        mItemReminderRecyclerViewAdapter = new ItemReminderRecyclerViewAdapter(mPagedItemReminderCmd, this, this, mNavigator, this);
+        mItemReminderRecyclerViewAdapter = new ItemReminderRecyclerViewAdapter(mPagedItemReminderCmd, this, this, this, mNavigator, this);
         SettingsSharedPreferences settings = mSvProvider.get(SettingsSharedPreferences.class);
         mRxDisposer.add("provideComponent_itemViewModeChanged",
                 settings.getItemViewModeFlow()
@@ -168,6 +169,18 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
         mNavigator.push(mNavExtDialogConfig.route_confirmDialog(),
                 mNavExtDialogConfig.args_confirmDialog(title, message),
                 (navigator, navRoute, activity, currentView) -> confirmDeleteItem(navRoute, itemReminder));
+    }
+
+    @Override
+    public void itemReminderItemSV_onItemNameChipClicked(ItemReminder itemReminder) {
+        Long itemId = itemReminder.itemId;
+        if (itemId == null) {
+            return;
+        }
+        // opens the items list filtered to this item; synchronous push, the
+        // name comes from the already-loaded map
+        String itemName = mPagedItemReminderCmd.getItemName(itemId);
+        mSvProvider.get(ItemNavigation.class).pushItemListFiltered(mNavigator, itemId, itemName);
     }
 
     private void confirmDeleteItem(NavRoute navRoute, ItemReminder itemReminder) {

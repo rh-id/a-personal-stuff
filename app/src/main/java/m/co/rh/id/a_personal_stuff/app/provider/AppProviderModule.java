@@ -3,6 +3,7 @@ package m.co.rh.id.a_personal_stuff.app.provider;
 import android.app.Application;
 
 import m.co.rh.id.a_personal_stuff.app.provider.command.CommandProviderModule;
+import m.co.rh.id.a_personal_stuff.app.provider.component.AppItemNavigation;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryAlertScheduler;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
@@ -42,6 +43,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new SettingsProviderModule());
 
         providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
+        providerRegistry.registerLazy(AppItemNavigation.class, AppItemNavigation::new);
         providerRegistry.registerLazy(InventoryStatsCalculator.class, () -> new InventoryStatsCalculator(provider));
         providerRegistry.registerAsync(InventoryAlertScheduler.class, () -> new InventoryAlertScheduler(provider));
 

@@ -23,6 +23,7 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
     private PagedItemReminderCmd mPagedItemReminderCmd;
     private ItemReminderItemSV.OnItemReminderEditClicked mOnItemReminderEditClicked;
     private ItemReminderItemSV.OnItemReminderDeleteClicked mOnItemReminderDeleteClicked;
+    private ItemReminderItemSV.OnItemNameChipClicked mOnItemNameChipClicked;
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
@@ -32,11 +33,13 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
     public ItemReminderRecyclerViewAdapter(PagedItemReminderCmd pagedItemReminderCmd,
                                            ItemReminderItemSV.OnItemReminderEditClicked onItemReminderEditClicked,
                                            ItemReminderItemSV.OnItemReminderDeleteClicked onItemReminderDeleteClicked,
+                                           ItemReminderItemSV.OnItemNameChipClicked onItemNameChipClicked,
                                            INavigator navigator, StatefulView parentStatefulView
     ) {
         mPagedItemReminderCmd = pagedItemReminderCmd;
         mOnItemReminderEditClicked = onItemReminderEditClicked;
         mOnItemReminderDeleteClicked = onItemReminderDeleteClicked;
+        mOnItemNameChipClicked = onItemNameChipClicked;
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
         mCreatedSvList = new ArrayList<>();
@@ -75,6 +78,7 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
             ItemReminderItemSV itemSV = new ItemReminderItemSV(mCompact);
             itemSV.setOnItemReminderEditClicked(mOnItemReminderEditClicked);
             itemSV.setOnItemReminderDeleteClicked(mOnItemReminderDeleteClicked);
+            itemSV.setOnItemNameChipClicked(mOnItemNameChipClicked);
             mNavigator.injectRequired(mParentStatefulView, itemSV);
             View view = itemSV.buildView(activity, parent);
             mCreatedSvList.add(itemSV);
@@ -88,7 +92,8 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
             ArrayList<ItemReminder> itemArrayList = mPagedItemReminderCmd.getAllItems();
             ItemReminder item = itemArrayList.get(position);
             ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
-            itemViewHolder.setItem(item);
+            itemViewHolder.setItem(item,
+                    mPagedItemReminderCmd.getItemName(item.itemId));
         }
     }
 
@@ -184,8 +189,8 @@ public class ItemReminderRecyclerViewAdapter extends RecyclerView.Adapter<Recycl
             mItemReminderItemSV = itemReminderItemSV;
         }
 
-        public void setItem(ItemReminder itemReminder) {
-            mItemReminderItemSV.setItemReminder(itemReminder);
+        public void setItem(ItemReminder itemReminder, String itemName) {
+            mItemReminderItemSV.setItemReminder(itemReminder, itemName);
         }
 
         public ItemReminder getItem() {

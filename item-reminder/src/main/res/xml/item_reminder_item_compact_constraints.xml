@@ -27,6 +27,22 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Owner chip on the delete-button row (left of the action container,
+         vertically centered on it). No android:visibility here: the chip's
+         visibility is data-driven (shown in global mode, GONE in per-item
+         mode) and re-applied by ItemReminderItemSV's subscription after every
+         applyTo. -->
+    <Constraint
+        android:id="@+id/chip_item_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/text_margin"
+        android:layout_marginEnd="@dimen/text_margin"
+        app:layout_constraintBottom_toBottomOf="@id/container_action_button"
+        app:layout_constraintEnd_toStartOf="@id/container_action_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/container_action_button" />
+
     <Constraint
         android:id="@+id/text_message"
         android:layout_width="0dp"

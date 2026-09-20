@@ -405,6 +405,9 @@ public abstract class ItemDao {
     @Query("SELECT * FROM item WHERE id = :itemId")
     public abstract Item findItemById(long itemId);
 
+    @Query("SELECT * FROM item")
+    public abstract List<Item> findAllItems();
+
     @Query("SELECT COUNT(*) FROM item")
     public abstract int countItems();
 

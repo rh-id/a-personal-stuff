@@ -29,6 +29,8 @@ public class PagedItemCmd {
     private int mLimit;
     private String mSearch;
     private ItemDao.QueryOrderBy mQueryOrderBy;
+    /** Nullable — when set, only this item is shown (filtered items-list mode). */
+    private Long mFilterItemId;
     private final BehaviorSubject<ArrayList<ItemState>> mItemStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final Subject<ArrayList<ItemState>> mItemStatesEmitter;
@@ -85,6 +87,14 @@ public class PagedItemCmd {
                     Set<Long> itemIds = new LinkedHashSet<>();
                     itemIds.addAll(itemTagSearchResult.get());
                     itemIds.addAll(itemSearchResult.get());
+                    if (mFilterItemId != null) {
+                        // a search within filtered mode cannot escape the single item
+                        itemIds.retainAll(Collections.singletonList(mFilterItemId));
+                        if (itemIds.isEmpty()) {
+                            mItemStatesEmitter.onNext(new ArrayList<>());
+                            return;
+                        }
+                    }
                     List<ItemState> itemStates =
                             mItemDao.findItemStateByIdsWithLimit(new ArrayList<>(itemIds), mQueryOrderBy, mLimit);
                     mItemStatesEmitter.onNext(new ArrayList<>(itemStates));
@@ -138,6 +148,11 @@ public class PagedItemCmd {
     }
 
     private ArrayList<ItemState> loadItems() {
+        if (mFilterItemId != null) {
+            // filtered mode: a single item regardless of the page limit
+            return new ArrayList<>(mItemDao.findItemStatesByIds(
+                    Collections.singletonList(mFilterItemId), mQueryOrderBy));
+        }
         return new ArrayList<>(mItemDao.findItemStateWithLimit(mLimit, mQueryOrderBy));
     }
 
@@ -155,6 +170,14 @@ public class PagedItemCmd {
 
     private void resetPage() {
         mLimit = 100;
+    }
+
+    /**
+     * Optional single-item filter (filtered items-list mode). Null clears the
+     * filter and restores normal behavior; callers refresh after changing it.
+     */
+    public void setItemFilter(Long filterItemId) {
+        mFilterItemId = filterItemId;
     }
 
     public void refreshWithItemId(long itemId) {

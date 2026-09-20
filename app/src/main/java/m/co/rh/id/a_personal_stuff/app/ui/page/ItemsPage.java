@@ -7,6 +7,8 @@ import android.view.ViewGroup;
 
 import androidx.appcompat.widget.Toolbar;
 
+import com.google.android.material.chip.Chip;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -50,6 +52,7 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
     @NavInject
     private ItemListSV mItemListSV;
     private SerialBehaviorSubject<Integer> mSelectedSort;
+    private transient Chip mFilterItemChip;
 
     public ItemsPage() {
         mAppBarSV = new AppBarSV(R.menu.page_items);
@@ -97,9 +100,17 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
     @Override
     protected void initState(Activity activity) {
         super.initState(activity);
-        Long itemId = getItemId();
-        if (itemId != null) {
-            mItemListSV.showItemId(itemId);
+        Args args = Args.of(mNavRoute);
+        if (args == null || args.itemId == null) {
+            return;
+        }
+        if (args.itemName != null) {
+            // filtered mode: the list shows only this item; the filter chip
+            // (created in createView) offers the way back to the full list
+            mItemListSV.setItemFilter(args.itemId);
+            mItemListSV.refresh();
+        } else {
+            mItemListSV.showItemId(args.itemId);
         }
     }
 
@@ -110,6 +121,17 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         mAppBarSV.setMenuItemClick(this);
         ViewGroup containerAppBar = rootLayout.findViewById(R.id.container_app_bar);
         containerAppBar.addView(mAppBarSV.buildView(activity, containerAppBar));
+        mFilterItemChip = rootLayout.findViewById(R.id.chip_filter_item);
+        Args args = Args.of(mNavRoute);
+        if (args != null && args.itemId != null && args.itemName != null) {
+            mFilterItemChip.setText(args.itemName);
+            mFilterItemChip.setVisibility(View.VISIBLE);
+        }
+        mFilterItemChip.setOnCloseIconClickListener(v -> {
+            mItemListSV.setItemFilter(null);
+            mItemListSV.refresh();
+            mFilterItemChip.setVisibility(View.GONE);
+        });
         mRxDisposer.add("createView_itemViewModeChanged",
                 mSettingsSharedPreferences.getItemViewModeFlow()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -134,6 +156,7 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         }
         mAppBarSV.dispose(activity);
         mAppBarSV = null;
+        mFilterItemChip = null;
         mItemListSV.dispose(activity);
         mItemListSV = null;
     }
@@ -173,14 +196,6 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
                         : SettingsSharedPreferences.ITEM_VIEW_MODE_DETAILED);
     }
 
-    private Long getItemId() {
-        Args args = Args.of(mNavRoute);
-        if (args != null) {
-            return args.itemId;
-        }
-        return null;
-    }
-
     @Override
     public void onPop(INavigator navigator, NavRoute navRoute, Activity activity, View currentView) {
         Serializable result = navRoute.getRouteResult();
@@ -196,6 +211,17 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
             return args;
         }
 
+        /**
+         * Filtered mode: the list shows only this item, with a clearable chip
+         * displaying its name.
+         */
+        public static Args filtered(long itemId, String itemName) {
+            Args args = new Args();
+            args.itemId = itemId;
+            args.itemName = itemName;
+            return args;
+        }
+
         static Args of(NavRoute navRoute) {
             if (navRoute != null) {
                 Serializable arg = navRoute.getRouteArgs();
@@ -207,5 +233,6 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         }
 
         private Long itemId;
+        private String itemName;
     }
 }

@@ -27,6 +27,25 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:text="20 Jan 2023, 12:00" />
 
+        <!-- Read-only owner chip on the action row (left of the edit/delete
+             buttons, vertically centered on them), mirroring the tag chips
+             ItemItemSV builds with new Chip(activity): default chipStyle, no
+             close icon, not clickable. -->
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:ellipsize="end"
+            android:visibility="gone"
+            app:layout_constrainedWidth="true"
+            app:layout_constraintBottom_toBottomOf="@id/container_action_button"
+            app:layout_constraintEnd_toStartOf="@id/container_action_button"
+            app:layout_constraintHorizontal_bias="0"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/container_action_button"
+            tools:text="Milk" />
+
         <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text_message"
             android:layout_width="match_parent"

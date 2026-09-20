@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,6 +13,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Clearable filter chip for filtered mode (single item); GONE in normal
+         all-items mode. A GONE chip collapses to a point right below the app
+         bar, leaving the content layout unchanged. -->
+    <com.google.android.material.chip.Chip
+        android:id="@+id/chip_filter_item"
+        style="@style/Widget.MaterialComponents.Chip.Entry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="4dp"
+        android:checkable="false"
+        android:visibility="gone"
+        app:closeIconVisible="true"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/container_app_bar"
+        tools:text="Milk" />
+
     <FrameLayout
         android:id="@+id/container_content"
         android:layout_width="match_parent"
@@ -19,5 +39,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/container_app_bar" />
+        app:layout_constraintTop_toBottomOf="@id/chip_filter_item" />
 </androidx.constraintlayout.widget.ConstraintLayout>

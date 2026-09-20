@@ -12,6 +12,7 @@ import java.text.SimpleDateFormat;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
+import com.google.android.material.chip.Chip;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
@@ -27,6 +28,8 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
     private transient RxDisposer mRxDisposer;
 
     private SerialBehaviorSubject<ItemReminder> mItemReminder;
+    /** Nullable — the owner item's name, shown in global mode only. */
+    private String mItemName;
     private DateFormat mDateFormat;
 
     /**
@@ -37,6 +40,7 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
 
     private transient OnItemReminderEditClicked mOnItemReminderEditClicked;
     private transient OnItemReminderDeleteClicked mOnItemReminderDeleteClicked;
+    private transient OnItemNameChipClicked mOnItemNameChipClicked;
 
     public ItemReminderItemSV() {
         this(false);
@@ -74,6 +78,7 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
         ConstraintLayout constraintRoot =
                 rootLayout.findViewById(R.id.constraint_root);
         TextView reminderDateTimeText = rootLayout.findViewById(R.id.text_reminder_date_time);
+        Chip itemChip = rootLayout.findViewById(R.id.chip_item_name);
         TextView messageText = rootLayout.findViewById(R.id.text_message);
         Button editButton = rootLayout.findViewById(R.id.button_edit);
         editButton.setOnClickListener(this);
@@ -108,6 +113,18 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
                 mItemReminder.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemReminder -> {
                             reminderDateTimeText.setText(mDateFormat.format(itemReminder.reminderDateTime));
+                            // the owner chip is present in global mode only; GONE
+                            // keeps per-item rows (and orphaned reminders)
+                            // identical to a missing view. The click listener is
+                            // attached only when a name is bound.
+                            if (mItemName != null) {
+                                itemChip.setText(mItemName);
+                                itemChip.setVisibility(View.VISIBLE);
+                                itemChip.setOnClickListener(this);
+                            } else {
+                                itemChip.setOnClickListener(null);
+                                itemChip.setVisibility(View.GONE);
+                            }
                             messageText.setText(itemReminder.message);
                         }));
         return rootLayout;
@@ -135,6 +152,11 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
                 mOnItemReminderDeleteClicked
                         .itemReminderItemSV_onItemReminderDeleteClicked(mItemReminder.getValue());
             }
+        } else if (id == R.id.chip_item_name) {
+            if (mOnItemNameChipClicked != null) {
+                mOnItemNameChipClicked
+                        .itemReminderItemSV_onItemNameChipClicked(mItemReminder.getValue());
+            }
         }
     }
 
@@ -146,7 +168,12 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
         mOnItemReminderDeleteClicked = onItemReminderDeleteClicked;
     }
 
-    public void setItemReminder(ItemReminder itemReminder) {
+    public void setOnItemNameChipClicked(OnItemNameChipClicked onItemNameChipClicked) {
+        mOnItemNameChipClicked = onItemNameChipClicked;
+    }
+
+    public void setItemReminder(ItemReminder itemReminder, String itemName) {
+        mItemName = itemName;
         mItemReminder.onNext(itemReminder);
     }
 
@@ -160,5 +187,9 @@ public class ItemReminderItemSV extends StatefulView<Activity> implements Requir
 
     public interface OnItemReminderDeleteClicked {
         void itemReminderItemSV_onItemReminderDeleteClicked(ItemReminder itemReminder);
+    }
+
+    public interface OnItemNameChipClicked {
+        void itemReminderItemSV_onItemNameChipClicked(ItemReminder itemReminder);
     }
 }

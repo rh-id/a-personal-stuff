@@ -371,6 +371,18 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mShowItemId.onNext(itemId);
     }
 
+    /**
+     * Optional single-item filter for filtered items-list mode; null clears.
+     * Callers refresh after changing it. UI stays in the hosting page.
+     */
+    public void setItemFilter(Long filterItemId) {
+        mPagedItemCmd.setItemFilter(filterItemId);
+    }
+
+    public void refresh() {
+        mPagedItemCmd.refresh();
+    }
+
     private void confirmDeleteItem(NavRoute navRoute, ItemState itemState) {
         Boolean isDelete = mNavExtDialogConfig.result_confirmDialog(navRoute);
         if (isDelete != null && isDelete) {
