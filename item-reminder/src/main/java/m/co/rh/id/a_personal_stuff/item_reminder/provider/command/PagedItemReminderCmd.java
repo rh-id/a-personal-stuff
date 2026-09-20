@@ -17,7 +17,8 @@ public class PagedItemReminderCmd {
     private Context mAppContext;
     private ExecutorService mExecutorService;
     private ItemReminderDao mItemReminderDao;
-    private long mItemId;
+    /** Nullable — null loads reminders of every item (global mode). */
+    private Long mItemId;
     private int mLimit;
     private final BehaviorSubject<ArrayList<ItemReminder>> mItemRemindersSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
@@ -63,6 +64,9 @@ public class PagedItemReminderCmd {
     }
 
     private ArrayList<ItemReminder> loadItems() {
+        if (mItemId == null) {
+            return new ArrayList<>(mItemReminderDao.findAllItemRemindersWithLimit(mLimit));
+        }
         return new ArrayList<>(mItemReminderDao.findItemReminderByItemIdWithLimit(mItemId, mLimit));
     }
 
@@ -82,7 +86,7 @@ public class PagedItemReminderCmd {
         mLimit = 100;
     }
 
-    public void setItemId(long itemId) {
+    public void setItemId(Long itemId) {
         mItemId = itemId;
     }
 }

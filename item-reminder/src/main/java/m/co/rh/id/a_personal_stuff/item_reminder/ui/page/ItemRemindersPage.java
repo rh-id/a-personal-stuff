@@ -40,6 +40,11 @@ public class ItemRemindersPage extends StatefulView<Activity> implements Require
         if (mItemReminderListSV == null) {
             mItemReminderListSV = new ItemReminderListSV(getItemId());
         }
+        if (getItemId() == null) {
+            // global mode: a reminder cannot exist without an item and creation
+            // flows live on item pages, so swap in a menu without the add action
+            mAppBarSV.setMenu(R.menu.page_item_reminders_global);
+        }
     }
 
     @Override

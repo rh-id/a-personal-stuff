@@ -50,6 +50,9 @@ public abstract class ItemReminderDao {
     @Query("SELECT * FROM item_reminder")
     public abstract List<ItemReminder> findAllItemReminders();
 
+    @Query("SELECT * FROM item_reminder LIMIT :limit")
+    public abstract List<ItemReminder> findAllItemRemindersWithLimit(int limit);
+
     // keyset pagination for bounded-memory exports
     @Query("SELECT * FROM item_reminder WHERE id > :lastId ORDER BY id ASC LIMIT :limit")
     public abstract List<ItemReminder> findItemRemindersAfter(long lastId, int limit);

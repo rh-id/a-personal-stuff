@@ -51,13 +51,14 @@ public class ItemReminderListSV extends StatefulView<Activity> implements Requir
     private transient DeleteItemReminderCmd mDeleteItemReminderCmd;
     private transient PagedItemReminderCmd mPagedItemReminderCmd;
 
-    private long mItemId;
+    /** Nullable — null shows reminders of every item (global mode). */
+    private Long mItemId;
     private SerialBehaviorSubject<String> mSearchString;
     private transient TextWatcher mSearchTextWatcher;
     private transient ItemReminderRecyclerViewAdapter mItemReminderRecyclerViewAdapter;
     private transient RecyclerView.OnScrollListener mItemsOnScrollListener;
 
-    public ItemReminderListSV(long itemId) {
+    public ItemReminderListSV(Long itemId) {
         mItemId = itemId;
         mSearchString = new SerialBehaviorSubject<>();
     }
