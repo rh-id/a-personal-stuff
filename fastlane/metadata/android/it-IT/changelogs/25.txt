@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Nuove funzionalità:
+* Chip con il nome dell'articolo ed elenco di articoli filtrato nella pagina dei promemoria globali
+
+Correzioni:
+* La pagina dei promemoria globali si apre ora dalla dashboard senza arresti anomali
+* La ricerca degli articoli è ora paginata e immagini e tag degli articoli vengono caricati in batch
+* Toccare il link per le donazioni non causa più arresti anomali quando nessuna app può gestirlo

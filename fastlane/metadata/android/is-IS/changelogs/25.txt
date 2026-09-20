@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Nýir eiginleikar:
+* Nafnspjald hluts og síaður listi yfir hluti á síðu fyrir almennar áminningar
+
+Villuleiðréttingar:
+* Síðan fyrir almennar áminningar opnast nú úr stjórnborðinu án hruns
+* Leit að hlutum er nú skipt í síður og myndir og merki hluta hlaðið inn í lotum
+* Ýtt á styrktarhlekkinn veldur ekki lengur hruni þegar ekkert forrit getur meðhöndlað hann

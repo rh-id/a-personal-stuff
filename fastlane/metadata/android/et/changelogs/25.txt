@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Uued funktsioonid:
+* Eseme nime kiip ja filtreeritud esemete loend globaalsete meeldetuletuste lehel
+
+Veaparandused:
+* Globaalsete meeldetuletuste leht avaneb armatuurist ilma krahhi tekitamata
+* Esemete otsing on nüüd lehekülgede kaupa ning esemete pildid ja sildid laaditakse partiidena
+* Annetuslingi puudutamine ei põhjusta enam krahhi, kui ükski rakendus ei saa seda käsitleda

@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Nye funksjonar:
+* Chip med gjenstandsnamn og ei filtrert gjenstandsliste på sida for globale påminningar
+
+Feilrettingar:
+* Sida for globale påminningar opnar no frå dashbordet utan å krasje
+* Gjenstandssøket er no sideinndelt, og bilete og merke for gjenstandar lastast i bunkar
+* Å trykkje på donasjonslenkja krasjar ikkje lenger når ingen app kan handsame ho

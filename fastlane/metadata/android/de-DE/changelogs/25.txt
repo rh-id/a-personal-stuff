@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Neue Funktionen:
+* Artikelnamen-Chip und eine gefilterte Artikelliste auf der globalen Erinnerungsseite
+
+Fehlerbehebungen:
+* Die globale Erinnerungsseite öffnet sich vom Dashboard aus ohne Absturz
+* Die Artikelsuche erfolgt jetzt seitenweise und Artikelbilder sowie Tags werden stapelweise geladen
+* Das Antippen des Spendenlinks führt nicht mehr zum Absturz, wenn keine App ihn öffnen kann

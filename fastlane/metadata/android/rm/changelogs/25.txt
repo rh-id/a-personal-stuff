@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Novas funcziuns:
+* Chip cun il num da l'object ed ina lista d'objects filtrada sin la pagina da las promemorias globalas
+
+Corecziuns:
+* La pagina da las promemorias globalas sa avra ussa dal dashboard senza ch'in'app collabschia
+* La tschertga d'objects è ussa dividida en paginas e maletgs sco er tags d'objects vegnan chargiads en blocs
+* Tuccar il link da donaziun na chaschuna betg pli in collaps quand nagina app po avrir il link

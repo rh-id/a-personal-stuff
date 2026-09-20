@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Features:
+* Item name chip and a filtered item list on the global reminders page
+
+Fixes:
+* The global reminders page opens from the dashboard without crashing
+* Item search is now paginated and item images and tags load in batches
+* Tapping the donation link no longer crashes when no app can handle it

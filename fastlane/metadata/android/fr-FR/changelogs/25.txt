@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Nouvelles fonctionnalités :
+* Puce avec le nom de l'article et liste d'articles filtrée sur la page des rappels globaux
+
+Corrections :
+* La page des rappels globaux s'ouvre désormais depuis le tableau de bord sans plantage
+* La recherche d'articles est désormais paginée et les images et étiquettes des articles se chargent par lots
+* Toucher le lien de don ne provoque plus de plantage lorsqu'aucune application ne peut le gérer

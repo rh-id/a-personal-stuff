@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Nye funksjoner:
+* Chip med gjenstandsnavn og en filtrert gjenstandsliste på siden for globale påminnelser
+
+Feilrettinger:
+* Siden for globale påminnelser åpnes nå fra dashbordet uten å krasje
+* Gjenstandssøket er nå sideinndelt, og bilder og merker for gjenstander lastes i bunker
+* Å trykke på donasjonslenken krasjer ikke lenger når ingen app kan håndtere den

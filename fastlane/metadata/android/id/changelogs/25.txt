@@ -1,0 +1,9 @@
+Release 2.1.0+25
+
+Fitur Baru:
+* Chip nama barang dan daftar barang yang terfilter di halaman pengingat global
+
+Perbaikan:
+* Halaman pengingat global kini dapat dibuka dari dasbor tanpa crash
+* Pencarian barang kini dilakukan per halaman dan gambar serta tag barang dimuat secara berkelompok
+* Mengetuk tautan donasi tidak lagi menyebabkan crash saat tidak ada aplikasi yang dapat menanganinya
