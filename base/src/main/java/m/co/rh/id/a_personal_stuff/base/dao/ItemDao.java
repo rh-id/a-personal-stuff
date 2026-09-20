@@ -11,7 +11,9 @@ import androidx.room.Update;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -22,6 +24,14 @@ import m.co.rh.id.a_personal_stuff.base.room.converter.Converter;
 
 @Dao
 public abstract class ItemDao {
+    /**
+     * Maximum number of ids bound per IN(...) clause. SQLite's default
+     * bind-variable cap is 999 (900 on some API levels) and the page limit
+     * doubles up to 1600 (see PagedItemCmd#loadNextPage), so id lists must
+     * be chunked (see also ExportSpreadsheetCmd).
+     */
+    private static final int SQLITE_IN_CHUNK_SIZE = 500;
+
     public enum QueryOrderBy {
         EXPIRED_DATE_TIME_ASC,
         EXPIRED_DATE_TIME_DESC,
@@ -89,27 +99,83 @@ public abstract class ItemDao {
     protected abstract void delete(Item item);
 
     private List<ItemState> prepareItemState(List<Item> items) {
-        List<ItemState> itemStates = new ArrayList<>();
-        if (!items.isEmpty()) {
-            for (Item item : items) {
-                ItemState itemState = new ItemState();
-                itemState.updateItem(item);
-                List<ItemImage> itemImages = findItemImagesByItemId(item.id);
-                if (!itemImages.isEmpty()) {
-                    itemState.updateItemImages(itemImages);
-                }
-                List<ItemTag> itemTags = findItemTagsByItemId(item.id);
-                if (!itemTags.isEmpty()) {
-                    itemState.updateItemTags(itemTags);
-                }
-                itemStates.add(itemState);
+        if (items.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<Long> itemIds = new ArrayList<>(items.size());
+        for (Item item : items) {
+            itemIds.add(item.id);
+        }
+        List<ItemImage> allItemImages = new ArrayList<>();
+        List<ItemTag> allItemTags = new ArrayList<>();
+        for (List<Long> itemIdsChunk : chunkIds(itemIds)) {
+            allItemImages.addAll(findItemImagesByItemIds(itemIdsChunk));
+            allItemTags.addAll(findItemTagsByItemIds(itemIdsChunk));
+        }
+        return assembleItemStates(items, allItemImages, allItemTags);
+    }
+
+    /**
+     * Pure grouping/assembly of pre-fetched images and tags onto their items,
+     * preserving the items-list order and the per-item semantics: images/tags
+     * are only attached when that item's list is non-empty. Package-private
+     * static so it stays unit-testable without Room.
+     */
+    static List<ItemState> assembleItemStates(List<Item> items,
+                                              List<ItemImage> images,
+                                              List<ItemTag> tags) {
+        Map<Long, List<ItemImage>> imagesByItemId = new HashMap<>();
+        for (ItemImage itemImage : images) {
+            List<ItemImage> itemImages = imagesByItemId.get(itemImage.itemId);
+            if (itemImages == null) {
+                itemImages = new ArrayList<>();
+                imagesByItemId.put(itemImage.itemId, itemImages);
             }
+            itemImages.add(itemImage);
+        }
+        Map<Long, List<ItemTag>> tagsByItemId = new HashMap<>();
+        for (ItemTag itemTag : tags) {
+            List<ItemTag> itemTags = tagsByItemId.get(itemTag.itemId);
+            if (itemTags == null) {
+                itemTags = new ArrayList<>();
+                tagsByItemId.put(itemTag.itemId, itemTags);
+            }
+            itemTags.add(itemTag);
+        }
+        List<ItemState> itemStates = new ArrayList<>(items.size());
+        for (Item item : items) {
+            ItemState itemState = new ItemState();
+            itemState.updateItem(item);
+            List<ItemImage> itemImages = imagesByItemId.get(item.id);
+            if (itemImages != null && !itemImages.isEmpty()) {
+                itemState.updateItemImages(itemImages);
+            }
+            List<ItemTag> itemTags = tagsByItemId.get(item.id);
+            if (itemTags != null && !itemTags.isEmpty()) {
+                itemState.updateItemTags(itemTags);
+            }
+            itemStates.add(itemState);
         }
         return itemStates;
     }
 
+    static List<List<Long>> chunkIds(List<Long> ids) {
+        List<List<Long>> chunks = new ArrayList<>();
+        for (int i = 0; i < ids.size(); i += SQLITE_IN_CHUNK_SIZE) {
+            chunks.add(ids.subList(i, Math.min(i + SQLITE_IN_CHUNK_SIZE, ids.size())));
+        }
+        return chunks;
+    }
+
     @Query("SELECT * FROM item_tag WHERE item_id = :itemId")
     protected abstract List<ItemTag> findItemTagsByItemId(Long itemId);
+
+    @Query("SELECT * FROM item_image WHERE item_id IN (:itemIds)" +
+            " ORDER BY created_date_time ASC, id ASC")
+    public abstract List<ItemImage> findItemImagesByItemIds(List<Long> itemIds);
+
+    @Query("SELECT * FROM item_tag WHERE item_id IN (:itemIds)")
+    public abstract List<ItemTag> findItemTagsByItemIds(List<Long> itemIds);
 
     @Query("SELECT * FROM item WHERE name LIKE '%'||:search||'%'" +
             " OR description LIKE '%'||:search||'%'" +
@@ -262,6 +328,60 @@ public abstract class ItemDao {
 
     @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time DESC")
     protected abstract List<Item> findItemByIds_orderByCreatedDateTimeDesc(List<Long> ids);
+
+    public List<ItemState> findItemStateByIdsWithLimit(List<Long> itemIds, QueryOrderBy queryOrderBy, int limit) {
+        Supplier<List<Item>> itemSupplier;
+        if (queryOrderBy == null) {
+            itemSupplier = () -> findItemByIdsWithLimit(itemIds, limit);
+        } else {
+            switch (queryOrderBy) {
+                case EXPIRED_DATE_TIME_ASC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByExpiredDateTime(itemIds, limit);
+                    break;
+                case EXPIRED_DATE_TIME_DESC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByExpiredDateTimeDesc(itemIds, limit);
+                    break;
+                case UPDATED_DATE_TIME_ASC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByUpdatedDateTime(itemIds, limit);
+                    break;
+                case UPDATED_DATE_TIME_DESC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByUpdatedDateTimeDesc(itemIds, limit);
+                    break;
+                case CREATED_DATE_TIME_ASC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByCreatedDateTime(itemIds, limit);
+                    break;
+                case CREATED_DATE_TIME_DESC:
+                    itemSupplier = () -> findItemByIdsWithLimit_orderByCreatedDateTimeDesc(itemIds, limit);
+                    break;
+                default:
+                    itemSupplier = () -> findItemByIdsWithLimit(itemIds, limit);
+            }
+        }
+        return prepareItemState(itemSupplier.get());
+    }
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY" +
+            " expired_date_time DESC, updated_date_time DESC, created_date_time DESC" +
+            " LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time ASC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByExpiredDateTime(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time DESC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByExpiredDateTimeDesc(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time ASC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByUpdatedDateTime(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time DESC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByUpdatedDateTimeDesc(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time ASC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByCreatedDateTime(List<Long> ids, int limit);
+
+    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time DESC LIMIT :limit")
+    protected abstract List<Item> findItemByIdsWithLimit_orderByCreatedDateTimeDesc(List<Long> ids, int limit);
 
     @Transaction
     public void insertItemImage(ItemImage itemImage) {

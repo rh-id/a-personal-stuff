@@ -17,11 +17,15 @@ import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class PagedItemCmd {
+    private static final String TAG = PagedItemCmd.class.getName();
+
     private ExecutorService mExecutorService;
     private ItemDao mItemDao;
+    private ILogger mLogger;
     private int mLimit;
     private String mSearch;
     private ItemDao.QueryOrderBy mQueryOrderBy;
@@ -33,6 +37,7 @@ public class PagedItemCmd {
     public PagedItemCmd(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
         mItemDao = provider.get(ItemDao.class);
+        mLogger = provider.get(ILogger.class);
         mItemStatesSubject = BehaviorSubject.createDefault(new ArrayList<>());
         mItemStatesEmitter = mItemStatesSubject.toSerialized();
         mIsLoadingSubject = BehaviorSubject.createDefault(false);
@@ -81,9 +86,10 @@ public class PagedItemCmd {
                     itemIds.addAll(itemTagSearchResult.get());
                     itemIds.addAll(itemSearchResult.get());
                     List<ItemState> itemStates =
-                            mItemDao.findItemStatesByIds(new ArrayList<>(itemIds), mQueryOrderBy);
+                            mItemDao.findItemStateByIdsWithLimit(new ArrayList<>(itemIds), mQueryOrderBy, mLimit);
                     mItemStatesEmitter.onNext(new ArrayList<>(itemStates));
                 } catch (Throwable throwable) {
+                    mLogger.e(TAG, throwable.getMessage(), throwable);
                     mItemStatesEmitter.onNext(new ArrayList<>());
                 } finally {
                     mIsLoadingEmitter.onNext(false);
@@ -93,13 +99,11 @@ public class PagedItemCmd {
     }
 
     public void loadNextPage() {
-        // no pagination for search
-        if (isSearching()) return;
         if (getAllItems().size() < mLimit) {
             return;
         }
         mLimit += mLimit;
-        load();
+        refresh();
     }
 
     public void refresh() {
@@ -125,6 +129,7 @@ public class PagedItemCmd {
                 mItemStatesEmitter.onNext(
                         callable.call());
             } catch (Throwable throwable) {
+                mLogger.e(TAG, throwable.getMessage(), throwable);
                 mItemStatesEmitter.onNext(mItemStatesSubject.getValue());
             } finally {
                 mIsLoadingEmitter.onNext(false);
