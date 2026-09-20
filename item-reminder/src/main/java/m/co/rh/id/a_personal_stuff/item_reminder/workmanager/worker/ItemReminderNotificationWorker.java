@@ -13,9 +13,12 @@ import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.IItemReminderNotificationHandler;
 import m.co.rh.id.a_personal_stuff.item_reminder.workmanager.WorkManagerConstants;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
 public class ItemReminderNotificationWorker extends Worker {
+
+    private static final String TAG = ItemReminderNotificationWorker.class.getName();
 
     public ItemReminderNotificationWorker(@NonNull Context context, @NonNull WorkerParameters workerParams) {
         super(context, workerParams);
@@ -38,6 +41,11 @@ public class ItemReminderNotificationWorker extends Worker {
             }
             return Result.success();
         } catch (Exception e) {
+            try {
+                BaseApplication.of(getApplicationContext()).getProvider()
+                        .get(ILogger.class).e(TAG, e.getMessage(), e);
+            } catch (Throwable ignored) {
+            }
             return Result.failure();
         }
     }
