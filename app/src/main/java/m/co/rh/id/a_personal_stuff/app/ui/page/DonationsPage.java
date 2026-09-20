@@ -22,6 +22,7 @@ import m.co.rh.id.aprovider.Provider;
 public class DonationsPage extends StatefulView<Activity> implements View.OnClickListener {
     private static final String TAG = DonationsPage.class.getName();
     private static final String DEV_URL = "<a href='https://rh-apps.github.io/'>https://rh-apps.github.io/</a>";
+    private static final String DONATE_URL = "https://teer.id/rh-id";
 
     @NavInject
     private transient Provider mProvider;
@@ -42,15 +43,15 @@ public class DonationsPage extends StatefulView<Activity> implements View.OnClic
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.button_donate) {
-            Uri webpage = Uri.parse("https://teer.id/rh-id");
+            Uri webpage = Uri.parse(DONATE_URL);
             Intent webIntent = new Intent(Intent.ACTION_VIEW, webpage);
             Context context = view.getContext();
             try {
                 context.startActivity(webIntent);
             } catch (ActivityNotFoundException activityNotFoundException) {
-                webpage = Uri.parse("https://teer.id/rh-id");
-                webIntent = new Intent(Intent.ACTION_VIEW, webpage);
-                context.startActivity(webIntent);
+                mProvider.get(ILogger.class).e(TAG,
+                        "No application available to open donation page", activityNotFoundException);
+                return;
             }
             mProvider.get(ILogger.class)
                     .i(TAG, context.getString(R.string.donation_thank_you));
