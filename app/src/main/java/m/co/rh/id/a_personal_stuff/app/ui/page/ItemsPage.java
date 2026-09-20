@@ -68,15 +68,6 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
                 mSelectedSort.getSubject()
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .subscribe(integer -> {
-                            /*
-                                        integers.add(R.string.sort_by_default);
-                                        integers.add(R.string.sort_by_expired_date_time_asc);
-                                        integers.add(R.string.sort_by_expired_date_time_desc);
-                                        integers.add(R.string.sort_by_updated_date_time_asc);
-                                        integers.add(R.string.sort_by_updated_date_time_desc);
-                                        integers.add(R.string.sort_by_created_date_time_asc);
-                                        integers.add(R.string.sort_by_created_date_time_desc);
-                             */
                             switch (integer) {
                                 case 1:
                                     mItemListSV.orderItemByExpiredTimeDate();
