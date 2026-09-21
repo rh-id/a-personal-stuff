@@ -828,12 +828,12 @@ To run tests:
 - **Release APK**: `app/build/outputs/apk/release/app-release.apk`
 
 ## Screenshots
-<img src="https://github.com/rh-id/a-personal-stuff/blob/master/fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
+<img src="fastlane/metadata/android/en-US/images/featureGraphic.png" width="1024"/>
 
-<img src="https://github.com/rh-id/a-personal-stuff/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" height="512"/>
-<img src="https://github.com/rh-id/a-personal-stuff/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" height="512"/>
-<img src="https://github.com/rh-id/a-personal-stuff/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" height="512"/>
-<img src="https://github.com/rh-id/a-personal-stuff/blob/master/fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" height="512"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" height="512"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" height="512"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" height="512"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" height="512"/>
 
 ## Support this project
 Consider donation to support this project
