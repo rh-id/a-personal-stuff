@@ -12,5 +12,5 @@ Eiginleikar þessa forrits:
   <li>Leyfir notanda að stjórna magninu og áminningum af hlutunum til að fylgst með hlutnum.</li>
   <li>Styður strikamerkjan lestur sem inntak og leit</li>
   <li>Öryggisafrit og endurheimta forritsgögn með ZIP-sniði þar á meðal myndir og smámyndir</li>
-  <li>Fáanlegt í 9 tungumálum (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Fáanlegt í 11 tungumálum (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

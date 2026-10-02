@@ -12,5 +12,5 @@ Features of this app:
   <li>Allow user to manage the amount and reminder of the items to keep track of the item.</li>
   <li>Support barcode scan as input & search</li>
   <li>Backup and restore app data with ZIP format including images and thumbnails</li>
-  <li>Available in 9 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Available in 11 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

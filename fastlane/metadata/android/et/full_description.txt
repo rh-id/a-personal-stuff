@@ -12,5 +12,5 @@ Rakenduse funktsioonid:
   <li>Võimaldab kasutajal hallata esemete kogust ja meeldetuletusi, et esemet jälgida</li>
   <li>Toetab triipkoodi skannimist sisendina ja otsinguna</li>
   <li>Rakenduse andmete varundamine ja taastamine ZIP-vormingus, sealhulgas pildid ja pisipildid</li>
-  <li>Saadaval 9 keeles (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Saadaval 11 keeles (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

@@ -12,5 +12,5 @@ Fitur aplikasi ini:
   <li>Mengizinkan pengguna mengelola jumlah dan pengingat item untuk melacak item tersebut.</li>
   <li>Mendukung pemindaian barcode sebagai input & pencarian</li>
   <li>Backup dan restore data aplikasi dengan format ZIP termasuk gambar dan thumbnail</li>
-  <li>Tersedia dalam 9 bahasa (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Tersedia dalam 11 bahasa (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

@@ -12,5 +12,5 @@ Fonctionnalités de cette application :
   <li>Permet à l'utilisateur de gérer la quantité et les rappels des articles pour suivre l'article</li>
   <li>Prend en charge le scan de codes-barres comme saisie et recherche</li>
   <li>Sauvegarde et restauration des données de l'application au format ZIP, y compris les images et les vignettes</li>
-  <li>Disponible en 9 langues (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Disponible en 11 langues (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

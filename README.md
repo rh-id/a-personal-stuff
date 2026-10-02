@@ -779,21 +779,32 @@ This structure allows for version-controlled store presence management. There ar
 
 ## Testing
 
-There are no unit tests (`src/test` does not exist in any module). Testing is covered by exactly two instrumented test suites in `:app/src/androidTest/`, run on the emulator matrix in CI (see Automation & CI/CD above):
+Testing is split between JVM unit tests and instrumented tests.
+
+### JVM Unit Tests
+Three suites, run on the local JVM by `./gradlew test`:
+
+- **`:base/src/test/` — ItemDaoTest.java**: unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
+- **`:app/src/test/` — PagedItemCmdTest.java**: tests the paged item search command against a Mockito-mocked DAO — state emission from DAO results, empty-list fallback when the DAO throws, DAO argument passing, and page-size doubling on `loadNextPage`.
+- **`:app/src/test/` — InventoryStatsCalculatorTest.java**: tests inventory statistics computation — zeroed summary for empty data, inventory value aggregation, expiry boundary splitting (expired vs. expiring within lead days), and low-stock detection from derived remaining stock.
+
+### Instrumented Tests (`:app/src/androidTest/`)
+Two suites, run on the emulator matrix in CI (see Automation & CI/CD above):
 
 - **BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
 - **ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
 
 Available tooling:
 - JUnit 4.13.2
+- Mockito 5.24.0
 - AndroidX Test / Espresso
 - AndroidX Test JUnit
-- Room Testing 2.6.1 (uses exported schemas in `schemas/` directories)
+- Room Testing 2.7.2 (uses exported schemas in `schemas/` directories)
 - Test Runner: AndroidJUnitRunner
 
 To run tests:
 ```bash
-# Run the unit-test task (no unit tests exist yet, so this is effectively a no-op)
+# Run JVM unit tests
 ./gradlew test
 
 # Run instrumented tests (requires connected device/emulator)

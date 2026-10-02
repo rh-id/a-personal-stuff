@@ -12,5 +12,5 @@ Funcziuns da questa app:
   <li>Permettar als utilisaders d'administrar la quantitad e la regorda da las chaussas per tegnair tracta da la chaussa.</li>
   <li>Supportar la scan da codice da barras sco input e tschertga</li>
   <li>Far ina copia da segirezza e restaurar ils datas da l'app cun format ZIP inclusi maletgs e miniaturen</li>
-  <li>Disponibel en 9 linguas (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Disponibel en 11 linguas (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

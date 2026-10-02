@@ -12,5 +12,5 @@ Funktionen dieser App:
   <li>Ermöglicht dem Benutzer, die Menge und Erinnerungen der Artikel zu verwalten, um den Artikel im Auge zu behalten</li>
   <li>Unterstützt Strichcodescan als Eingabe und Suche</li>
   <li>Backup und Wiederherstellung von App-Daten im ZIP-Format einschließlich Bilder und Thumbnails</li>
-  <li>Verfügbar in 9 Sprachen (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh)</li>
+  <li>Verfügbar in 11 Sprachen (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>
