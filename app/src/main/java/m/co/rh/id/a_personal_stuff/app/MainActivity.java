@@ -83,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
                                     getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.daynight_status_bar_color));
                                 }
                                 BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
+                                // reBuildAllRoute re-installs the activity content view while the
+                                // activity is running; the new hierarchy misses the initial inset
+                                // dispatch, so request one explicitly or content lays out under the
+                                // transparent status bar on Android 15+ (enforced edge-to-edge)
+                                getWindow().getDecorView().requestApplyInsets();
                             }
                         })
                 );
