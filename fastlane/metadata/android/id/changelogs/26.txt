@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Fitur Baru:
+* Pencadangan terjadwal otomatis ke folder pilihan pengguna
+* Warna dinamis Material You dengan sakelar di pengaturan tema
+* Ikon peluncur monokrom untuk ikon bertema di Android 13+
+
+Perbaikan:
+* Inset bilah sistem kini diterapkan kembali setelah berpindah halaman di Android 15+

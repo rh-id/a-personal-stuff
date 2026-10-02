@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Nouvelles fonctionnalités :
+* Sauvegardes automatiques planifiées vers un dossier choisi par l'utilisateur
+* Couleurs dynamiques Material You avec un commutateur dans les paramètres de thème
+* Icône de lanceur monochrome pour les icônes thématiques sur Android 13+
+
+Corrections :
+* Les encarts des barres système sont désormais réappliqués après une navigation sous Android 15+

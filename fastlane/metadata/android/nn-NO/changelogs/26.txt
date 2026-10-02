@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Nye funksjonar:
+* Automatiske planlagde tryggleikskopiar til ei sjølvvald mappe
+* Material You dynamiske fargar med brytar i draktinnstillingane
+* Monokromt launcher-ikon for tematiske ikon på Android 13+
+
+Feilrettingar:
+* Systemlinjeavstandane vert no brukte på nytt etter navigering på Android 15+

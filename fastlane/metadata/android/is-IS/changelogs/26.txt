@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Nýir eiginleikar:
+* Sjálfvirk áætluð afritun í möppu sem notandinn velur
+* Material You dýnamískir litir með rofa í þemastillingum
+* Táknmynd í einum lit fyrir Android 13+ þemutákn
+
+Villuleiðréttingar:
+* Bilurinn við kerfisstikurnar er nú aftur réttur eftir flakk á Android 15+

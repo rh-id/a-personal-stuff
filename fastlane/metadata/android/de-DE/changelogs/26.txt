@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Neue Funktionen:
+* Automatische geplante Backups in einen vom Nutzer ausgewählten Ordner
+* Material You dynamische Farben mit einem Schalter in den Theme-Einstellungen
+* Einfarbiges Launcher-Symbol für Themensymbole ab Android 13+
+
+Fehlerbehebungen:
+* Systemleisten-Abstände werden auf Android 15+ nach dem Navigieren nun wieder korrekt angewendet

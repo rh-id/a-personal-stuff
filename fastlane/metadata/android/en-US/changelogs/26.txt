@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Features:
+* Automatic scheduled backups to a user-selected folder
+* Material You dynamic color with a toggle in theme settings
+* Monochrome launcher icon for Android 13+ themed icons
+
+Fixes:
+* Fixed system bar insets not being re-applied after navigating on Android 15+

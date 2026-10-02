@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Novas funcziuns:
+* Backup automatica planifitgada en in ordinatur tschernì da l'utilisader
+* Colurs dinamicas da Material You cun in interruttur en ils parameters dal tema
+* Icona monocroma dal launcher per las iconas tematicas sin Android 13+
+
+Corecziuns:
+* Ils spazis da las travs dal sistem vegnan ussa applitgads puspè suenter navigar sin Android 15+

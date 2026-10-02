@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Uued funktsioonid:
+* Automaatsed ajastatud varundused kasutaja valitud kausta
+* Material You dünaamilised värvid koos lülitiga teema seadetes
+* Ühevärviline käivitaja ikoon Android 13+ teemaikoonide jaoks
+
+Veaparandused:
+* Süsteemiriba sisestusi rakendatakse Android 15+ seadmetel pärast navigeerimist nüüd uuesti

@@ -1,0 +1,9 @@
+Release 2.2.0+26
+
+Nuove funzionalità:
+* Backup pianificati automatici in una cartella scelta dall'utente
+* Colori dinamici Material You con un interruttore nelle impostazioni del tema
+* Icona del launcher monocromatica per le icone tematiche su Android 13+
+
+Correzioni:
+* I margini delle barre di sistema ora vengono riapplicati dopo la navigazione su Android 15+
