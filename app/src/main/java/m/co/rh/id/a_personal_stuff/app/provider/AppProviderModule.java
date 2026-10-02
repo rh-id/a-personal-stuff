@@ -5,8 +5,10 @@ import android.app.Application;
 import m.co.rh.id.a_personal_stuff.app.provider.command.CommandProviderModule;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppItemNavigation;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_personal_stuff.app.provider.component.AutoBackupScheduler;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryAlertScheduler;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
+import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
 import m.co.rh.id.a_personal_stuff.barcode.provider.BarcodeProviderModule;
 import m.co.rh.id.a_personal_stuff.base.provider.BaseProviderModule;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
@@ -45,7 +47,9 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));
         providerRegistry.registerLazy(AppItemNavigation.class, AppItemNavigation::new);
         providerRegistry.registerLazy(InventoryStatsCalculator.class, () -> new InventoryStatsCalculator(provider));
+        providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
         providerRegistry.registerAsync(InventoryAlertScheduler.class, () -> new InventoryAlertScheduler(provider));
+        providerRegistry.registerAsync(AutoBackupScheduler.class, () -> new AutoBackupScheduler(provider));
 
         providerRegistry.registerPool(IStatefulViewProvider.class, () -> new StatefulViewProvider(provider));
         // it is safer to register navigator last in case it needs dependency from all above, provider can be passed here

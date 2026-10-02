@@ -25,6 +25,20 @@ public class SettingsSharedPreferences {
     public static final boolean DEFAULT_LOW_STOCK_ALERT_ENABLED = true;
     /** Default: Material You dynamic colors are enabled (when supported by the device). */
     public static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
+    /** Default: automatic scheduled backup is disabled. */
+    public static final boolean DEFAULT_AUTO_BACKUP_ENABLED = false;
+    /** Default backup interval in days: 30. */
+    public static final int DEFAULT_AUTO_BACKUP_INTERVAL_DAYS = 30;
+    /**
+     * Sentinel for "no SAF folder selected". Strings must never be null here:
+     * {@code BehaviorSubject.createDefault(null)}/{@code onNext(null)} throw
+     * NPE in RxJava3, so an empty string means none.
+     */
+    public static final String DEFAULT_AUTO_BACKUP_TREE_URI = "";
+    /** Sentinel for "no recorded backup failure". */
+    public static final String DEFAULT_AUTO_BACKUP_LAST_FAILURE = "";
+    /** Default last successful backup timestamp (never backed up). */
+    public static final long DEFAULT_AUTO_BACKUP_LAST_SUCCESS_DATE_TIME = 0L;
 
     private ExecutorService mExecutorService;
     private SharedPreferences mSharedPreferences;
@@ -41,6 +55,16 @@ public class SettingsSharedPreferences {
     private String mLowStockAlertEnabledKey;
     private BehaviorSubject<Boolean> mDynamicColorsEnabled;
     private String mDynamicColorsEnabledKey;
+    private BehaviorSubject<Boolean> mAutoBackupEnabled;
+    private String mAutoBackupEnabledKey;
+    private BehaviorSubject<Integer> mAutoBackupIntervalDays;
+    private String mAutoBackupIntervalDaysKey;
+    private BehaviorSubject<String> mAutoBackupTreeUri;
+    private String mAutoBackupTreeUriKey;
+    private BehaviorSubject<Long> mAutoBackupLastSuccessDateTime;
+    private String mAutoBackupLastSuccessDateTimeKey;
+    private BehaviorSubject<String> mAutoBackupLastFailure;
+    private String mAutoBackupLastFailureKey;
 
     public SettingsSharedPreferences(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
@@ -53,6 +77,11 @@ public class SettingsSharedPreferences {
         mExpiryAlertLeadDays = BehaviorSubject.createDefault(DEFAULT_EXPIRY_ALERT_LEAD_DAYS);
         mLowStockAlertEnabled = BehaviorSubject.createDefault(DEFAULT_LOW_STOCK_ALERT_ENABLED);
         mDynamicColorsEnabled = BehaviorSubject.createDefault(DEFAULT_DYNAMIC_COLORS_ENABLED);
+        mAutoBackupEnabled = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_ENABLED);
+        mAutoBackupIntervalDays = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_INTERVAL_DAYS);
+        mAutoBackupTreeUri = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_TREE_URI);
+        mAutoBackupLastSuccessDateTime = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_LAST_SUCCESS_DATE_TIME);
+        mAutoBackupLastFailure = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_LAST_FAILURE);
         initValue();
     }
 
@@ -99,6 +128,41 @@ public class SettingsSharedPreferences {
                 mDynamicColorsEnabledKey,
                 mDynamicColorsEnabled.getValue());
         setDynamicColorsEnabled(dynamicColorsEnabled);
+
+        mAutoBackupEnabledKey = SHARED_PREFERENCES_NAME
+                + ".autoBackupEnabled";
+        boolean autoBackupEnabled = mSharedPreferences.getBoolean(
+                mAutoBackupEnabledKey,
+                mAutoBackupEnabled.getValue());
+        setAutoBackupEnabled(autoBackupEnabled);
+
+        mAutoBackupIntervalDaysKey = SHARED_PREFERENCES_NAME
+                + ".autoBackupIntervalDays";
+        int autoBackupIntervalDays = mSharedPreferences.getInt(
+                mAutoBackupIntervalDaysKey,
+                mAutoBackupIntervalDays.getValue());
+        setAutoBackupIntervalDays(autoBackupIntervalDays);
+
+        mAutoBackupTreeUriKey = SHARED_PREFERENCES_NAME
+                + ".autoBackupTreeUri";
+        String autoBackupTreeUri = mSharedPreferences.getString(
+                mAutoBackupTreeUriKey,
+                mAutoBackupTreeUri.getValue());
+        setAutoBackupTreeUri(autoBackupTreeUri);
+
+        mAutoBackupLastSuccessDateTimeKey = SHARED_PREFERENCES_NAME
+                + ".autoBackupLastSuccessDateTime";
+        long autoBackupLastSuccessDateTime = mSharedPreferences.getLong(
+                mAutoBackupLastSuccessDateTimeKey,
+                mAutoBackupLastSuccessDateTime.getValue());
+        setAutoBackupLastSuccessDateTime(autoBackupLastSuccessDateTime);
+
+        mAutoBackupLastFailureKey = SHARED_PREFERENCES_NAME
+                + ".autoBackupLastFailure";
+        String autoBackupLastFailure = mSharedPreferences.getString(
+                mAutoBackupLastFailureKey,
+                mAutoBackupLastFailure.getValue());
+        setAutoBackupLastFailure(autoBackupLastFailure);
     }
 
     private void selectedTheme(int setting) {
@@ -214,5 +278,110 @@ public class SettingsSharedPreferences {
 
     public Flowable<Boolean> getDynamicColorsEnabledFlow() {
         return Flowable.fromObservable(mDynamicColorsEnabled, BackpressureStrategy.BUFFER);
+    }
+
+    private void autoBackupEnabled(boolean enabled) {
+        mAutoBackupEnabled.onNext(enabled);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putBoolean(mAutoBackupEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setAutoBackupEnabled(boolean enabled) {
+        autoBackupEnabled(enabled);
+    }
+
+    public boolean isAutoBackupEnabled() {
+        Boolean current = mAutoBackupEnabled.getValue();
+        return current != null ? current : DEFAULT_AUTO_BACKUP_ENABLED;
+    }
+
+    public Flowable<Boolean> getAutoBackupEnabledFlow() {
+        return Flowable.fromObservable(mAutoBackupEnabled, BackpressureStrategy.BUFFER);
+    }
+
+    private void autoBackupIntervalDays(int days) {
+        mAutoBackupIntervalDays.onNext(days);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putInt(mAutoBackupIntervalDaysKey, days)
+                        .commit());
+    }
+
+    public void setAutoBackupIntervalDays(int days) {
+        autoBackupIntervalDays(days);
+    }
+
+    public int getAutoBackupIntervalDays() {
+        Integer current = mAutoBackupIntervalDays.getValue();
+        return current != null ? current : DEFAULT_AUTO_BACKUP_INTERVAL_DAYS;
+    }
+
+    public Flowable<Integer> getAutoBackupIntervalDaysFlow() {
+        return Flowable.fromObservable(mAutoBackupIntervalDays, BackpressureStrategy.BUFFER);
+    }
+
+    private void autoBackupTreeUri(String treeUri) {
+        // the subject must never carry null: RxJava3 BehaviorSubject throws
+        // NPE on createDefault(null)/onNext(null), so "" means "no folder"
+        String value = treeUri != null ? treeUri : DEFAULT_AUTO_BACKUP_TREE_URI;
+        mAutoBackupTreeUri.onNext(value);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putString(mAutoBackupTreeUriKey, value)
+                        .commit());
+    }
+
+    public void setAutoBackupTreeUri(String treeUri) {
+        autoBackupTreeUri(treeUri);
+    }
+
+    public String getAutoBackupTreeUri() {
+        String current = mAutoBackupTreeUri.getValue();
+        return current != null ? current : DEFAULT_AUTO_BACKUP_TREE_URI;
+    }
+
+    public Flowable<String> getAutoBackupTreeUriFlow() {
+        return Flowable.fromObservable(mAutoBackupTreeUri, BackpressureStrategy.BUFFER);
+    }
+
+    private void autoBackupLastSuccessDateTime(long dateTime) {
+        mAutoBackupLastSuccessDateTime.onNext(dateTime);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putLong(mAutoBackupLastSuccessDateTimeKey, dateTime)
+                        .commit());
+    }
+
+    public void setAutoBackupLastSuccessDateTime(long dateTime) {
+        autoBackupLastSuccessDateTime(dateTime);
+    }
+
+    public long getAutoBackupLastSuccessDateTime() {
+        Long current = mAutoBackupLastSuccessDateTime.getValue();
+        return current != null ? current : DEFAULT_AUTO_BACKUP_LAST_SUCCESS_DATE_TIME;
+    }
+
+    public Flowable<Long> getAutoBackupLastSuccessDateTimeFlow() {
+        return Flowable.fromObservable(mAutoBackupLastSuccessDateTime, BackpressureStrategy.BUFFER);
+    }
+
+    private void autoBackupLastFailure(String failure) {
+        // same null-safety rule as the tree uri: "" means "no failure"
+        String value = failure != null ? failure : DEFAULT_AUTO_BACKUP_LAST_FAILURE;
+        mAutoBackupLastFailure.onNext(value);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putString(mAutoBackupLastFailureKey, value)
+                        .commit());
+    }
+
+    public void setAutoBackupLastFailure(String failure) {
+        autoBackupLastFailure(failure);
+    }
+
+    public String getAutoBackupLastFailure() {
+        String current = mAutoBackupLastFailure.getValue();
+        return current != null ? current : DEFAULT_AUTO_BACKUP_LAST_FAILURE;
+    }
+
+    public Flowable<String> getAutoBackupLastFailureFlow() {
+        return Flowable.fromObservable(mAutoBackupLastFailure, BackpressureStrategy.BUFFER);
     }
 }

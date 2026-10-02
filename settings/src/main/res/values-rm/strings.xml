@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 dis</string>
     <string name="alert_notify_within">Avisar entaifer</string>
     <string name="settings">Parameters</string>
+    <string name="auto_backup_title">Backup automatica</string>
+    <string name="auto_backup_enabled">Activar il backup automatic</string>
+    <string name="auto_backup_interval_hint">Interval da backup (dis)</string>
+    <string name="auto_backup_choose_folder">Tscherner ordinatur</string>
+    <string name="auto_backup_folder_none">Nagin ordinatur tschernì</string>
+    <string name="auto_backup_folder_set">Ordinatur da backup definì</string>
+    <string name="auto_backup_last_success">Ultim backup: %s</string>
+    <string name="auto_backup_last_failure">Backup falì: %s</string>
 </resources>

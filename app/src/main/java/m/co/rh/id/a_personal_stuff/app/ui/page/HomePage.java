@@ -568,7 +568,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         })
         );
         mRxDisposer.add("home_import_execute",
-                Single.fromCallable(() -> mFileHelper.createTempFile("backup_import.aps_backup", uri))
+                Single.fromCallable(() -> mFileHelper.createTempFile("backup_import.zip", uri))
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .flatMap(tempFile -> mImportCmd.execute(tempFile))
                         .observeOn(AndroidSchedulers.mainThread())

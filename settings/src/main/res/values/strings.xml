@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 days</string>
     <string name="alert_notify_within">Notify within</string>
     <string name="settings">Settings</string>
+    <string name="auto_backup_title">Automatic backup</string>
+    <string name="auto_backup_enabled">Enable automatic backup</string>
+    <string name="auto_backup_interval_hint">Backup interval (days)</string>
+    <string name="auto_backup_choose_folder">Choose folder</string>
+    <string name="auto_backup_folder_none">No folder selected</string>
+    <string name="auto_backup_folder_set">Backup folder set</string>
+    <string name="auto_backup_last_success">Last backup: %s</string>
+    <string name="auto_backup_last_failure">Backup failed: %s</string>
 </resources>

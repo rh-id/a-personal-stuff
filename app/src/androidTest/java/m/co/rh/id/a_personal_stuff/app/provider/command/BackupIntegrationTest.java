@@ -36,6 +36,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
+import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
@@ -2172,7 +2173,7 @@ public class BackupIntegrationTest {
     }
 
     private File createBackupZip(BackupData data) throws Exception {
-        File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".aps_backup");
+        File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".zip");
         FileOutputStream fos = new FileOutputStream(zipFile);
         ZipOutputStream zos = new ZipOutputStream(fos);
         try {
@@ -2189,7 +2190,7 @@ public class BackupIntegrationTest {
     }
 
     private File createBackupZip(BackupData data, Map<String, byte[]> extraFiles) throws Exception {
-        File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".aps_backup");
+        File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".zip");
         FileOutputStream fos = new FileOutputStream(zipFile);
         ZipOutputStream zos = new ZipOutputStream(fos);
         try {
@@ -2354,6 +2355,7 @@ public class BackupIntegrationTest {
             providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new NoOpCleanUpItemMaintenanceFileHelper(provider));
             providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new NoOpCleanUpItemUsageFileHelper(provider));
             providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new NoOpCleanUpItemPurchaseFileHelper(provider));
+            providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
         }
 
         private ExecutorService getExecutorService() {

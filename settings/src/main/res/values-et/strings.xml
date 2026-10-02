@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 päeva</string>
     <string name="alert_notify_within">Teavita ajavahemikus</string>
     <string name="settings">Seaded</string>
+    <string name="auto_backup_title">Automaatne varundus</string>
+    <string name="auto_backup_enabled">Luba automaatne varundus</string>
+    <string name="auto_backup_interval_hint">Varunduse intervall (päevades)</string>
+    <string name="auto_backup_choose_folder">Vali kaust</string>
+    <string name="auto_backup_folder_none">Kausta pole valitud</string>
+    <string name="auto_backup_folder_set">Varunduskaust on määratud</string>
+    <string name="auto_backup_last_success">Viimane varundus: %s</string>
+    <string name="auto_backup_last_failure">Varundus ebaõnnestus: %s</string>
 </resources>

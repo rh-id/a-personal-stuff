@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 dagar</string>
     <string name="alert_notify_within">Tilkynna innan</string>
     <string name="settings">Stillingar</string>
+    <string name="auto_backup_title">Sjálfvirk afritun</string>
+    <string name="auto_backup_enabled">Virkja sjálfvirka afritun</string>
+    <string name="auto_backup_interval_hint">Afritunartíðni (dagar)</string>
+    <string name="auto_backup_choose_folder">Veldu möppu</string>
+    <string name="auto_backup_folder_none">Engin mappa valin</string>
+    <string name="auto_backup_folder_set">Afritunarmappa valin</string>
+    <string name="auto_backup_last_success">Síðasta afritun: %s</string>
+    <string name="auto_backup_last_failure">Afritun mistókst: %s</string>
 </resources>

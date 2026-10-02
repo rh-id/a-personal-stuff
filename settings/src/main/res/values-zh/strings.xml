@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 天</string>
     <string name="alert_notify_within">提前提醒</string>
     <string name="settings">设置</string>
+    <string name="auto_backup_title">自动备份</string>
+    <string name="auto_backup_enabled">启用自动备份</string>
+    <string name="auto_backup_interval_hint">备份间隔（天）</string>
+    <string name="auto_backup_choose_folder">选择文件夹</string>
+    <string name="auto_backup_folder_none">尚未选择文件夹</string>
+    <string name="auto_backup_folder_set">已设置备份文件夹</string>
+    <string name="auto_backup_last_success">上次备份：%s</string>
+    <string name="auto_backup_last_failure">备份失败：%s</string>
 </resources>

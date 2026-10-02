@@ -93,6 +93,70 @@ public class FileHelper {
         return tmpFile;
     }
 
+    /**
+     * Deletes a temp file previously created by this helper together with
+     * the per-use folder that holds it. Null-safe and best-effort: failures
+     * are logged, never thrown.
+     */
+    public void deleteTempFile(File tempFile) {
+        try {
+            if (tempFile == null) {
+                return;
+            }
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
+            File parent = tempFile.getParentFile();
+            // File.delete on a non-empty folder is a no-op, so this only
+            // removes the per-use folder once the file itself is gone
+            if (parent != null && !mTempFileRoot.equals(parent)) {
+                parent.delete();
+            }
+        } catch (Throwable throwable) {
+            mLogger.get().e(TAG, throwable.getMessage(), throwable);
+        }
+    }
+
+    /**
+     * Best-effort housekeeping for temp files left behind by crashed or
+     * interrupted operations: deletes files whose names end with
+     * fileNameSuffix and whose last-modified time is older than
+     * maxAgeMillis, then removes any per-use folder left empty. Failures
+     * are logged, never thrown.
+     */
+    public void pruneStaleTempFiles(String fileNameSuffix, long maxAgeMillis) {
+        try {
+            File[] tempDirs = mTempFileRoot.listFiles();
+            if (tempDirs == null) {
+                return;
+            }
+            long expiry = System.currentTimeMillis() - maxAgeMillis;
+            for (File tempDir : tempDirs) {
+                boolean deletedSomething = false;
+                File[] files = tempDir.listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.getName().endsWith(fileNameSuffix)
+                                && file.lastModified() < expiry) {
+                            file.delete();
+                            deletedSomething = true;
+                        }
+                    }
+                }
+                File[] remaining = tempDir.listFiles();
+                if (remaining != null && remaining.length == 0) {
+                    // the last-modified guard avoids racing a folder that
+                    // was just created and is about to receive its file
+                    if (deletedSomething || tempDir.lastModified() < expiry) {
+                        tempDir.delete();
+                    }
+                }
+            }
+        } catch (Throwable throwable) {
+            mLogger.get().e(TAG, throwable.getMessage(), throwable);
+        }
+    }
+
     public void clearLogFile() {
         if (mLogFile.exists()) {
             mLogFile.delete();

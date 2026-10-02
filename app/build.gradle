@@ -73,6 +73,7 @@ dependencies {
     implementation project(path: ':item-reminder')
     implementation project(path: ':item-checklist')
     implementation project(path: ':settings')
+    implementation libs.androidx.documentfile
     implementation libs.photo.view
     implementation libs.a.poi.spreadsheet
 

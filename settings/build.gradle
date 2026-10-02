@@ -32,4 +32,5 @@ dependencies {
     coreLibraryDesugaring libs.desugar.jdk.libs
 
     implementation project(":base")
+    implementation libs.androidx.documentfile
 }

@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 hari</string>
     <string name="alert_notify_within">Beri tahu dalam</string>
     <string name="settings">Pengaturan</string>
+    <string name="auto_backup_title">Pencadangan otomatis</string>
+    <string name="auto_backup_enabled">Aktifkan pencadangan otomatis</string>
+    <string name="auto_backup_interval_hint">Interval pencadangan (hari)</string>
+    <string name="auto_backup_choose_folder">Pilih folder</string>
+    <string name="auto_backup_folder_none">Belum ada folder yang dipilih</string>
+    <string name="auto_backup_folder_set">Folder pencadangan ditetapkan</string>
+    <string name="auto_backup_last_success">Pencadangan terakhir: %s</string>
+    <string name="auto_backup_last_failure">Pencadangan gagal: %s</string>
 </resources>

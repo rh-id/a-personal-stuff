@@ -20,4 +20,12 @@
     <string name="alert_lead_days_14">14 dagar</string>
     <string name="alert_notify_within">Varsla innan</string>
     <string name="settings">Innstillingar</string>
+    <string name="auto_backup_title">Automatisk sikkerheitskopiering</string>
+    <string name="auto_backup_enabled">Aktiver automatisk sikkerheitskopiering</string>
+    <string name="auto_backup_interval_hint">Sikkerheitskopieringsintervall (dagar)</string>
+    <string name="auto_backup_choose_folder">Vel mappe</string>
+    <string name="auto_backup_folder_none">Ingen mappe vald</string>
+    <string name="auto_backup_folder_set">Sikkerheitskopimappe er vald</string>
+    <string name="auto_backup_last_success">Siste sikkerheitskopi: %s</string>
+    <string name="auto_backup_last_failure">Sikkerheitskopiering feila: %s</string>
 </resources>

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="@dimen/text_margin">
+
+    <com.google.android.material.textview.MaterialTextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textStyle="bold"
+        android:text="@string/auto_backup_title" />
+
+    <com.google.android.material.checkbox.MaterialCheckBox
+        android:id="@+id/switch_auto_backup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/auto_backup_enabled" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_auto_backup_folder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:paddingStart="32dp"
+        android:text="@string/auto_backup_folder_none" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/form_auto_backup_interval"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="32dp"
+        android:hint="@string/auto_backup_interval_hint">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/edit_text_auto_backup_interval"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:maxLength="3"
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/button_choose_folder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="@string/auto_backup_choose_folder" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_auto_backup_status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp" />
+</androidx.appcompat.widget.LinearLayoutCompat>
