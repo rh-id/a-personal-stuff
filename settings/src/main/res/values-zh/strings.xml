@@ -11,6 +11,7 @@
     <string name="follow_system">跟随系统</string>
     <string name="light_mode">浅色模式</string>
     <string name="dark_mode">深色模式</string>
+    <string name="settings_use_dynamic_colors">使用系统颜色（Material You）</string>
     <string name="alert_settings">提醒</string>
     <string name="expiry_date_alerts">到期提醒</string>
     <string name="low_stock_alerts">低库存提醒</string>

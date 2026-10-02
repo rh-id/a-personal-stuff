@@ -11,6 +11,7 @@
     <string name="follow_system">Ikuti Sistem</string>
     <string name="light_mode">Mode Terang</string>
     <string name="dark_mode">Mode Gelap</string>
+    <string name="settings_use_dynamic_colors">Gunakan warna sistem (Material You)</string>
     <string name="alert_settings">Peringatan</string>
     <string name="expiry_date_alerts">Peringatan tanggal kedaluwarsa</string>
     <string name="low_stock_alerts">Peringatan stok menipis</string>

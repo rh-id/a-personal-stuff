@@ -23,6 +23,8 @@ public class SettingsSharedPreferences {
     public static final int DEFAULT_EXPIRY_ALERT_LEAD_DAYS = 7;
     /** Default: low stock alerts are enabled. */
     public static final boolean DEFAULT_LOW_STOCK_ALERT_ENABLED = true;
+    /** Default: Material You dynamic colors are enabled (when supported by the device). */
+    public static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
 
     private ExecutorService mExecutorService;
     private SharedPreferences mSharedPreferences;
@@ -37,6 +39,8 @@ public class SettingsSharedPreferences {
     private String mExpiryAlertLeadDaysKey;
     private BehaviorSubject<Boolean> mLowStockAlertEnabled;
     private String mLowStockAlertEnabledKey;
+    private BehaviorSubject<Boolean> mDynamicColorsEnabled;
+    private String mDynamicColorsEnabledKey;
 
     public SettingsSharedPreferences(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
@@ -48,6 +52,7 @@ public class SettingsSharedPreferences {
         mExpiryAlertEnabled = BehaviorSubject.createDefault(DEFAULT_EXPIRY_ALERT_ENABLED);
         mExpiryAlertLeadDays = BehaviorSubject.createDefault(DEFAULT_EXPIRY_ALERT_LEAD_DAYS);
         mLowStockAlertEnabled = BehaviorSubject.createDefault(DEFAULT_LOW_STOCK_ALERT_ENABLED);
+        mDynamicColorsEnabled = BehaviorSubject.createDefault(DEFAULT_DYNAMIC_COLORS_ENABLED);
         initValue();
     }
 
@@ -87,6 +92,13 @@ public class SettingsSharedPreferences {
                 mLowStockAlertEnabledKey,
                 mLowStockAlertEnabled.getValue());
         setLowStockAlertEnabled(lowStockAlertEnabled);
+
+        mDynamicColorsEnabledKey = SHARED_PREFERENCES_NAME
+                + ".dynamicColorsEnabled";
+        boolean dynamicColorsEnabled = mSharedPreferences.getBoolean(
+                mDynamicColorsEnabledKey,
+                mDynamicColorsEnabled.getValue());
+        setDynamicColorsEnabled(dynamicColorsEnabled);
     }
 
     private void selectedTheme(int setting) {
@@ -182,5 +194,25 @@ public class SettingsSharedPreferences {
 
     public Flowable<Boolean> getLowStockAlertEnabledFlow() {
         return Flowable.fromObservable(mLowStockAlertEnabled, BackpressureStrategy.BUFFER);
+    }
+
+    private void dynamicColorsEnabled(boolean enabled) {
+        mDynamicColorsEnabled.onNext(enabled);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putBoolean(mDynamicColorsEnabledKey, enabled)
+                        .commit());
+    }
+
+    public void setDynamicColorsEnabled(boolean enabled) {
+        dynamicColorsEnabled(enabled);
+    }
+
+    public boolean isDynamicColorsEnabled() {
+        Boolean current = mDynamicColorsEnabled.getValue();
+        return current != null ? current : DEFAULT_DYNAMIC_COLORS_ENABLED;
+    }
+
+    public Flowable<Boolean> getDynamicColorsEnabledFlow() {
+        return Flowable.fromObservable(mDynamicColorsEnabled, BackpressureStrategy.BUFFER);
     }
 }

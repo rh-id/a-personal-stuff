@@ -11,6 +11,7 @@
     <string name="follow_system">Järgi süsteemi</string>
     <string name="light_mode">Hele režiim</string>
     <string name="dark_mode">Tume režiim</string>
+    <string name="settings_use_dynamic_colors">Kasuta süsteemi värve (Material You)</string>
     <string name="alert_settings">Hoiatused</string>
     <string name="expiry_date_alerts">Aegumiskuupäeva hoiatused</string>
     <string name="low_stock_alerts">Madala laoseisu hoiatused</string>

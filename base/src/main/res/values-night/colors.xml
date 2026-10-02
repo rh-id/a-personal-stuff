@@ -5,4 +5,6 @@
     <color name="daynight_black_white">@color/white</color>
     <color name="daynight_light_green_600_green_600">@color/green_600</color>
     <color name="daynight_status_bar_color">@color/black</color>
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_dark_primary</color>
+    <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_dark_secondary</color>
 </resources>

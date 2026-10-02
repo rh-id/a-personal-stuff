@@ -2,7 +2,9 @@ package m.co.rh.id.a_personal_stuff.app;
 
 import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
+import android.util.TypedValue;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -10,6 +12,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+
+import com.google.android.material.color.DynamicColors;
 
 import java.util.concurrent.TimeUnit;
 
@@ -40,17 +44,45 @@ public class MainActivity extends AppCompatActivity {
         mAppNotificationHandler = BaseApplication.of(this).getProvider()
                 .get(AppNotificationHandler.class);
         mRebuildUi = BehaviorSubject.create();
+        // apply Material You dynamic colors before super.onCreate installs
+        // the theme; gated on both the user setting and device support
+        if (mSettingsSharedPreferences.isDynamicColorsEnabled()
+                && DynamicColors.isDynamicColorAvailable()) {
+            getTheme().applyStyle(R.style.Theme_Apersonalstuff_Overlay_DynamicColors, true);
+        }
         // rebuild UI is expensive and error prone, avoid spam rebuild (especially due to day and night mode)
         mRxDisposer
                 .add("onCreate_rebuildUI", mRebuildUi.debounce(100, TimeUnit.MILLISECONDS)
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
+                                // mirrors the onCreate applyStyle gate: the overrides are
+                                // skipped only when dynamic colors are actually active
+                                boolean dynamicColorsActive = mSettingsSharedPreferences.isDynamicColorsEnabled()
+                                        && DynamicColors.isDynamicColorAvailable();
+                                if (dynamicColorsActive) {
+                                    // the activity handles uiMode config changes without recreation,
+                                    // so re-apply the overlay to re-resolve its DayNight variant
+                                    // (light/dark) for the new configuration before views rebuild
+                                    getTheme().applyStyle(R.style.Theme_Apersonalstuff_Overlay_DynamicColors, true);
+                                    // the window background drawable was instantiated under the previous
+                                    // configuration and is never re-created by applyStyle, so re-resolve
+                                    // it explicitly (the legacy branch below does the same via daynight_*)
+                                    TypedValue windowBackground = new TypedValue();
+                                    getTheme().resolveAttribute(android.R.attr.windowBackground, windowBackground, true);
+                                    if (windowBackground.type >= TypedValue.TYPE_FIRST_COLOR_INT
+                                            && windowBackground.type <= TypedValue.TYPE_LAST_COLOR_INT) {
+                                        getWindow().setBackgroundDrawable(new ColorDrawable(windowBackground.data));
+                                    } else if (windowBackground.resourceId != 0) {
+                                        getWindow().setBackgroundDrawableResource(windowBackground.resourceId);
+                                    }
+                                } else {
+                                    // Switching to night mode didn't update window background for some reason?
+                                    // seemed to occur on android 8 and below
+                                    getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
+                                    getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.daynight_status_bar_color));
+                                }
                                 BaseApplication.of(this).getNavigator(this).reBuildAllRoute();
-                                // Switching to night mode didn't update window background for some reason?
-                                // seemed to occur on android 8 and below
-                                getWindow().setBackgroundDrawableResource(R.color.daynight_white_black);
-                                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.daynight_status_bar_color));
                             }
                         })
                 );

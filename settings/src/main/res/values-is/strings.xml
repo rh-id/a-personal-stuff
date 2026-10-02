@@ -11,6 +11,7 @@
     <string name="follow_system">Fylgja kerfi</string>
     <string name="light_mode">Ljóshamur</string>
     <string name="dark_mode">Dökkt hamur</string>
+    <string name="settings_use_dynamic_colors">Nota kerfisliti (Material You)</string>
     <string name="alert_settings">Viðvaranir</string>
     <string name="expiry_date_alerts">Viðvaranir um gildistíma</string>
     <string name="low_stock_alerts">Viðvaranir um lágbirgðir</string>

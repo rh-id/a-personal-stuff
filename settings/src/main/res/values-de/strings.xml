@@ -11,6 +11,7 @@
     <string name="follow_system">System folgen</string>
     <string name="light_mode">Heller Modus</string>
     <string name="dark_mode">Dunkler Modus</string>
+    <string name="settings_use_dynamic_colors">Systemfarben verwenden (Material You)</string>
     <string name="alert_settings">Warnungen</string>
     <string name="expiry_date_alerts">Warnungen zum Ablaufdatum</string>
     <string name="low_stock_alerts">Warnungen bei niedrigem Bestand</string>

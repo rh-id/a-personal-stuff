@@ -11,6 +11,7 @@
     <string name="follow_system">Følg system</string>
     <string name="light_mode">Lys modus</string>
     <string name="dark_mode">Mørk modus</string>
+    <string name="settings_use_dynamic_colors">Bruk systemfargane (Material You)</string>
     <string name="alert_settings">Varslar</string>
     <string name="expiry_date_alerts">Varsel om utløpsdato</string>
     <string name="low_stock_alerts">Varsel ved lågt lager</string>
