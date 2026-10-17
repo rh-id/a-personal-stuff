@@ -19,10 +19,13 @@ fastlane/
         │   │       ├── 1.png
         │   │       ├── 2.png
         │   │       ├── 3.png
-        │   │       └── 4.png
+        │   │       ├── 4.png
+        │   │       ├── 5.png
+        │   │       ├── 6.png
+        │   │       ├── 7.png
+        │   │       └── 8.png
         │   └── changelogs/
-        │       ├── {versionCode}.txt              # Per-version release notes
-        │       └── default.txt                    # Fallback if versionCode not matched
+        │       └── {versionCode}.txt              # Per-version release notes
         ├── de-DE/                                 # German
         ├── et/                                    # Estonian
         ├── fr-FR/                                 # French
@@ -31,12 +34,13 @@ fastlane/
         ├── it-IT/                                 # Italian
         ├── nb-NO/                                 # Norwegian Bokmål
         ├── nn-NO/                                 # Norwegian Nynorsk
-        └── rm/                                    # Romansh
+        ├── rm/                                    # Romansh
+        └── zh-CN/                                 # Chinese (Simplified)
 ```
 
 ## How Changelogs Work
 
-Changelog files are named by `versionCode` (e.g., `16.txt` corresponds to `versionCode 16` in `app/build.gradle`). The CI release pipeline (`android-release.yml`) copies `changelogs/{versionCode}.txt` to `app/build/changelog.txt` and uses it as the GitHub Release body.
+Changelog files are named by `versionCode` (e.g., `16.txt` corresponds to `versionCode 16` in `app/build.gradle`); there is no `default.txt` fallback. At build time `app/build.gradle` copies `fastlane/metadata/android/en-US/changelogs/{versionCode}.txt` to `app/build/changelog.txt`, and the release pipeline (`android-release.yml`) uploads it as `changelog.txt` / uses it as the GitHub Release body.
 
 ## How to Update for a New Release
 

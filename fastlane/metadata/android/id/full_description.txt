@@ -12,5 +12,7 @@ Fitur aplikasi ini:
   <li>Mengizinkan pengguna mengelola jumlah dan pengingat item untuk melacak item tersebut.</li>
   <li>Mendukung pemindaian barcode sebagai input & pencarian</li>
   <li>Backup dan restore data aplikasi dengan format ZIP termasuk gambar dan thumbnail</li>
+  <li>Backup otomatis: jadwalkan backup berkala ke folder pilihan Anda (menyimpan backup terbaru)</li>
+  <li>Mendukung warna dinamis (Material You) di Android 12+</li>
   <li>Tersedia dalam 11 bahasa (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

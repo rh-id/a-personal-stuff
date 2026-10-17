@@ -15,7 +15,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 ## Features
 *   **Item Management**: Easily add, edit, and organize items.
 *   **Dashboard Overview Card**: The dashboard leads with an inventory overview — total item count, total inventory value (Σ price × amount), expired and expiring-soon counts with sample items, low-stock items, and an upcoming-reminders card; tapping a card jumps to the item list or reminders, and the card live-refreshes on data changes.
-*   **Daily Inventory Alert Digest**: A periodic WorkManager job (24 h cycle) posts a single self-replacing "Inventory needs attention (N)" notification listing up to 5 expired, 5 expiring-soon, and 5 low-stock items; expiry alerts use a configurable lead time (3/7/14 days, default 7) and both alert types can be toggled in Settings → Alerts (both default on).
+*   **Daily Inventory Alert Digest**: A periodic WorkManager job (24 h cycle) posts a single self-replacing "Inventory needs attention (N)" notification listing up to a configurable cap (3/5/10, default 5) expired, expiring-soon, and low-stock items; expiry alerts use a configurable lead time (3/7/14 days, default 7), and both alert types can be toggled in Settings → Alerts (both default on).
 *   **Per-Item Low Stock Threshold**: Optionally set a "low stock alert threshold" on the item form; low stock is computed from derived remaining stock (amount − Σ usage + Σ purchases) compared against the threshold, and it surfaces in the dashboard card, the daily digest, and the spreadsheet export.
 *   **Smart Reminders**: Set up notifications for expiration dates or custom events.
 *   **Usage Tracking**: Log when and how much of an item is used.
@@ -25,8 +25,11 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan 1D barcodes using the device camera and the ZXing library for quick input and searching.
 *   **Backup & Restore**: Export and import full app data as ZIP files, including images and thumbnails (backup format version 2, which adds the low stock threshold; version 1 backups still import).
+*   **Automatic Backup**: Scheduled backup (configurable interval in days, default every 30 days) to a folder you choose via the system folder picker (works with local storage or any SAF provider such as an SD card or cloud drive); keeps the newest 5 backups, runs only when the battery isn't low, and is toggleable in Settings (off by default).
 *   **Spreadsheet Export**: Export all data as sheets of a single .xlsx workbook (Items, Usages, Purchases, Maintenances, Reminders, Checklists and Checklist Items) — the Items sheet now includes a low stock alert threshold column; requires Android 8.0 (API 26)+, the export button is hidden on older devices.
 *   **Item Duplication**: Duplicate an existing item including its images and tags.
+*   **Dynamic Colors (Material You)**: The UI follows your wallpaper's color palette on supported devices (Android 12+), with an on/off toggle in Settings (on by default when supported).
+*   **Item View Mode**: Switch item lists between detailed and compact rows (persisted preference, detailed by default).
 *   **Multilingual Support**: Available in 11 languages (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese).
 
 ## User Workflow
@@ -58,7 +61,7 @@ The codebase is split into feature-centric modules to enforce boundaries:
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations, the dashboard overview card (DashboardCmd, InventoryStatsCalculator), and the daily inventory alert digest (InventoryAlertScheduler, AlertDigestWorker) |
+| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations, the dashboard overview card (DashboardCmd, InventoryStatsCalculator), and the daily inventory alert digest (InventoryAlertScheduler, AlertDigestWorker), automatic scheduled backup (AutoBackupScheduler, AutoBackupWorker, AutoBackupFileUtil) |
 | `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, Room migrations (DbMigration), and shared UI components (AppBar, ImageSV, SelectionPage) |
 | `:barcode` | Barcode scanning functionality using the camera (Camera1 API) with ZXing barcode decoding, with ScanBarcodePage and ScanBarcodePreview components |
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
@@ -66,7 +69,7 @@ The codebase is split into feature-centric modules to enforce boundaries:
 | `:item-maintenance` | Item maintenance tracking with entities (ItemMaintenance, ItemMaintenanceImage), commands, DAO, and UI pages (ItemMaintenancesPage, ItemMaintenanceDetailPage) |
 | `:item-checklist` | Checklist feature with entities (ItemChecklist, ItemChecklistItem), commands, DAO, and UI pages (ItemChecklistsPage, ItemChecklistDetailPage) |
 | `:item-reminder` | Reminder and alarm scheduling using WorkManager with entities (ItemReminder), commands, DAO, and UI pages (ItemRemindersPage, ItemReminderDetailPage) |
-| `:settings` | App configuration and preferences with SettingsPage, theme management (system/light/dark), alert settings (expiry/low-stock toggles, lead time), log viewing, and a licenses page rendered from a licenses.html generated at build time |
+| `:settings` | App configuration and preferences with SettingsPage, theme management (system/light/dark) with a Material You dynamic colors toggle, item view mode (detailed/compact) preference, alert settings (expiry/low-stock toggles, lead time, digest cap), the automatic backup settings menu (AutoBackupMenuSV: enable toggle, interval, folder picker), log viewing, and a licenses page rendered from a licenses.html generated at build time |
 
 ### Database Strategy
 Instead of a monolithic database, the app uses **Multiple Room Databases**, one for each feature module:
@@ -314,6 +317,7 @@ a-personal-stuff/
 │   │   │   ├── StatefulViewProviderModule.java
 │   │   │   ├── component/
 │   │   │   │   ├── AppNotificationHandler.java   # Notification processing
+│   │   │   │   ├── AutoBackupScheduler.java      # Schedules/keeps in sync the automatic backup work
 │   │   │   │   ├── InventoryAlertScheduler.java  # Schedules the daily alert digest work
 │   │   │   │   └── InventoryStatsCalculator.java # Shared inventory/expiry/low-stock aggregation
 │   │   │   ├── command/
@@ -332,10 +336,14 @@ a-personal-stuff/
 │   │   │   │   ├── ExportCmd.java              # Export data command
 │   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export command (Android 8.0+)
 │   │   │   │   └── ImportCmd.java              # Import data command
+│   │   │   ├── service/
+│   │   │   │   └── ExportService.java          # ZIP backup builder (manual & automatic backup)
 │   │   ├── workmanager/
+│   │   │   ├── AutoBackupFileUtil.java        # Backup file naming and rotation (keep newest 5)
 │   │   │   ├── WorkManagerConstants.java      # Unique work name constants
 │   │   │   └── worker/
-│   │   │       └── AlertDigestWorker.java     # Daily inventory alert digest worker
+│   │   │       ├── AlertDigestWorker.java     # Daily inventory alert digest worker
+│   │   │       └── AutoBackupWorker.java      # Automatic scheduled backup worker
 │   │   └── ui/
 │   │       ├── page/
 │   │       │   ├── SplashPage.java             # Splash screen
@@ -634,6 +642,7 @@ a-personal-stuff/
 │   │       │   ├── LogPage.java             # Log viewer
 │   │       │   └── LicensesPage.java        # Renders build-time generated licenses.html in a WebView
 │   │       └── component/
+│   │           ├── AutoBackupMenuSV.java    # Automatic backup settings (interval, folder picker)
 │   │           ├── ThemeMenuSV.java         # Theme selector
 │   │           ├── VersionMenuSV.java       # Version display
 │   │           ├── LogMenuSV.java           # Log menu
@@ -764,7 +773,7 @@ The `fastlane/` directory contains metadata for store listings:
 - `metadata/android/en-US/`: Store metadata for English (US)
   - `images/featureGraphic.png`: Feature graphic (1024x500)
   - `images/icon.png`: App icon (512x512)
-  - `images/phoneScreenshots/`: Phone screenshots (1.png to 4.png)
+  - `images/phoneScreenshots/`: Phone screenshots (1.png to 8.png)
   - `full_description.txt`: Full app description
   - `short_description.txt`: Short app description (80 characters max)
   - `title.txt`: App title
@@ -782,11 +791,12 @@ This structure allows for version-controlled store presence management. There ar
 Testing is split between JVM unit tests and instrumented tests.
 
 ### JVM Unit Tests
-Three suites, run on the local JVM by `./gradlew test`:
+Four suites, run on the local JVM by `./gradlew test`:
 
 - **`:base/src/test/` — ItemDaoTest.java**: unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
 - **`:app/src/test/` — PagedItemCmdTest.java**: tests the paged item search command against a Mockito-mocked DAO — state emission from DAO results, empty-list fallback when the DAO throws, DAO argument passing, and page-size doubling on `loadNextPage`.
 - **`:app/src/test/` — InventoryStatsCalculatorTest.java**: tests inventory statistics computation — zeroed summary for empty data, inventory value aggregation, expiry boundary splitting (expired vs. expiring within lead days), and low-stock detection from derived remaining stock.
+- **`:app/src/test/` — AutoBackupFileUtilTest.java**: 7 tests covering auto-backup rotation — backup file name format, fixed keep-newest-5 rotation (7 backups → the oldest 2 deleted, fewer than 5 → nothing deleted), order independence, ignoring non-matching file names, and null/empty input handling.
 
 ### Instrumented Tests (`:app/src/androidTest/`)
 Two suites, run on the emulator matrix in CI (see Automation & CI/CD above):
@@ -817,7 +827,7 @@ To run tests:
 - JDK 17
 - Android SDK with compileSdk 37
 - Minimum supported Android version: 5.0 Lollipop (API 21)
-- Gradle wrapper 9.4.1 / Android Gradle Plugin 9.2.1 (via Gradle Wrapper included)
+- Gradle wrapper 9.8.0 / Android Gradle Plugin 9.4.1 (via Gradle Wrapper included)
 - Java 17 source/target with core library desugaring enabled
 
 > **Note**: XLSX export requires a device running Android 8.0 (API 26) or newer; the app itself runs on Android 5.0+.

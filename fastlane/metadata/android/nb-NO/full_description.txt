@@ -12,5 +12,7 @@ Funksjoner i denne appen:
   <li>Tillat brukere å administrere mengden og påminnelsen for gjenstandene for å holde oversikt over gjenstanden.</li>
   <li>Støtte strekkodeskanning som inndata og søk</li>
   <li>Sikkerhetskopier og gjenopprett app-data med ZIP-format inkludert bilder og miniatyrbilder</li>
+  <li>Automatisk sikkerhetskopiering: planlegg regelmessige sikkerhetskopieringer til en mappe du har valgt (beholder de nyeste sikkerhetskopiene)</li>
+  <li>Støtte for dynamiske farger (Material You) på Android 12+</li>
   <li>Tilgjengelig på 11 språk (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>

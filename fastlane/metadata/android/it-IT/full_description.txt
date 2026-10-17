@@ -12,5 +12,7 @@ Caratteristiche di questa app:
   <li>Consente all'utente di gestire la quantità e i promemoria degli elementi per tenere traccia dell'elemento.</li>
   <li>Supporta la scansione dei codici a barre come input e ricerca</li>
   <li>Backup e ripristino dei dati dell'app in formato ZIP incluse immagini e miniature</li>
+  <li>Backup automatico: pianifica backup regolari in una cartella a tua scelta (conserva i backup più recenti)</li>
+  <li>Supporto per i colori dinamici (Material You) su Android 12+</li>
   <li>Disponibile in 11 lingue (English, German, Estonian, French, Indonesian, Icelandic, Italian, Norwegian Bokmål, Norwegian Nynorsk, Romansh, Chinese)</li>
 </ul>
