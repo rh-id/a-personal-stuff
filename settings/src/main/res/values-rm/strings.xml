@@ -19,6 +19,7 @@
     <string name="alert_lead_days_7">7 dis</string>
     <string name="alert_lead_days_14">14 dis</string>
     <string name="alert_notify_within">Avisar entaifer</string>
+    <string name="alert_max_names_label">Nummer maximal d\'elements per secziun d\'alerta</string>
     <string name="settings">Parameters</string>
     <string name="auto_backup_title">Backup automatica</string>
     <string name="auto_backup_enabled">Activar il backup automatic</string>

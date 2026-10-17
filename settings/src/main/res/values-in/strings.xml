@@ -19,6 +19,7 @@
     <string name="alert_lead_days_7">7 hari</string>
     <string name="alert_lead_days_14">14 hari</string>
     <string name="alert_notify_within">Beri tahu dalam</string>
+    <string name="alert_max_names_label">Jumlah maksimum item per bagian peringatan</string>
     <string name="settings">Pengaturan</string>
     <string name="auto_backup_title">Pencadangan otomatis</string>
     <string name="auto_backup_enabled">Aktifkan pencadangan otomatis</string>

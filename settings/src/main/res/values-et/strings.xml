@@ -19,6 +19,7 @@
     <string name="alert_lead_days_7">7 päeva</string>
     <string name="alert_lead_days_14">14 päeva</string>
     <string name="alert_notify_within">Teavita ajavahemikus</string>
+    <string name="alert_max_names_label">Maksimaalne elementide arv teavituse sektsioonis</string>
     <string name="settings">Seaded</string>
     <string name="auto_backup_title">Automaatne varundus</string>
     <string name="auto_backup_enabled">Luba automaatne varundus</string>

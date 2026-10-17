@@ -38,6 +38,7 @@ import m.co.rh.id.a_personal_stuff.base.util.NotificationPermissionHelper;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.IItemReminderNotificationHandler;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.aprovider.Provider;
 
 public class AppNotificationHandler implements IItemReminderNotificationHandler {
@@ -45,7 +46,6 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
     public static final String CHANNEL_ID_INVENTORY_ALERT = "CHANNEL_ID_INVENTORY_ALERT";
     public static final String GROUP_KEY_INVENTORY_ALERT = "GROUP_KEY_INVENTORY_ALERT";
 
-    private static final int MAX_DIGEST_NAMES = 5;
     private static final long DIGEST_REF_ID = 0;
     private static final int FIXED_DIGEST_NOTIFICATION_ID = (int) DIGEST_REF_ID;
 
@@ -182,7 +182,8 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
 
     @SuppressLint("MissingPermission") // NotificationPermissionHelper.canPostNotifications is the permission check
     public void postInventoryDigestNotification(boolean includeExpiry, boolean includeLowStock,
-                                                InventoryStatsCalculator.AlertSummary alertSummary, Date now) {
+                                                InventoryStatsCalculator.AlertSummary alertSummary, Date now,
+                                                int maxNames) {
         if (!NotificationPermissionHelper.canPostNotifications(mAppContext)) {
             return;
         }
@@ -196,7 +197,7 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
             NotificationManagerCompat.from(mAppContext).cancel(GROUP_KEY_INVENTORY_ALERT,
                     FIXED_DIGEST_NOTIFICATION_ID);
         }
-        List<String> lines = buildDigestLines(includeExpiry, includeLowStock, alertSummary, now);
+        List<String> lines = buildDigestLines(includeExpiry, includeLowStock, alertSummary, now, maxNames);
         if (lines.isEmpty()) {
             mLock.unlock();
             return;
@@ -255,8 +256,18 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
         mLock.unlock();
     }
 
+    /**
+     * Builds the digest notification lines, capping the item names listed in
+     * each section at {@code maxNames} (non-positive falls back to
+     * {@link SettingsSharedPreferences#DEFAULT_DIGEST_MAX_NAMES}; the actual
+     * cap comes from the {@code digestMaxNames} setting, read by the caller
+     * {@code AlertDigestWorker} so the digest cap keeps flowing through the
+     * existing caller-owned parameter).
+     */
     private List<String> buildDigestLines(boolean includeExpiry, boolean includeLowStock,
-                                          InventoryStatsCalculator.AlertSummary alertSummary, Date now) {
+                                          InventoryStatsCalculator.AlertSummary alertSummary, Date now,
+                                          int maxNames) {
+        int effectiveMaxNames = maxNames < 1 ? SettingsSharedPreferences.DEFAULT_DIGEST_MAX_NAMES : maxNames;
         List<String> lines = new ArrayList<>();
         if (includeExpiry) {
             List<String> expiredNames = new ArrayList<>();
@@ -266,11 +277,11 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
                     continue;
                 }
                 if (!item.expiredDateTime.after(now)) {
-                    if (expiredNames.size() < MAX_DIGEST_NAMES) {
+                    if (expiredNames.size() < effectiveMaxNames) {
                         expiredNames.add(item.name);
                     }
                 } else {
-                    if (expiringNames.size() < MAX_DIGEST_NAMES) {
+                    if (expiringNames.size() < effectiveMaxNames) {
                         expiringNames.add(item.name);
                     }
                 }
@@ -287,7 +298,7 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
         if (includeLowStock) {
             List<String> lowStockNames = new ArrayList<>();
             for (Item item : alertSummary.lowStockItems) {
-                if (lowStockNames.size() < MAX_DIGEST_NAMES) {
+                if (lowStockNames.size() < effectiveMaxNames) {
                     lowStockNames.add(mAppContext.getString(R.string.notification_low_stock_item_,
                             item.name, item.minAmount));
                 } else {

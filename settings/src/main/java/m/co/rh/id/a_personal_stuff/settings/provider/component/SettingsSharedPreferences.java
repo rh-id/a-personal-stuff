@@ -23,6 +23,10 @@ public class SettingsSharedPreferences {
     public static final int DEFAULT_EXPIRY_ALERT_LEAD_DAYS = 7;
     /** Default: low stock alerts are enabled. */
     public static final boolean DEFAULT_LOW_STOCK_ALERT_ENABLED = true;
+    /** Default maximum number of item names shown per digest notification section. */
+    public static final int DEFAULT_DIGEST_MAX_NAMES = 5;
+    /** Selectable values for {@link #setDigestMaxNames(int)}. */
+    public static final int[] DIGEST_MAX_NAMES_OPTIONS = {3, 5, 10};
     /** Default: Material You dynamic colors are enabled (when supported by the device). */
     public static final boolean DEFAULT_DYNAMIC_COLORS_ENABLED = true;
     /** Default: automatic scheduled backup is disabled. */
@@ -53,6 +57,8 @@ public class SettingsSharedPreferences {
     private String mExpiryAlertLeadDaysKey;
     private BehaviorSubject<Boolean> mLowStockAlertEnabled;
     private String mLowStockAlertEnabledKey;
+    private BehaviorSubject<Integer> mDigestMaxNames;
+    private String mDigestMaxNamesKey;
     private BehaviorSubject<Boolean> mDynamicColorsEnabled;
     private String mDynamicColorsEnabledKey;
     private BehaviorSubject<Boolean> mAutoBackupEnabled;
@@ -76,6 +82,7 @@ public class SettingsSharedPreferences {
         mExpiryAlertEnabled = BehaviorSubject.createDefault(DEFAULT_EXPIRY_ALERT_ENABLED);
         mExpiryAlertLeadDays = BehaviorSubject.createDefault(DEFAULT_EXPIRY_ALERT_LEAD_DAYS);
         mLowStockAlertEnabled = BehaviorSubject.createDefault(DEFAULT_LOW_STOCK_ALERT_ENABLED);
+        mDigestMaxNames = BehaviorSubject.createDefault(DEFAULT_DIGEST_MAX_NAMES);
         mDynamicColorsEnabled = BehaviorSubject.createDefault(DEFAULT_DYNAMIC_COLORS_ENABLED);
         mAutoBackupEnabled = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_ENABLED);
         mAutoBackupIntervalDays = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_INTERVAL_DAYS);
@@ -121,6 +128,13 @@ public class SettingsSharedPreferences {
                 mLowStockAlertEnabledKey,
                 mLowStockAlertEnabled.getValue());
         setLowStockAlertEnabled(lowStockAlertEnabled);
+
+        mDigestMaxNamesKey = SHARED_PREFERENCES_NAME
+                + ".digestMaxNames";
+        int digestMaxNames = mSharedPreferences.getInt(
+                mDigestMaxNamesKey,
+                mDigestMaxNames.getValue());
+        setDigestMaxNames(digestMaxNames);
 
         mDynamicColorsEnabledKey = SHARED_PREFERENCES_NAME
                 + ".dynamicColorsEnabled";
@@ -258,6 +272,29 @@ public class SettingsSharedPreferences {
 
     public Flowable<Boolean> getLowStockAlertEnabledFlow() {
         return Flowable.fromObservable(mLowStockAlertEnabled, BackpressureStrategy.BUFFER);
+    }
+
+    private void digestMaxNames(int maxNames) {
+        // guard: a non-positive value (corrupt prefs or bad caller) falls
+        // back to the default so the digest always caps at a sane number
+        int value = maxNames > 0 ? maxNames : DEFAULT_DIGEST_MAX_NAMES;
+        mDigestMaxNames.onNext(value);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putInt(mDigestMaxNamesKey, value)
+                        .commit());
+    }
+
+    public void setDigestMaxNames(int maxNames) {
+        digestMaxNames(maxNames);
+    }
+
+    public int getDigestMaxNames() {
+        Integer current = mDigestMaxNames.getValue();
+        return current != null && current > 0 ? current : DEFAULT_DIGEST_MAX_NAMES;
+    }
+
+    public Flowable<Integer> getDigestMaxNamesFlow() {
+        return Flowable.fromObservable(mDigestMaxNames, BackpressureStrategy.BUFFER);
     }
 
     private void dynamicColorsEnabled(boolean enabled) {

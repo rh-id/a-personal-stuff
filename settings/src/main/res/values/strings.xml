@@ -19,6 +19,7 @@
     <string name="alert_lead_days_7">7 days</string>
     <string name="alert_lead_days_14">14 days</string>
     <string name="alert_notify_within">Notify within</string>
+    <string name="alert_max_names_label">Max items per alert section</string>
     <string name="settings">Settings</string>
     <string name="auto_backup_title">Automatic backup</string>
     <string name="auto_backup_enabled">Enable automatic backup</string>

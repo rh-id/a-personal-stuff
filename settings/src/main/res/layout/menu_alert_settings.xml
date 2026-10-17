@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -56,4 +57,41 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="@string/low_stock_alerts" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/text_max_names"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        android:paddingStart="32dp"
+        android:text="@string/alert_max_names_label" />
+
+    <RadioGroup
+        android:id="@+id/radioGroup_max_names"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="32dp">
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_max_names_3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="3"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_max_names_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="5"
+            tools:ignore="HardcodedText" />
+
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/radio_max_names_10"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="10"
+            tools:ignore="HardcodedText" />
+    </RadioGroup>
 </androidx.appcompat.widget.LinearLayoutCompat>

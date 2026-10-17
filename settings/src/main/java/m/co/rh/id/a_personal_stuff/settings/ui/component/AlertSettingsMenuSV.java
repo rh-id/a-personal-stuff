@@ -31,6 +31,7 @@ public class AlertSettingsMenuSV extends StatefulView<Activity> implements Requi
     private transient Activity mActivity;
     private transient RadioGroup mRadioGroupLeadDays;
     private transient TextView mTextNotifyWithin;
+    private transient RadioGroup mRadioGroupMaxNames;
 
     @Override
     public void provideComponent(Provider provider) {
@@ -46,18 +47,22 @@ public class AlertSettingsMenuSV extends StatefulView<Activity> implements Requi
         RadioGroup radioGroupLeadDays = view.findViewById(R.id.radioGroup_lead_days);
         TextView textNotifyWithin = view.findViewById(R.id.text_notify_within);
         CompoundButton switchLowStockAlert = view.findViewById(R.id.switch_low_stock_alert);
+        RadioGroup radioGroupMaxNames = view.findViewById(R.id.radioGroup_max_names);
         // assign before use so setLeadDaysEnabled can reach the group
         mRadioGroupLeadDays = radioGroupLeadDays;
         mTextNotifyWithin = textNotifyWithin;
+        mRadioGroupMaxNames = radioGroupMaxNames;
         // apply current values before attaching listeners so initialization
         // does not write back to the shared preferences
         switchExpiryAlert.setChecked(mSettingsSharedPreferences.isExpiryAlertEnabled());
         radioGroupLeadDays.check(toLeadDaysRadioId(mSettingsSharedPreferences.getExpiryAlertLeadDays()));
         setLeadDaysEnabled(mSettingsSharedPreferences.isExpiryAlertEnabled());
         switchLowStockAlert.setChecked(mSettingsSharedPreferences.isLowStockAlertEnabled());
+        radioGroupMaxNames.check(toMaxNamesRadioId(mSettingsSharedPreferences.getDigestMaxNames()));
         switchExpiryAlert.setOnCheckedChangeListener(this);
         radioGroupLeadDays.setOnCheckedChangeListener(this);
         switchLowStockAlert.setOnCheckedChangeListener(this);
+        radioGroupMaxNames.setOnCheckedChangeListener(this);
         return view;
     }
 
@@ -67,6 +72,7 @@ public class AlertSettingsMenuSV extends StatefulView<Activity> implements Requi
         mActivity = null;
         mRadioGroupLeadDays = null;
         mTextNotifyWithin = null;
+        mRadioGroupMaxNames = null;
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -89,6 +95,16 @@ public class AlertSettingsMenuSV extends StatefulView<Activity> implements Requi
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, int checkedId) {
+        if (radioGroup.getId() == R.id.radioGroup_max_names) {
+            int maxNames = SettingsSharedPreferences.DEFAULT_DIGEST_MAX_NAMES;
+            if (checkedId == R.id.radio_max_names_3) {
+                maxNames = 3;
+            } else if (checkedId == R.id.radio_max_names_10) {
+                maxNames = 10;
+            }
+            mSettingsSharedPreferences.setDigestMaxNames(maxNames);
+            return;
+        }
         int leadDays = SettingsSharedPreferences.DEFAULT_EXPIRY_ALERT_LEAD_DAYS;
         if (checkedId == R.id.radio_3_days) {
             leadDays = 3;
@@ -130,5 +146,15 @@ public class AlertSettingsMenuSV extends StatefulView<Activity> implements Requi
             return R.id.radio_7_days;
         }
         return R.id.radio_14_days;
+    }
+
+    private static int toMaxNamesRadioId(int maxNames) {
+        if (maxNames <= 3) {
+            return R.id.radio_max_names_3;
+        }
+        if (maxNames <= 5) {
+            return R.id.radio_max_names_5;
+        }
+        return R.id.radio_max_names_10;
     }
 }

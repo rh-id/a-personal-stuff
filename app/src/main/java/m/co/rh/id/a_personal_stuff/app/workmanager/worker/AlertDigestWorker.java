@@ -49,7 +49,8 @@ public class AlertDigestWorker extends Worker {
                 return Result.success();
             }
             AppNotificationHandler notificationHandler = provider.get(AppNotificationHandler.class);
-            notificationHandler.postInventoryDigestNotification(expiryEnabled, lowStockEnabled, alertSummary, now);
+            notificationHandler.postInventoryDigestNotification(expiryEnabled, lowStockEnabled, alertSummary, now,
+                    settings.getDigestMaxNames());
             return Result.success();
         } catch (Exception e) {
             try {
