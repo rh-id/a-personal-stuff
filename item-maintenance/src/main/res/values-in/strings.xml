@@ -15,8 +15,8 @@
     <string name="success_add_item_maintenance_image">Gambar pemeliharaan item ditambahkan</string>
     <string name="cost_">Biaya: %s</string>
     <string name="description_">Deskripsi: %s</string>
-    <string name="title_confirm_delete">Konfirmasi hapus</string>
-    <string name="confirm_delete_">Hapus \'%s\' ?</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Hapus \'%s\'?</string>
     <string name="success_delete_item_maintenance">Pemeliharaan item dihapus</string>
     <string name="hint_type_to_search">Ketik untuk mencari</string>
     <string name="title_update_item_maintenance">Perbarui Pemeliharaan Item</string>

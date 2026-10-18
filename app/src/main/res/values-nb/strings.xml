@@ -26,7 +26,7 @@
     <string name="barcode_">Strekkode: %s</string>
     <string name="price_">Pris: %s</string>
     <string name="title_confirm_delete">Bekreft sletting</string>
-    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s?</string>
     <string name="success_delete_item_">Gjenstand slettet: %s</string>
     <string name="title_duplicate">Dupliser</string>
     <string name="title_delete">Slett</string>

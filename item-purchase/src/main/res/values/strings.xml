@@ -7,7 +7,7 @@
     <string name="cost_">Cost: %s</string>
     <string name="description_">Description: %s</string>
     <string name="title_confirm_delete">Confirm Delete</string>
-    <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s?</string>
     <string name="title_purchases">Purchases</string>
     <string name="title_add_item_purchase">Add Item Purchase</string>
     <string name="title_update_item_purchase">Update Item Purchase</string>

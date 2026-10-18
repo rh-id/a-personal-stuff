@@ -26,7 +26,7 @@
     <string name="barcode_">Strekkode: %s</string>
     <string name="price_">Pris: %s</string>
     <string name="title_confirm_delete">Stadfest sletting</string>
-    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s?</string>
     <string name="success_delete_item_">Gjenstand sletta: %s</string>
     <string name="title_duplicate">Dupliser</string>
     <string name="title_delete">Slett</string>
@@ -132,7 +132,7 @@
     <string name="dashboard_upcoming_reminders_">%1$d komande</string>
 
     <!-- Inventory alert digest notification -->
-    <string name="notification_name_inventory_alert">Beholdningsvarsel</string>
+    <string name="notification_name_inventory_alert">Beholdningsvarsler</string>
     <string name="notification_description_inventory_alert">Varslingskanal for beholdningsvarsel</string>
     <string name="notification_title_inventory_alert_">Beholdning treng merksemd (%1$d)</string>
     <string name="notification_expired_">Utgått: %1$s</string>
@@ -145,5 +145,5 @@
     <string name="filter_label_expiring_soon">Går ut snart (%1$d)</string>
     <string name="filter_label_expiring">Går ut (%1$d)</string>
     <string name="filter_label_low_stock">Lågt lager (%1$d)</string>
-    <string name="filter_label_inventory_alerts">Beholdningsvarsel (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Beholdningsvarsler (%1$d)</string>
 </resources>

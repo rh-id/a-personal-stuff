@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Personal Stuff</string>
     <string name="trakteer">Trakteer</string>
@@ -28,8 +29,8 @@
     <string name="barcode_">Barcode: %s</string>
     <string name="price_">Price: %s</string>
     <string name="title_confirm_delete">Confirm Delete</string>
-    <string name="confirm_delete_">Are you sure you want to delete %s ?</string>
-    <string name="success_delete_item_">Item deleted : %s</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s?</string>
+    <string name="success_delete_item_">Item deleted: %s</string>
     <string name="title_duplicate">Duplicate</string>
     <string name="title_delete">Delete</string>
     <string name="success_duplicate_">Item duplicated: %s</string>

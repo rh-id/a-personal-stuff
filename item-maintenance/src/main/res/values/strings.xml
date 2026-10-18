@@ -15,8 +15,8 @@
     <string name="success_add_item_maintenance_image">Item maintenance image added</string>
     <string name="cost_">Cost: %s</string>
     <string name="description_">Description: %s</string>
-    <string name="title_confirm_delete">Confirm delete</string>
-    <string name="confirm_delete_">Delete \'%s\' ?</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Delete \'%s\'?</string>
     <string name="success_delete_item_maintenance">Item maintenance deleted</string>
     <string name="hint_type_to_search">Type to search</string>
     <string name="title_update_item_maintenance">Update Item Maintenance</string>

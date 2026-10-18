@@ -6,13 +6,13 @@
     <string name="amount_">Jumlah: %d</string>
     <string name="description_">Deskripsi: %s</string>
     <string name="title_confirm_delete">Konfirmasi Hapus</string>
-    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s?</string>
     <string name="success_delete_item_usage">Penggunaan item dihapus</string>
     <string name="title_usages">Penggunaan</string>
     <string name="title_update_item_usage">Perbarui Penggunaan Item</string>
     <string name="title_add_item_usage">Tambah Penggunaan Item</string>
     <string name="success_add_item_usage_image">Gambar penggunaan item ditambahkan</string>
-    <string name="success_delete_item_usage_image">gambar penggunaan item dihapus</string>
+    <string name="success_delete_item_usage_image">Gambar penggunaan item dihapus</string>
     <string name="success_add_item_usage">Penggunaan item ditambahkan</string>
     <string name="success_update_item_usage">Penggunaan item diperbarui</string>
     <string name="title_add">Tambah</string>

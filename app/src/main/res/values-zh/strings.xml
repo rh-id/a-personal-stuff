@@ -73,7 +73,7 @@
     <string name="import_failed">导入失败</string>
     <string name="export_progress_gathering">正在收集数据…</string>
     <string name="export_progress_writing">正在写入备份…</string>
-    <string name="export_progress_images">正在打包图片 (%d/8)…</string>
+    <string name="export_progress_images">正在打包图片（%d/8）…</string>
     <string name="import_progress_extracting">正在解压备份…</string>
     <string name="import_progress_reading">正在读取备份…</string>
     <string name="import_progress_importing">正在导入条目 %d/%d…</string>

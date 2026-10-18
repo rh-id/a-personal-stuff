@@ -26,7 +26,7 @@
     <string name="barcode_">Barcode: %s</string>
     <string name="price_">Harga: %s</string>
     <string name="title_confirm_delete">Konfirmasi Hapus</string>
-    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s ?</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s?</string>
     <string name="success_delete_item_">Item dihapus: %s</string>
     <string name="title_duplicate">Duplikat</string>
     <string name="title_delete">Hapus</string>

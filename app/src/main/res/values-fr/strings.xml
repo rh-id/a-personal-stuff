@@ -22,9 +22,9 @@
     <string name="form_expired_date_time">Date et heure d\'expiration</string>
     <string name="success_add_item_">Élément ajouté: %s</string>
     <string name="hint_type_to_search">Tapez pour rechercher</string>
-    <string name="amount_">Quantité: %d</string>
-    <string name="barcode_">Code-barres: %s</string>
-    <string name="price_">Prix: %s</string>
+    <string name="amount_">Quantité : %d</string>
+    <string name="barcode_">Code-barres : %s</string>
+    <string name="price_">Prix : %s</string>
     <string name="title_confirm_delete">Confirmer la suppression</string>
     <string name="confirm_delete_">Voulez-vous vraiment supprimer %s ?</string>
     <string name="success_delete_item_">Élément supprimé: %s</string>

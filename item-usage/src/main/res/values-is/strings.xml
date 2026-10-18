@@ -12,7 +12,7 @@
     <string name="title_update_item_usage">Uppfæra notkun hluta</string>
     <string name="title_add_item_usage">Bæta við notkun hluta</string>
     <string name="success_add_item_usage_image">Mynd notkunar hluta bætt við</string>
-    <string name="success_delete_item_usage_image">mynd notkunar hluta eytt</string>
+    <string name="success_delete_item_usage_image">Mynd notkunar hluta eytt</string>
     <string name="success_add_item_usage">Notkun hluta bætt við</string>
     <string name="success_update_item_usage">Notkun hluta uppfærð</string>
     <string name="title_add">Bæta við</string>

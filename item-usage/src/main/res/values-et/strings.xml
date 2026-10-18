@@ -12,7 +12,7 @@
     <string name="title_update_item_usage">Uuenda eseme kasutust</string>
     <string name="title_add_item_usage">Lisa eseme kasutus</string>
     <string name="success_add_item_usage_image">Eseme kasutuse pilt lisatud</string>
-    <string name="success_delete_item_usage_image">eseme kasutuse pilt kustutatud</string>
+    <string name="success_delete_item_usage_image">Eseme kasutuse pilt kustutatud</string>
     <string name="success_add_item_usage">Eseme kasutus lisatud</string>
     <string name="success_update_item_usage">Eseme kasutus uuendatud</string>
     <string name="title_add">Lisa</string>

@@ -6,13 +6,13 @@
     <string name="amount_">Mengde: %d</string>
     <string name="description_">Beskrivelse: %s</string>
     <string name="title_confirm_delete">Bekreft sletting</string>
-    <string name="confirm_delete_">Er du sikker på at du vil slette %s ?</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s?</string>
     <string name="success_delete_item_usage">Gjenstandbruk slettet</string>
     <string name="title_usages">Bruk</string>
     <string name="title_update_item_usage">Oppdater gjenstandbruk</string>
     <string name="title_add_item_usage">Legg til gjenstandbruk</string>
     <string name="success_add_item_usage_image">Gjenstandbrukbilde lagt til</string>
-    <string name="success_delete_item_usage_image">gjenstandbrukbilde slettet</string>
+    <string name="success_delete_item_usage_image">Gjenstandbrukbilde slettet</string>
     <string name="success_add_item_usage">Gjenstandbruk lagt til</string>
     <string name="success_update_item_usage">Gjenstandbruk oppdatert</string>
     <string name="title_add">Legg til</string>

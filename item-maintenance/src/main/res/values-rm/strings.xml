@@ -7,13 +7,13 @@
     <string name="success_update_item_maintenance">Manutenziun dals objects actualisada</string>
     <string name="save">Memorisar</string>
     <string name="form_maintenance_date_time">Data da manutenziun</string>
-    <string name="form_cost">Costs</string>
+    <string name="form_cost">Cust</string>
     <string name="form_description">Descripziun</string>
     <string name="title_add">Agiuntar</string>
     <string name="title_maintenances">Manutenziuns</string>
     <string name="success_delete_item_maintenance_image">Maletg da la manutenziun dals objects stizzà</string>
     <string name="success_add_item_maintenance_image">Maletg da la manutenziun dals objects agiuntà</string>
-    <string name="cost_">Costs: %s</string>
+    <string name="cost_">Cust: %s</string>
     <string name="description_">Descripziun: %s</string>
     <string name="title_confirm_delete">Confermar la stiraziun</string>
     <string name="confirm_delete_">Stizzar \'%s\'?</string>

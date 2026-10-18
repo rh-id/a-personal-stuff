@@ -82,7 +82,7 @@
     <string name="title_stock_movements">Moviments da provisiun</string>
     <string name="stock_movements_summary">Inizial: %1$d  −  Duvrà: %2$d  +  Cumprà: %3$d  =  Restà: %4$d</string>
     <string name="movement_amount">Quantità: %d</string>
-    <string name="movement_cost">Datasplaz: %s</string>
+    <string name="movement_cost">Cust: %s</string>
     <string name="movement_description">Descripziun: %s</string>
 
     <!-- Export Spreadsheet -->
@@ -96,7 +96,7 @@
     <string name="header_images">Maletgs</string>
     <string name="header_item_id">ID da l\'object</string>
     <string name="header_item_name">Num da l\'object</string>
-    <string name="header_cost">Datasplaz</string>
+    <string name="header_cost">Cust</string>
     <string name="header_message">Messadi</string>
     <string name="header_title">Titel</string>
     <string name="header_created_date_time">Creà il</string>

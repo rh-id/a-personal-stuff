@@ -14,6 +14,6 @@
     <string name="title_reminders">Reminders</string>
     <string name="title_add">Add</string>
     <string name="title_confirm_delete">Confirm Delete</string>
-    <string name="confirm_delete_">Delete %s ?</string>
+    <string name="confirm_delete_">Delete %s?</string>
     <string name="success_delete_item_reminder">Item reminder deleted</string>
 </resources>

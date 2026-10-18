@@ -12,7 +12,7 @@
     <string name="title_update_item_usage">Actualisar l\'utilisaziun dals objects</string>
     <string name="title_add_item_usage">Agiuntar utilisaziun dals objects</string>
     <string name="success_add_item_usage_image">Maletg da l\'utilisaziun dals objects agiuntà</string>
-    <string name="success_delete_item_usage_image">maletg da l\'utilisaziun dals objects stizzà</string>
+    <string name="success_delete_item_usage_image">Maletg da l\'utilisaziun dals objects stizzà</string>
     <string name="success_add_item_usage">Utilisaziun dals objects agiuntada</string>
     <string name="success_update_item_usage">Utilisaziun dals objects actualisada</string>
     <string name="title_add">Agiuntar</string>
