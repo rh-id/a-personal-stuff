@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Segera kedaluwarsa: %1$s</string>
     <string name="notification_low_stock_">Stok menipis: %1$s</string>
     <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Kedaluwarsa (%1$d)</string>
+    <string name="filter_label_expiring_soon">Segera kedaluwarsa (%1$d)</string>
+    <string name="filter_label_expiring">Mendekati kedaluwarsa (%1$d)</string>
+    <string name="filter_label_low_stock">Stok menipis (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Peringatan inventaris (%1$d)</string>
 </resources>

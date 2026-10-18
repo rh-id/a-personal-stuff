@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Scaden prest: %1$s</string>
     <string name="notification_low_stock_">Provisiun bassa: %1$s</string>
     <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Scadì (%1$d)</string>
+    <string name="filter_label_expiring_soon">Scaden prest (%1$d)</string>
+    <string name="filter_label_expiring">Scaden (%1$d)</string>
+    <string name="filter_label_low_stock">Provisiun bassa (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Alertas da provisiun (%1$d)</string>
 </resources>

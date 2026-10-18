@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Utløper snart: %1$s</string>
     <string name="notification_low_stock_">Lavt lager: %1$s</string>
     <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Utløpt (%1$d)</string>
+    <string name="filter_label_expiring_soon">Utløper snart (%1$d)</string>
+    <string name="filter_label_expiring">Utløper (%1$d)</string>
+    <string name="filter_label_low_stock">Lavt lager (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Beholdningsvarsler (%1$d)</string>
 </resources>

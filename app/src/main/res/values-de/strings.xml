@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Läuft bald ab: %1$s</string>
     <string name="notification_low_stock_">Geringer Bestand: %1$s</string>
     <string name="notification_low_stock_item_">%1$s (min. %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Abgelaufen (%1$d)</string>
+    <string name="filter_label_expiring_soon">Läuft bald ab (%1$d)</string>
+    <string name="filter_label_expiring">Läuft ab (%1$d)</string>
+    <string name="filter_label_low_stock">Geringer Bestand (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Inventar-Warnungen (%1$d)</string>
 </resources>

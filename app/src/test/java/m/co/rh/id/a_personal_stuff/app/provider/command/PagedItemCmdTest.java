@@ -9,6 +9,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.nullable;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -139,6 +140,76 @@ public class PagedItemCmdTest {
         verify(mItemDao).findItemStateByIdsWithLimit(anyList(),
                 nullable(ItemDao.QueryOrderBy.class), eq(200));
         assertEquals(200, pagedItemCmd.getAllItems().size());
+    }
+
+    @Test
+    public void emptyFilterEmitsEmptyListWithoutTouchingDao() {
+        PagedItemCmd pagedItemCmd = new PagedItemCmd(mProvider);
+        pagedItemCmd.setItemFilter(new ArrayList<>());
+        pagedItemCmd.refresh();
+
+        // an empty filter matches nothing and must short-circuit before the
+        // DAO: Room's IN () throws on an empty collection
+        assertTrue(pagedItemCmd.getAllItems().isEmpty());
+        verify(mItemDao, never()).findItemStateWithLimit(anyInt(),
+                nullable(ItemDao.QueryOrderBy.class));
+        verify(mItemDao, never()).findItemStatesByIds(anyList(),
+                nullable(ItemDao.QueryOrderBy.class));
+    }
+
+    @Test
+    public void multiIdFilterLoadsOnlyMatchingItems() {
+        ItemState itemState = new ItemState();
+        Item item = new Item();
+        item.id = 2L;
+        item.name = "Milk";
+        itemState.updateItem(item);
+        ArrayList<ItemState> daoResult = new ArrayList<>(Collections.singletonList(itemState));
+        when(mItemDao.findItemStatesByIds(eq(Arrays.asList(1L, 2L, 3L)),
+                nullable(ItemDao.QueryOrderBy.class))).thenReturn(daoResult);
+
+        PagedItemCmd pagedItemCmd = new PagedItemCmd(mProvider);
+        pagedItemCmd.setItemFilter(Arrays.asList(1L, 2L, 3L));
+        pagedItemCmd.refresh();
+
+        assertEquals(1, pagedItemCmd.getAllItems().size());
+        assertEquals("Milk", pagedItemCmd.getAllItems().get(0).getItemName());
+        verify(mItemDao).findItemStatesByIds(eq(Arrays.asList(1L, 2L, 3L)),
+                nullable(ItemDao.QueryOrderBy.class));
+        verify(mItemDao, never()).findItemStateWithLimit(anyInt(),
+                nullable(ItemDao.QueryOrderBy.class));
+    }
+
+    @Test
+    public void searchWithinMultiIdFilterRetainsOnlyFilterMatches() {
+        ItemTag itemTag = new ItemTag();
+        itemTag.itemId = 9L;
+        when(mItemDao.searchItemTag("beans"))
+                .thenReturn(new ArrayList<>(Collections.singletonList(itemTag)));
+        Item item = new Item();
+        item.id = 2L;
+        when(mItemDao.searchItem("beans"))
+                .thenReturn(new ArrayList<>(Collections.singletonList(item)));
+        ItemState itemState = new ItemState();
+        Item filteredItem = new Item();
+        filteredItem.id = 2L;
+        filteredItem.name = "Beans";
+        itemState.updateItem(filteredItem);
+        when(mItemDao.findItemStateByIdsWithLimit(eq(Arrays.asList(2L)),
+                nullable(ItemDao.QueryOrderBy.class), eq(100)))
+                .thenReturn(new ArrayList<>(Collections.singletonList(itemState)));
+
+        PagedItemCmd pagedItemCmd = new PagedItemCmd(mProvider);
+        pagedItemCmd.setItemFilter(Arrays.asList(1L, 2L, 3L));
+        pagedItemCmd.refresh();
+        pagedItemCmd.search("beans");
+
+        // search results {9, 2} retained against the filter {1, 2, 3} keep
+        // only 2 — a search within filtered mode cannot escape the filter set
+        assertEquals(1, pagedItemCmd.getAllItems().size());
+        assertEquals(2L, pagedItemCmd.getAllItems().get(0).getItemId().longValue());
+        verify(mItemDao).findItemStateByIdsWithLimit(eq(Arrays.asList(2L)),
+                nullable(ItemDao.QueryOrderBy.class), eq(100));
     }
 
     /**

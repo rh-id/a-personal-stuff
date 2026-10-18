@@ -417,7 +417,7 @@ public abstract class ItemDao {
     @TypeConverters({Converter.class})
     @Query("SELECT * FROM item WHERE expired_date_time IS NOT NULL" +
             " AND expired_date_time <= :to" +
-            " ORDER BY expired_date_time ASC")
+            " ORDER BY expired_date_time ASC, id ASC")
     public abstract List<Item> findItemsExpiringBefore(Date to);
 
     @TypeConverters({Converter.class})
@@ -426,6 +426,7 @@ public abstract class ItemDao {
     public abstract int countItemsExpiringBefore(Date to);
 
     @Query("SELECT * FROM item WHERE min_amount IS NOT NULL" +
-            " AND min_amount > 0")
+            " AND min_amount > 0" +
+            " ORDER BY id ASC")
     public abstract List<Item> findItemsWithMinAmount();
 }

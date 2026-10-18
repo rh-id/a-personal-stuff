@@ -12,8 +12,11 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -131,6 +134,88 @@ public class InventoryStatsCalculatorTest {
 
         assertEquals(1, alertSummary.lowStockItems.size());
         assertEquals(Long.valueOf(2L), alertSummary.lowStockItems.get(0).id);
+    }
+
+    @Test
+    public void findAlertItemIdsDeduplicatesExpiredAndLowStock() {
+        // item 1 is both expired and low on stock: it must appear exactly
+        // once when both alert types are requested
+        Date now = new Date(NOW_MILLIS);
+        Item both = itemWithExpiry(1L, new Date(NOW_MILLIS - MILLIS_PER_DAY));
+        both.amount = 5;
+        both.minAmount = 5; // remaining 5 − 2 = 3 <= 5 → low stock
+        when(mItemDao.findItemsExpiringBefore(any(Date.class)))
+                .thenReturn(new ArrayList<>(Collections.singletonList(both)));
+        when(mItemDao.findItemsWithMinAmount())
+                .thenReturn(new ArrayList<>(Collections.singletonList(both)));
+        when(mItemUsageDao.sumAmountGroupByItem()).thenReturn(totals(usageTotal(1L, 2)));
+
+        List<Long> alertItemIds = mCalculator.findAlertItemIds(
+                EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED,
+                        InventoryStatsCalculator.AlertType.LOW_STOCK),
+                now, 7);
+
+        assertEquals(1, alertItemIds.size());
+        assertEquals(Long.valueOf(1L), alertItemIds.get(0));
+    }
+
+    @Test
+    public void findAlertItemIdsCountsExpiryAtNowAsExpired() {
+        // the expired/expiring split uses !expiredDateTime.after(now), so an
+        // item whose expiry is exactly now is EXPIRED, not EXPIRING_SOON
+        Date now = new Date(NOW_MILLIS);
+        when(mItemDao.findItemsExpiringBefore(any(Date.class))).thenReturn(new ArrayList<>(
+                Collections.singletonList(itemWithExpiry(1L, now))));
+
+        List<Long> expired = mCalculator.findAlertItemIds(
+                EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED), now, 7);
+        List<Long> expiringSoon = mCalculator.findAlertItemIds(
+                EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRING_SOON), now, 7);
+
+        assertEquals(1, expired.size());
+        assertEquals(Long.valueOf(1L), expired.get(0));
+        assertTrue("an item whose expiry is exactly now must not be expiring soon",
+                expiringSoon.isEmpty());
+    }
+
+    @Test
+    public void findAlertItemIdsReturnsOnlyRequestedTypes() {
+        // requesting only LOW_STOCK must not leak expiring-only items
+        Date now = new Date(NOW_MILLIS);
+        Item expiringOnly = itemWithExpiry(1L, new Date(NOW_MILLIS + 3 * MILLIS_PER_DAY));
+        Item lowStockOnly = new Item();
+        lowStockOnly.id = 2L;
+        lowStockOnly.amount = 1;
+        lowStockOnly.minAmount = 3; // remaining 1 <= 3 → low stock
+        when(mItemDao.findItemsExpiringBefore(any(Date.class)))
+                .thenReturn(new ArrayList<>(Collections.singletonList(expiringOnly)));
+        when(mItemDao.findItemsWithMinAmount())
+                .thenReturn(new ArrayList<>(Collections.singletonList(lowStockOnly)));
+
+        List<Long> alertItemIds = mCalculator.findAlertItemIds(
+                EnumSet.of(InventoryStatsCalculator.AlertType.LOW_STOCK), now, 7);
+
+        assertEquals(1, alertItemIds.size());
+        assertEquals(Long.valueOf(2L), alertItemIds.get(0));
+    }
+
+    @Test
+    public void findAlertItemIdsExcludesOutOfStockItemsFromExpiry() {
+        // a fully used-up item (remaining stock <= 0) is not an expiry alert
+        // regardless of its expiry date, matching the dashboard counts
+        Date now = new Date(NOW_MILLIS);
+        Item usedUp = itemWithExpiry(1L, new Date(NOW_MILLIS - MILLIS_PER_DAY));
+        usedUp.amount = 5;
+        when(mItemDao.findItemsExpiringBefore(any(Date.class)))
+                .thenReturn(new ArrayList<>(Collections.singletonList(usedUp)));
+        when(mItemUsageDao.sumAmountGroupByItem()).thenReturn(totals(usageTotal(1L, 5)));
+
+        Set<InventoryStatsCalculator.AlertType> types =
+                EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED,
+                        InventoryStatsCalculator.AlertType.EXPIRING_SOON);
+        List<Long> alertItemIds = mCalculator.findAlertItemIds(types, now, 7);
+
+        assertTrue(alertItemIds.isEmpty());
     }
 
     private static Item itemWithExpiry(long id, Date expiredDateTime) {

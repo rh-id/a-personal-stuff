@@ -11,6 +11,8 @@ import com.google.android.material.chip.Chip;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
@@ -101,16 +103,23 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
     protected void initState(Activity activity) {
         super.initState(activity);
         Args args = Args.of(mNavRoute);
-        if (args == null || args.itemId == null) {
+        if (args == null) {
             return;
         }
-        if (args.itemName != null) {
-            // filtered mode: the list shows only this item; the filter chip
+        if (args.itemId != null) {
+            if (args.itemName != null) {
+                // filtered mode: the list shows only this item; the filter chip
+                // (created in createView) offers the way back to the full list
+                mItemListSV.setItemFilter(Collections.singletonList(args.itemId));
+                mItemListSV.refresh();
+            } else {
+                mItemListSV.showItemId(args.itemId);
+            }
+        } else if (args.itemIds != null) {
+            // filtered mode: the list shows only these items; the filter chip
             // (created in createView) offers the way back to the full list
-            mItemListSV.setItemFilter(args.itemId);
+            mItemListSV.setItemFilter(args.itemIds);
             mItemListSV.refresh();
-        } else {
-            mItemListSV.showItemId(args.itemId);
         }
     }
 
@@ -125,6 +134,9 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         Args args = Args.of(mNavRoute);
         if (args != null && args.itemId != null && args.itemName != null) {
             mFilterItemChip.setText(args.itemName);
+            mFilterItemChip.setVisibility(View.VISIBLE);
+        } else if (args != null && args.itemIds != null && args.filterLabel != null) {
+            mFilterItemChip.setText(args.filterLabel);
             mFilterItemChip.setVisibility(View.VISIBLE);
         }
         mFilterItemChip.setOnCloseIconClickListener(v -> {
@@ -222,6 +234,19 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
             return args;
         }
 
+        /**
+         * Filtered mode for an alert-driven selection: the list shows only
+         * these items, with a clearable chip displaying the filter label.
+         * A defensive copy is kept so a later caller-side mutation cannot
+         * change what the page shows.
+         */
+        public static Args filtered(List<Long> itemIds, String label) {
+            Args args = new Args();
+            args.itemIds = new ArrayList<>(itemIds);
+            args.filterLabel = label;
+            return args;
+        }
+
         static Args of(NavRoute navRoute) {
             if (navRoute != null) {
                 Serializable arg = navRoute.getRouteArgs();
@@ -234,5 +259,9 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
 
         private Long itemId;
         private String itemName;
+        /** Nullable — alert-filtered mode: the only items the list shows. */
+        private List<Long> itemIds;
+        /** Nullable — chip text for the alert-filtered mode. */
+        private String filterLabel;
     }
 }

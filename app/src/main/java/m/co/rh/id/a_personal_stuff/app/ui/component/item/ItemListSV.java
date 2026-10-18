@@ -372,11 +372,12 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     }
 
     /**
-     * Optional single-item filter for filtered items-list mode; null clears.
-     * Callers refresh after changing it. UI stays in the hosting page.
+     * Optional item-ID-set filter for filtered items-list mode; null clears
+     * (an EMPTY list filters everything out). Callers refresh after changing
+     * it. UI stays in the hosting page.
      */
-    public void setItemFilter(Long filterItemId) {
-        mPagedItemCmd.setItemFilter(filterItemId);
+    public void setItemFilter(List<Long> filterItemIds) {
+        mPagedItemCmd.setItemFilter(filterItemIds);
     }
 
     public void refresh() {

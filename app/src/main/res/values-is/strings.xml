@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Rennur út fljótlega: %1$s</string>
     <string name="notification_low_stock_">Lágar birgðir: %1$s</string>
     <string name="notification_low_stock_item_">%1$s (lágmark %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Útrunnið (%1$d)</string>
+    <string name="filter_label_expiring_soon">Rennur út fljótlega (%1$d)</string>
+    <string name="filter_label_expiring">Rennur út (%1$d)</string>
+    <string name="filter_label_low_stock">Lágar birgðir (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Birgðaviðvaranir (%1$d)</string>
 </resources>

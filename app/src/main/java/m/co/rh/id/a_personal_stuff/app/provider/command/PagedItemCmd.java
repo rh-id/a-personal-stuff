@@ -29,8 +29,14 @@ public class PagedItemCmd {
     private int mLimit;
     private String mSearch;
     private ItemDao.QueryOrderBy mQueryOrderBy;
-    /** Nullable — when set, only this item is shown (filtered items-list mode). */
-    private Long mFilterItemId;
+    /**
+     * Nullable — when non-null, only these items are shown (filtered
+     * items-list mode). Null means no filter. An EMPTY list is also a valid
+     * state: it filters everything out (used when all matching alerts have
+     * resolved) and must never reach a Room IN () query, which throws on an
+     * empty collection.
+     */
+    private List<Long> mFilterItemIds;
     private final BehaviorSubject<ArrayList<ItemState>> mItemStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final Subject<ArrayList<ItemState>> mItemStatesEmitter;
@@ -87,9 +93,9 @@ public class PagedItemCmd {
                     Set<Long> itemIds = new LinkedHashSet<>();
                     itemIds.addAll(itemTagSearchResult.get());
                     itemIds.addAll(itemSearchResult.get());
-                    if (mFilterItemId != null) {
-                        // a search within filtered mode cannot escape the single item
-                        itemIds.retainAll(Collections.singletonList(mFilterItemId));
+                    if (mFilterItemIds != null) {
+                        // a search within filtered mode cannot escape the filtered item set
+                        itemIds.retainAll(mFilterItemIds);
                         if (itemIds.isEmpty()) {
                             mItemStatesEmitter.onNext(new ArrayList<>());
                             return;
@@ -148,10 +154,15 @@ public class PagedItemCmd {
     }
 
     private ArrayList<ItemState> loadItems() {
-        if (mFilterItemId != null) {
-            // filtered mode: a single item regardless of the page limit
+        if (mFilterItemIds != null) {
+            // an empty filter matches nothing; Room's IN () throws on an empty
+            // list, so short-circuit without touching the DAO
+            if (mFilterItemIds.isEmpty()) {
+                return new ArrayList<>();
+            }
+            // filtered mode: only these items regardless of the page limit
             return new ArrayList<>(mItemDao.findItemStatesByIds(
-                    Collections.singletonList(mFilterItemId), mQueryOrderBy));
+                    new ArrayList<>(mFilterItemIds), mQueryOrderBy));
         }
         return new ArrayList<>(mItemDao.findItemStateWithLimit(mLimit, mQueryOrderBy));
     }
@@ -173,11 +184,17 @@ public class PagedItemCmd {
     }
 
     /**
-     * Optional single-item filter (filtered items-list mode). Null clears the
-     * filter and restores normal behavior; callers refresh after changing it.
+     * Optional item-ID-set filter (filtered items-list mode). Null clears the
+     * filter and restores normal behavior; an EMPTY list filters everything
+     * out. A defensive copy is stored so later caller-side mutations cannot
+     * leak into an in-flight load. Callers refresh after changing it.
      */
-    public void setItemFilter(Long filterItemId) {
-        mFilterItemId = filterItemId;
+    public void setItemFilter(List<Long> filterItemIds) {
+        if (filterItemIds == null) {
+            mFilterItemIds = null;
+        } else {
+            mFilterItemIds = new ArrayList<>(filterItemIds);
+        }
     }
 
     public void refreshWithItemId(long itemId) {

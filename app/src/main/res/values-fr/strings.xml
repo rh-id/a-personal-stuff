@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">Expirent bientôt : %1$s</string>
     <string name="notification_low_stock_">Stock faible : %1$s</string>
     <string name="notification_low_stock_item_">%1$s (min %2$d)</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">Expirés (%1$d)</string>
+    <string name="filter_label_expiring_soon">Expirent bientôt (%1$d)</string>
+    <string name="filter_label_expiring">Expirent (%1$d)</string>
+    <string name="filter_label_low_stock">Stock faible (%1$d)</string>
+    <string name="filter_label_inventory_alerts">Alertes d\'inventaire (%1$d)</string>
 </resources>

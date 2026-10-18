@@ -17,8 +17,11 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -28,6 +31,7 @@ import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.DashboardCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
+import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
 import m.co.rh.id.a_personal_stuff.app.ui.model.DashboardData;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -46,6 +50,7 @@ import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsageDetailPage;
+import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
@@ -78,6 +83,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient ImportCmd mImportCmd;
     private transient FileHelper mFileHelper;
     private transient ILogger mLogger;
+    private transient InventoryStatsCalculator mInventoryStatsCalculator;
+    private transient SettingsSharedPreferences mSettingsSharedPreferences;
 
     private transient DrawerLayout mDrawerLayout;
     private transient View.OnClickListener mOnNavigationClicked;
@@ -121,6 +128,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mImportCmd = mSvProvider.get(ImportCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
         mLogger = mSvProvider.get(ILogger.class);
+        mInventoryStatsCalculator = mSvProvider.get(InventoryStatsCalculator.class);
+        mSettingsSharedPreferences = mSvProvider.get(SettingsSharedPreferences.class);
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
@@ -194,7 +203,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mContainerDashboardExpiring = rootLayout.findViewById(R.id.container_dashboard_expiring);
         mContainerDashboardExpiring.setOnClickListener(this);
         mContainerDashboardExpiredGroup = rootLayout.findViewById(R.id.container_dashboard_expired_group);
+        mContainerDashboardExpiredGroup.setOnClickListener(this);
         mContainerDashboardExpiringGroup = rootLayout.findViewById(R.id.container_dashboard_expiring_group);
+        mContainerDashboardExpiringGroup.setOnClickListener(this);
         mDividerDashboardLowStock = rootLayout.findViewById(R.id.divider_dashboard_low_stock);
         mDividerDashboardExpiring = rootLayout.findViewById(R.id.divider_dashboard_expiring);
         mTextDashboardExpiringSummary = rootLayout.findViewById(R.id.text_dashboard_expiring_summary);
@@ -229,13 +240,43 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         }));
         mRxDisposer.add("createView_onInventoryAlert",
                 mAppNotificationHandler.getInventoryAlertFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(requestId -> {
-                            NavRoute currentRoute = mNavigator.getCurrentRoute();
-                            if (!Routes.ITEMS_PAGE.equals(currentRoute.getRouteName())) {
-                                mNavigator.push(Routes.ITEMS_PAGE);
+                        // recompute on a worker thread: the calculator issues
+                        // blocking Room queries; honors the CURRENT alert
+                        // settings, consistent with AlertDigestWorker's
+                        // post-time gating
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .map(requestId -> {
+                            boolean expiryEnabled = mSettingsSharedPreferences.isExpiryAlertEnabled();
+                            boolean lowStockEnabled = mSettingsSharedPreferences.isLowStockAlertEnabled();
+                            Set<InventoryStatsCalculator.AlertType> types =
+                                    EnumSet.noneOf(InventoryStatsCalculator.AlertType.class);
+                            if (expiryEnabled) {
+                                types.add(InventoryStatsCalculator.AlertType.EXPIRED);
+                                types.add(InventoryStatsCalculator.AlertType.EXPIRING_SOON);
                             }
-                        }));
+                            if (lowStockEnabled) {
+                                types.add(InventoryStatsCalculator.AlertType.LOW_STOCK);
+                            }
+                            if (types.isEmpty()) {
+                                return new ArrayList<Long>();
+                            }
+                            return mInventoryStatsCalculator.findAlertItemIds(types,
+                                    new Date(), mSettingsSharedPreferences.getExpiryAlertLeadDays());
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemIds -> {
+                            // a notification tap is an explicit user action, so
+                            // always push regardless of the current page
+                            if (itemIds.isEmpty()) {
+                                mNavigator.push(Routes.ITEMS_PAGE);
+                            } else {
+                                Context context = mSvProvider.getContext();
+                                String label = context.getString(
+                                        R.string.filter_label_inventory_alerts, itemIds.size());
+                                mNavigator.push(Routes.ITEMS_PAGE,
+                                        ItemsPage.Args.filtered(itemIds, label));
+                            }
+                        }, throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)));
         mRxDisposer.add("createView_onDashboardData",
                 mDashboardCmd.getDashboardFlow()
                         .observeOn(AndroidSchedulers.mainThread())
@@ -275,6 +316,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mTextDashboardLowStockSamples = null;
         mTextDashboardRemindersSummary = null;
         mTextDashboardRemindersSamples = null;
+        mInventoryStatsCalculator = null;
+        mSettingsSharedPreferences = null;
         mLocale = null;
     }
 
@@ -355,13 +398,64 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             doExportSpreadsheet((Activity) view.getContext());
         } else if (id == R.id.button_import) {
             doImport((Activity) view.getContext());
-        } else if (id == R.id.card_dashboard_inventory
-                || id == R.id.container_dashboard_low_stock
-                || id == R.id.container_dashboard_expiring) {
+        } else if (id == R.id.card_dashboard_inventory) {
             mNavigator.push(Routes.ITEMS_PAGE);
+        } else if (id == R.id.container_dashboard_low_stock) {
+            navigateToAlertItems("home_alert_items_low_stock",
+                    EnumSet.of(InventoryStatsCalculator.AlertType.LOW_STOCK),
+                    R.string.filter_label_low_stock);
+        } else if (id == R.id.container_dashboard_expired_group) {
+            navigateToAlertItems("home_alert_items_expired",
+                    EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED),
+                    R.string.filter_label_expired);
+        } else if (id == R.id.container_dashboard_expiring_group) {
+            navigateToAlertItems("home_alert_items_expiring_soon",
+                    EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRING_SOON),
+                    R.string.filter_label_expiring_soon);
+        } else if (id == R.id.container_dashboard_expiring) {
+            // the combined parent row is the fallback tap target when the
+            // group sub-rows are hidden (expired XOR expiring-soon only)
+            navigateToAlertItems("home_alert_items_expiring",
+                    EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED,
+                            InventoryStatsCalculator.AlertType.EXPIRING_SOON),
+                    R.string.filter_label_expiring);
         } else if (id == R.id.card_dashboard_reminders) {
             mNavigator.push(Routes.ITEM_REMINDERS_PAGE);
         }
+    }
+
+    /**
+     * Navigates to the items list filtered down to the items currently
+     * affected by the requested alert types. The computation runs on a worker
+     * thread: the calculator issues blocking Room queries, which the main
+     * thread must never touch. If every alert resolved in the meantime, the
+     * unfiltered list opens instead.
+     */
+    private void navigateToAlertItems(String disposerKey,
+                                      Set<InventoryStatsCalculator.AlertType> types,
+                                      int labelRes) {
+        Context context = mSvProvider.getContext();
+        // keyed RxDisposer subscription: a re-tap replaces the previous
+        // computation instead of stacking duplicates
+        mRxDisposer.add(disposerKey,
+                Single.fromCallable(() -> {
+                    Date now = new Date();
+                    int leadDays = mSettingsSharedPreferences.getExpiryAlertLeadDays();
+                    return mInventoryStatsCalculator.findAlertItemIds(types, now, leadDays);
+                })
+                        .subscribeOn(Schedulers.from(mExecutorService))
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemIds -> {
+                            if (itemIds.isEmpty()) {
+                                // alerts resolved since the row appeared;
+                                // fall back to the full list
+                                mNavigator.push(Routes.ITEMS_PAGE);
+                            } else {
+                                String label = context.getString(labelRes, itemIds.size());
+                                mNavigator.push(Routes.ITEMS_PAGE,
+                                        ItemsPage.Args.filtered(itemIds, label));
+                            }
+                        }, throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)));
     }
 
     private void renderDashboard(DashboardData dashboardData) {

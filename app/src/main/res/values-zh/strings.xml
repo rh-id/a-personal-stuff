@@ -139,4 +139,11 @@
     <string name="notification_expiring_soon_">即将过期：%1$s</string>
     <string name="notification_low_stock_">库存不足：%1$s</string>
     <string name="notification_low_stock_item_">%1$s（最少 %2$d）</string>
+
+    <!-- Chip labels for the alert-filtered items list; count is filled at tap time -->
+    <string name="filter_label_expired">已过期（%1$d）</string>
+    <string name="filter_label_expiring_soon">即将过期（%1$d）</string>
+    <string name="filter_label_expiring">即将到期（%1$d）</string>
+    <string name="filter_label_low_stock">库存不足（%1$d）</string>
+    <string name="filter_label_inventory_alerts">库存警报（%1$d）</string>
 </resources>

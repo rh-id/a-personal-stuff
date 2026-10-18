@@ -3,8 +3,10 @@ package m.co.rh.id.a_personal_stuff.app.provider.component;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -23,6 +25,9 @@ import m.co.rh.id.aprovider.Provider;
 public class InventoryStatsCalculator {
 
     private static final long MILLIS_PER_DAY = 86400000L;
+
+    /** Alert categories shared by the dashboard rows and the digest notification. */
+    public enum AlertType { EXPIRED, EXPIRING_SOON, LOW_STOCK }
 
     private ItemDao mItemDao;
     private ItemUsageDao mItemUsageDao;
@@ -50,6 +55,45 @@ public class InventoryStatsCalculator {
         computeExpiryCounts(alertSummary, now);
         computeLowStock(alertSummary, usageTotals, purchaseTotals);
         return alertSummary;
+    }
+
+    /**
+     * Computes the item IDs currently affected by the requested alert types.
+     * Blocking Room queries — must run on a background thread. Results are
+     * deduplicated (an item may be both expired and low stock) and ordered
+     * deterministically (expiry ASC then id ASC / id ASC per DAO queries).
+     * An empty result means the alerts resolved since they were raised.
+     */
+    public List<Long> findAlertItemIds(Set<AlertType> types, Date now, int leadDays) {
+        Date leadEnd = new Date(now.getTime() + leadDays * MILLIS_PER_DAY);
+        // the derived remaining stock spans the usage and purchase databases,
+        // so the totals are loaded once here and shared by the expiry filter
+        // and the low-stock check
+        Map<Long, Integer> usageTotals = buildUsageTotals();
+        Map<Long, Integer> purchaseTotals = buildPurchaseTotals();
+        Set<Long> alertItemIds = new LinkedHashSet<>();
+        if (types.contains(AlertType.EXPIRED) || types.contains(AlertType.EXPIRING_SOON)) {
+            List<Item> expiringItems = filterItemsInStock(
+                    mItemDao.findItemsExpiringBefore(leadEnd),
+                    usageTotals, purchaseTotals);
+            // same split rule as computeExpiryCounts: items at or before now
+            // are expired, the rest are expiring soon
+            for (Item item : expiringItems) {
+                if (!item.expiredDateTime.after(now)) {
+                    if (types.contains(AlertType.EXPIRED)) {
+                        alertItemIds.add(item.id);
+                    }
+                } else if (types.contains(AlertType.EXPIRING_SOON)) {
+                    alertItemIds.add(item.id);
+                }
+            }
+        }
+        if (types.contains(AlertType.LOW_STOCK)) {
+            for (Item item : findLowStockItems(usageTotals, purchaseTotals)) {
+                alertItemIds.add(item.id);
+            }
+        }
+        return new ArrayList<>(alertItemIds);
     }
 
     private Map<Long, Integer> buildUsageTotals() {
@@ -125,6 +169,16 @@ public class InventoryStatsCalculator {
     private void computeLowStock(AlertSummary alertSummary,
                                  Map<Long, Integer> usageTotals,
                                  Map<Long, Integer> purchaseTotals) {
+        alertSummary.lowStockItems = findLowStockItems(usageTotals, purchaseTotals);
+    }
+
+    /**
+     * Shared low-stock selection used by both {@link #compute(Date, int)}
+     * and {@link #findAlertItemIds(Set, Date, int)}: an item is low when its
+     * derived remaining stock is at or below min_amount.
+     */
+    private List<Item> findLowStockItems(Map<Long, Integer> usageTotals,
+                                         Map<Long, Integer> purchaseTotals) {
         List<Item> lowStockItems = new ArrayList<>();
         List<Item> candidates = mItemDao.findItemsWithMinAmount();
         for (Item item : candidates) {
@@ -133,7 +187,7 @@ public class InventoryStatsCalculator {
                 lowStockItems.add(item);
             }
         }
-        alertSummary.lowStockItems = lowStockItems;
+        return lowStockItems;
     }
 
     public static class AlertSummary {
