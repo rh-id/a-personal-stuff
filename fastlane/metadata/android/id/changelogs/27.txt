@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Fitur Baru:
+* Baris Stok menipis, Kedaluwarsa, dan Segera kedaluwarsa pada dasbor kini membuka daftar item yang sudah difilter ke item terdampak, dengan chip filter yang bisa dihapus
+* Mengetuk notifikasi peringatan inventaris membuka daftar terfilter yang sama
+* Opsi baru untuk membatasi jumlah maksimum nama item per bagian peringatan dalam notifikasi
+
+Perbaikan:
+* Perbaikan terjemahan di beberapa bahasa, termasuk Romansh dan Islandia

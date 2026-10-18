@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Nýir eiginleikar:
+* Lágar birgðir, Útrunnið og Rennur út fljótlega í yfirlitinu opna nú hlutalista sem er fyrirfram síaður að viðkomandi hlutum, með fjarlægjanlegri síumerki
+* Ýting á birgðaviðvörunartilkynninguna opnar sama síaða lista
+* Stilling fyrir hámarksfjölda hluta sem birtast í hverjum hluta viðvarana í tilkynningunni
+
+Villuleiðréttingar:
+* Betruð þýðingar í nokkrum tungumálum, meðal annars rómönsku og íslensku

@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Nye funksjoner:
+* Radene Lavt lager, Utløpt og Utløper snart på dashbordet åpner nå gjenstandslisten forhåndsfiltrert på de berørte gjenstandene, bak en fjernbar chip
+* Trykk på beholdningsvarslet åpner samme forhåndsfiltrerte liste
+* Ny innstilling for maksimalt antall gjenstandsnavn per varslingsseksjon i varselet
+
+Feilrettinger:
+* Forbedrede oversettelser på flere språk, blant annet retoromansk og islandsk

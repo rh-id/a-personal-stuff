@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Novas funcziuns:
+* Las lingias Provisiun bassa, Scadì e Scaden prest sin il dashboard avran ussa la glista d'objects prefiltrada sin ils objects pertuccads, cun in chip laminaibel
+* Toccar l'alerta da provisiun avra la medema glista prefiltrada
+* Possibilitad da limitar il nummer maximal d'elements che vegnan mussads per secziun d'alerta en la notificaziun
+
+Corecziuns:
+* Traducziuns meglieradas en pliras linguas, tranter auter il romontsch ed l'islandais

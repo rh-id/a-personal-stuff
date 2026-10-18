@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Nouvelles fonctionnalités :
+* Les lignes Stock faible, Expirés et Expirent bientôt du tableau de bord ouvrent désormais la liste des éléments préfiltrée sur les éléments concernés, avec une puce effaçable
+* Toucher la notification d'alerte d'inventaire ouvre la même liste préfiltrée
+* Nouvelle option pour limiter le nombre max d'éléments affichés par section d'alerte dans la notification
+
+Corrections :
+* Traductions affinées dans plusieurs langues, dont le romanche et l'islandais

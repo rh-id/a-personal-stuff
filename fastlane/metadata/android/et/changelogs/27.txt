@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Uued funktsioonid:
+* Madal laoseis, Aegunud ja Aegub peagi read avalehel avavad nüüd esemete loendi, eelnevalt filtreerituna mõjutatud esemetele, eemaldatava filtrisildiga
+* Laoseisu hoiatusteavituse puudutamine avab sama eelnevalt filtreeritud loendi
+* Uus seadistus, et piirata hoiatusteavituse ühes sektsioonis näidatavate elementide maksimaalset arvu
+
+Veaparandused:
+* Tõlkeparandused mitmes keeles, sealhulgas retoromaani ja islandi keeles

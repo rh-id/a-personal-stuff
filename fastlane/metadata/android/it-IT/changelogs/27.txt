@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Nuove funzionalità:
+* Le righe Scorta bassa, Scaduti e In scadenza della dashboard aprono ora l'elenco elementi prefiltrato sugli elementi interessati, con un chip rimovibile
+* Toccando la notifica di avviso dell'inventario si apre lo stesso elenco prefiltrato
+* Nuova opzione per limitare il numero massimo di nomi di elementi mostrato per sezione di avviso nella notifica
+
+Correzioni:
+* Traduzioni affinate in diverse lingue, tra cui romancio e islandese

@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Features:
+* Dashboard rows for low stock, expired, and expiring soon items now open the items list pre-filtered to the affected items behind a clearable chip
+* Tapping the inventory alert notification opens the same pre-filtered items list
+* New setting to cap how many item names are shown per alert section in the notification
+
+Fixes:
+* Translation refinements in several languages, including Romansh and Icelandic

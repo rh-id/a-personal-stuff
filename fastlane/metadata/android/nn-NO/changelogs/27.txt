@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Nye funksjonar:
+* Radane Lågt lager, Utgått og Går ut snart på dashbordet opnar no gjenstandlista, førehandsfiltrert på dei ramsde gjenstandane, med ein fjernbar chip
+* Trykk på beholdningsvarselet opnar same førehandsfiltrerte lista
+* Ny innstilling for maksimalt tal gjenstandsnamn per varslingsseksjon i varselet
+
+Feilrettingar:
+* Forbetra omsetjingar på fleire språk, mellom anna retoromansk og islandsk

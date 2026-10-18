@@ -1,0 +1,9 @@
+Release 2.3.0+27
+
+Neue Funktionen:
+* Die Dashboard-Zeilen für Geringer Bestand, Abgelaufen und Läuft bald ab öffnen nun die Artikelliste, vorab gefiltert auf die betroffenen Artikel, mit einem entfernbaren Chip
+* Tippen auf die Inventar-Warnung öffnet dieselbe vorab gefilterte Artikelliste
+* Neue Einstellung, wie viele Objektnamen pro Warnungsbereich in der Benachrichtigung angezeigt werden
+
+Fehlerbehebungen:
+* Überarbeitete Übersetzungen in mehreren Sprachen, u. a. Rätoromanisch und Isländisch
