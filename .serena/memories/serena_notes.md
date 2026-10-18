@@ -13,5 +13,5 @@
 
 ## Memories
 - Memories live in `.serena/memories/` and are meant to be committed (only `.serena/cache` and `project.local.yml` are gitignored).
-- Keep memories small and non-duplicative: `README.md` (848 lines) is authoritative for features/architecture — reference it instead of copying.
+- Keep memories small and non-duplicative: `README.md` (~875 lines) is authoritative for features/architecture — reference it instead of copying.
 - Update (don't append) stale memories; delete memories that no longer hold true.

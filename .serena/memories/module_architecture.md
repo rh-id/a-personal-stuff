@@ -4,7 +4,7 @@ Modular Single-Activity Architecture. 9 Gradle modules (see `settings.gradle`):
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | `MainActivity`, `MainApplication`, DI setup, `NavigatorProvider` (route → StatefulViewFactory), dashboard overview card (`DashboardCmd`, `InventoryStatsCalculator`), daily alert digest (`InventoryAlertScheduler`, `AlertDigestWorker`), backup/restore, XLSX export |
+| `:app` | `MainActivity`, `MainApplication`, DI setup, `NavigatorProvider` (route → StatefulViewFactory), dashboard overview card (`DashboardCmd`, `InventoryStatsCalculator`), daily alert digest (`InventoryAlertScheduler`, `AlertDigestWorker`) with alert-aware deep links (`PagedItemCmd` id-set filter, `InventoryStatsCalculator.findAlertItemIds()`), manual + scheduled backup/restore (`AutoBackupScheduler`/`AutoBackupWorker`/`ExportService`), XLSX export |
 | `:base` | Shared entities (`Item`, `ItemImage`, `ItemTag`), DAOs, Rx utilities, `DbMigration`, Room migrations, shared UI (`AppBar`, `ImageSV`, `SelectionPage`) |
 | `:barcode` | Camera1 + ZXing scanning (`ScanBarcodePage`, `ScanBarcodePreview`) |
 | `:item-usage` | `ItemUsage` entity/DAO/commands/pages |
@@ -12,7 +12,7 @@ Modular Single-Activity Architecture. 9 Gradle modules (see `settings.gradle`):
 | `:item-maintenance` | `ItemMaintenance` entity/DAO/commands/pages |
 | `:item-reminder` | `ItemReminder`, WorkManager alarm scheduling |
 | `:item-checklist` | `ItemChecklist`, `ItemChecklistItem` |
-| `:settings` | `SettingsPage`, theme, alert toggles/lead time, licenses page (licenses.html generated at build time) |
+| `:settings` | `SettingsPage`, theme + Material You dynamic colors toggle, alert settings (expiry/low-stock toggles, lead time, digest name cap), item view mode (detailed/compact), auto-backup settings (`AutoBackupMenuSV`), licenses page (licenses.html generated at build time) |
 
 ## Database strategy
 Multiple Room databases, one per feature module (decoupled, independently extractable):

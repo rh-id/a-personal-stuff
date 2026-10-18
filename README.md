@@ -14,7 +14,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 
 ## Features
 *   **Item Management**: Easily add, edit, and organize items.
-*   **Dashboard Overview Card**: The dashboard leads with an inventory overview — total item count, total inventory value (Σ price × amount), expired and expiring-soon counts with sample items, low-stock items, and an upcoming-reminders card; tapping a card jumps to the item list or reminders, and the card live-refreshes on data changes.
+*   **Dashboard Overview Card**: The dashboard leads with an inventory overview — total item count, total inventory value (Σ price × amount), expired and expiring-soon counts with sample items, low-stock items, and an upcoming-reminders card; tapping the low-stock / expired / expiring-soon rows jumps to the item list pre-filtered to the affected items behind a clearable chip, other rows jump to their lists, and the card live-refreshes on data changes.
 *   **Daily Inventory Alert Digest**: A periodic WorkManager job (24 h cycle) posts a single self-replacing "Inventory needs attention (N)" notification listing up to a configurable cap (3/5/10, default 5) expired, expiring-soon, and low-stock items; expiry alerts use a configurable lead time (3/7/14 days, default 7), and both alert types can be toggled in Settings → Alerts (both default on).
 *   **Per-Item Low Stock Threshold**: Optionally set a "low stock alert threshold" on the item form; low stock is computed from derived remaining stock (amount − Σ usage + Σ purchases) compared against the threshold, and it surfaces in the dashboard card, the daily digest, and the spreadsheet export.
 *   **Smart Reminders**: Set up notifications for expiration dates or custom events.
@@ -222,7 +222,7 @@ graph TB
     *   Injects required dependencies (`ExecutorService`, `AppNotificationHandler`, `RxDisposer`, `QueryItemCmd`, `DashboardCmd`)
     *   Sets up drawer navigation and button click handlers
     *   Subscribes to notification events to navigate to appropriate pages
-    *   Renders the inventory overview card from `DashboardCmd` (debounced refresh on data/setting changes) and navigates to `ItemsPage` when the daily digest notification is tapped
+    *   Renders the inventory overview card from `DashboardCmd` (debounced refresh on data/setting changes) and, via alert-aware deep links, navigates to a pre-filtered `ItemsPage` (clearable chip) when the daily digest notification or an affected overview-card row is tapped
 
 ```mermaid
 sequenceDiagram
@@ -664,9 +664,11 @@ a-personal-stuff/
 │   ├── android-release.yml      # Release build automation
 │   └── android-emulator-test.yml # Emulator testing
 │
-├── gradle/                       # Gradle build scripts
-│   └── license-html-generator.gradle # Generates licenses.html from app dependencies at build time
-├── build.gradle                  # Root build configuration (room_version, nav_version ext properties)
+├── gradle/                       # Gradle build configuration
+│   ├── libs.versions.toml        # Version catalog (all dependency/plugin versions)
+│   ├── license-html-generator.gradle # Generates licenses.html from app dependencies at build time
+│   └── wrapper/                  # Gradle wrapper (pinned distribution + checksum)
+├── build.gradle                  # Root build configuration (plugins applied via version catalog)
 ├── settings.gradle               # Project module configuration
 ├── gradle.properties            # Gradle build flags (JVM args, AndroidX settings)
 └── README.md                     # This file
@@ -766,7 +768,7 @@ Located in `.github/workflows/`, the project has three main pipelines:
 
 3.  **Emulator Test (`android-emulator-test.yml`)**:
     *   Triggers on push/PR to `master`
-    *   Runs `./gradlew connectedCheck` on an Android emulator matrix — API levels 23, 26, 31 and 36 on the `default` target (x86_64) — with KVM and AVD caching (snapshot pre-warmed with a raised dalvik heap, hard-gated emulator readiness checks, and emulator/`crashpad_handler` processes killed after runs to prevent runner pipe hangs)
+    *   Runs `./gradlew connectedCheck` on an Android emulator matrix — API levels 23, 26, 31 and 36 on the `default` target (x86_64) — with KVM, a run-time dalvik-heap re-raise fallback (when pre-warmed snapshot heap props are missing), hard-gated emulator readiness checks, and emulator/`crashpad_handler` processes killed after runs to prevent runner pipe hangs
 
 ### Fastlane
 The `fastlane/` directory contains metadata for store listings:
