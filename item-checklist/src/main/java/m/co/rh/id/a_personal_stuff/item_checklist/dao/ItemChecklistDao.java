@@ -99,6 +99,13 @@ public abstract class ItemChecklistDao {
     @Query("DELETE FROM item_checklist_item WHERE item_id = :itemId")
     public abstract void deleteItemChecklistItemsByItemId(long itemId);
 
+    @Query("DELETE FROM item_checklist_item WHERE item_id IN (:itemIds)")
+    public abstract void deleteItemChecklistItemsByItemIds(List<Long> itemIds);
+
+    // used by the startup orphan sweep to compute referenced child ids
+    @Query("SELECT DISTINCT item_id FROM item_checklist_item WHERE item_id IS NOT NULL")
+    public abstract List<Long> findDistinctItemIds();
+
     public List<ItemChecklistState> findItemChecklistWithLimit(int limit, QueryOrderBy orderBy) {
         Supplier<List<ItemChecklist>> itemSupplier;
 

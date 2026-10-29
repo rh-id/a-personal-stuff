@@ -60,7 +60,6 @@ public abstract class ItemPurchaseDao {
         }
     }
 
-    // delete itempurchase and all its dependencies
     private void deleteItemPurchase(ItemPurchase itemPurchase) {
         delete(itemPurchase);
         deleteItemPurchaseImagesByItemPurchaseId(itemPurchase.id);
@@ -136,16 +135,31 @@ public abstract class ItemPurchaseDao {
 
     @Transaction
     public void deleteItemPurchaseStatesByItemId(long itemId) {
-        List<ItemPurchase> itemPurchases = findItemPurchaseByItemId(itemId);
-        if (!itemPurchases.isEmpty()) {
-            for (ItemPurchase itemPurchase : itemPurchases) {
-                deleteItemPurchase(itemPurchase);
-            }
-        }
+        deleteItemPurchaseStatesByItemIds(Collections.singletonList(itemId));
+    }
+
+    // delete itempurchases and all their dependencies: the image statement
+    // runs first because its subquery reads the parent table, so parents must
+    // still exist when it runs
+    @Query("DELETE FROM item_purchase_image WHERE item_purchase_id IN" +
+            " (SELECT id FROM item_purchase WHERE item_id IN (:itemIds))")
+    protected abstract void deleteItemPurchaseImagesByItemIds(List<Long> itemIds);
+
+    @Query("DELETE FROM item_purchase WHERE item_id IN (:itemIds)")
+    protected abstract void deleteItemPurchasesByItemIds(List<Long> itemIds);
+
+    @Transaction
+    public void deleteItemPurchaseStatesByItemIds(List<Long> itemIds) {
+        deleteItemPurchaseImagesByItemIds(itemIds);
+        deleteItemPurchasesByItemIds(itemIds);
     }
 
     @Query("SELECT * FROM item_purchase WHERE item_id = :itemId")
     public abstract List<ItemPurchase> findItemPurchaseByItemId(long itemId);
+
+    // used by the startup orphan sweep to compute referenced child ids
+    @Query("SELECT DISTINCT item_id FROM item_purchase WHERE item_id IS NOT NULL")
+    public abstract List<Long> findDistinctItemIds();
 
     @Query("SELECT * FROM item_purchase")
     public abstract List<ItemPurchase> findAllItemPurchases();

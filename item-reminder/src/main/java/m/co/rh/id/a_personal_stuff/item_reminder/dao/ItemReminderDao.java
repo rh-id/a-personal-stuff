@@ -38,6 +38,18 @@ public abstract class ItemReminderDao {
     @Query("SELECT * FROM item_reminder WHERE item_id = :itemId")
     public abstract List<ItemReminder> findItemReminderByItemId(long itemId);
 
+    /**
+     * Bulk delete for the startup orphan sweep. WorkManager unique-work
+     * cancellation is intentionally omitted: ItemReminderNotificationWorker
+     * no-ops when the reminder row is gone.
+     */
+    @Query("DELETE FROM item_reminder WHERE item_id IN (:itemIds)")
+    public abstract void deleteItemRemindersByItemIds(List<Long> itemIds);
+
+    // used by the startup orphan sweep to compute referenced child ids
+    @Query("SELECT DISTINCT item_id FROM item_reminder WHERE item_id IS NOT NULL")
+    public abstract List<Long> findDistinctItemIds();
+
     @Query("SELECT * FROM item_reminder WHERE id = :id")
     public abstract ItemReminder findItemReminderById(long id);
 

@@ -30,7 +30,7 @@ public abstract class ItemDao {
      * doubles up to 1600 (see PagedItemCmd#loadNextPage), so id lists must
      * be chunked (see also ExportSpreadsheetCmd).
      */
-    private static final int SQLITE_IN_CHUNK_SIZE = 500;
+    public static final int SQLITE_IN_CHUNK_SIZE = 500;
 
     public enum QueryOrderBy {
         EXPIRED_DATE_TIME_ASC,
@@ -159,7 +159,7 @@ public abstract class ItemDao {
         return itemStates;
     }
 
-    static List<List<Long>> chunkIds(List<Long> ids) {
+    public static List<List<Long>> chunkIds(List<Long> ids) {
         List<List<Long>> chunks = new ArrayList<>();
         for (int i = 0; i < ids.size(); i += SQLITE_IN_CHUNK_SIZE) {
             chunks.add(ids.subList(i, Math.min(i + SQLITE_IN_CHUNK_SIZE, ids.size())));
@@ -407,6 +407,9 @@ public abstract class ItemDao {
 
     @Query("SELECT * FROM item")
     public abstract List<Item> findAllItems();
+
+    @Query("SELECT id FROM item")
+    public abstract List<Long> getAllItemIds();
 
     @Query("SELECT COUNT(*) FROM item")
     public abstract int countItems();

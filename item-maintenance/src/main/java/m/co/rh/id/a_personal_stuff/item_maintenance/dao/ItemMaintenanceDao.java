@@ -10,6 +10,7 @@ import androidx.room.Update;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
@@ -63,18 +64,29 @@ public abstract class ItemMaintenanceDao {
 
     @Transaction
     public void deleteItemMaintenanceStatesByItemId(long itemId) {
-        List<ItemMaintenance> itemMaintenances = findItemMaintenanceByItemId(itemId);
-        if (!itemMaintenances.isEmpty()) {
-            for (ItemMaintenance itemMaintenance : itemMaintenances) {
-                deleteItemMaintenance(itemMaintenance);
-            }
-        }
+        deleteItemMaintenanceStatesByItemIds(Collections.singletonList(itemId));
     }
 
-    @Query("SELECT * FROM item_maintenance WHERE item_id = :itemId")
-    protected abstract List<ItemMaintenance> findItemMaintenanceByItemId(long itemId);
+    // delete itemmaintenances and all their dependencies: the image statement
+    // runs first because its subquery reads the parent table, so parents must
+    // still exist when it runs
+    @Query("DELETE FROM item_maintenance_image WHERE item_maintenance_id IN" +
+            " (SELECT id FROM item_maintenance WHERE item_id IN (:itemIds))")
+    protected abstract void deleteItemMaintenanceImagesByItemIds(List<Long> itemIds);
 
-    // delete ItemMaintenance and all its dependencies
+    @Query("DELETE FROM item_maintenance WHERE item_id IN (:itemIds)")
+    protected abstract void deleteItemMaintenancesByItemIds(List<Long> itemIds);
+
+    @Transaction
+    public void deleteItemMaintenanceStatesByItemIds(List<Long> itemIds) {
+        deleteItemMaintenanceImagesByItemIds(itemIds);
+        deleteItemMaintenancesByItemIds(itemIds);
+    }
+
+    // used by the startup orphan sweep to compute referenced child ids
+    @Query("SELECT DISTINCT item_id FROM item_maintenance WHERE item_id IS NOT NULL")
+    public abstract List<Long> findDistinctItemIds();
+
     private void deleteItemMaintenance(ItemMaintenance itemMaintenance) {
         delete(itemMaintenance);
         deleteItemMaintenanceImagesByItemMaintenanceId(itemMaintenance.id);
