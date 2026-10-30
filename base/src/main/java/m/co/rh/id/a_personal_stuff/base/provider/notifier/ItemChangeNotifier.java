@@ -53,6 +53,17 @@ public class ItemChangeNotifier {
         return Flowable.fromObservable(mDeletedSubject, BackpressureStrategy.BUFFER);
     }
 
+    /**
+     * Emits the affected item on any item add/update/delete.
+     * Convenience for consumers that only need to know "something about this item changed".
+     */
+    public Flowable<ItemState> getAnyItemChangeFlow() {
+        return Flowable.merge(
+                getAddedItemFlow(),
+                getUpdatedItemFlow(),
+                getDeletedItemFlow());
+    }
+
     public void itemImageDeleted(List<ItemImage> itemImages) {
         mDeletedItemImagesSubject.onNext(itemImages);
     }

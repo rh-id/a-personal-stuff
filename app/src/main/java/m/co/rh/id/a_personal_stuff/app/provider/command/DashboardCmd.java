@@ -15,12 +15,11 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
 import m.co.rh.id.a_personal_stuff.app.ui.model.DashboardData;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
-import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -42,9 +41,7 @@ public class DashboardCmd implements ProviderDisposable {
     private ItemReminderDao mItemReminderDao;
     private SettingsSharedPreferences mSettingsSharedPreferences;
     private ItemChangeNotifier mItemChangeNotifier;
-    private ItemUsageChangeNotifier mItemUsageChangeNotifier;
-    private ItemPurchaseChangeNotifier mItemPurchaseChangeNotifier;
-    private ItemReminderChangeNotifier mItemReminderChangeNotifier;
+    private BackupContributorRegistry mContributorRegistry;
     private ILogger mLogger;
     private CompositeDisposable mCompositeDisposable;
     private final BehaviorSubject<DashboardData> mDashboardSubject;
@@ -56,9 +53,7 @@ public class DashboardCmd implements ProviderDisposable {
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mSettingsSharedPreferences = provider.get(SettingsSharedPreferences.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
-        mItemUsageChangeNotifier = provider.get(ItemUsageChangeNotifier.class);
-        mItemPurchaseChangeNotifier = provider.get(ItemPurchaseChangeNotifier.class);
-        mItemReminderChangeNotifier = provider.get(ItemReminderChangeNotifier.class);
+        mContributorRegistry = provider.get(BackupContributorRegistry.class);
         mLogger = provider.get(ILogger.class);
         mDashboardSubject = BehaviorSubject.createDefault(new DashboardData());
         mDashboardEmitter = mDashboardSubject.toSerialized();
@@ -75,17 +70,17 @@ public class DashboardCmd implements ProviderDisposable {
     }
 
     private Flowable<Object> refreshTrigger() {
-        return Flowable.mergeArray(
-                mItemChangeNotifier.getAddedItemFlow().map(itemState -> (Object) itemState),
-                mItemChangeNotifier.getUpdatedItemFlow().map(itemState -> (Object) itemState),
-                mItemChangeNotifier.getDeletedItemFlow().map(itemState -> (Object) itemState),
-                mItemUsageChangeNotifier.getAnyItemUsageChangeFlow().map(itemId -> (Object) itemId),
-                mItemPurchaseChangeNotifier.getAnyItemPurchaseChangeFlow().map(itemId -> (Object) itemId),
-                mItemReminderChangeNotifier.getAddedFlow().map(itemReminder -> (Object) itemReminder),
-                mItemReminderChangeNotifier.getUpdatedFlow().map(itemReminder -> (Object) itemReminder),
-                mItemReminderChangeNotifier.getDeletedFlow().map(itemReminder -> (Object) itemReminder),
-                mSettingsSharedPreferences.getExpiryAlertLeadDaysFlow()
-                        .map(leadDays -> (Object) leadDays));
+        // base-DB item changes plus the per-module refresh flows contributed
+        // through the BackupContributorRegistry (usage/purchase any-change,
+        // reminder add/update/delete)
+        List<Flowable<Object>> triggers = new ArrayList<>();
+        triggers.add(mItemChangeNotifier.getAnyItemChangeFlow().map(itemState -> (Object) itemState));
+        for (ModuleDashboardContributor contributor : mContributorRegistry.getDashboardContributors()) {
+            triggers.addAll(contributor.getRefreshTriggers());
+        }
+        triggers.add(mSettingsSharedPreferences.getExpiryAlertLeadDaysFlow()
+                .map(leadDays -> (Object) leadDays));
+        return Flowable.merge(triggers);
     }
 
     public synchronized void refresh() {
@@ -119,6 +114,10 @@ public class DashboardCmd implements ProviderDisposable {
                 dashboardData.lowStockCount = alertSummary.lowStockItems.size();
                 dashboardData.lowStockSamples = alertSummary.lowStockItems.subList(0,
                         Math.min(SAMPLE_LIMIT, alertSummary.lowStockItems.size()));
+                // Upcoming-reminder CONTENT stays :app-owned (not via the
+                // contributor registry): it is the alert-digest payload shape
+                // the :app notification renderer consumes, and the reminder
+                // DAO queries are already module-agnostic SELECTs.
                 dashboardData.upcomingReminders = mItemReminderDao.findNextReminders(now, SAMPLE_LIMIT);
                 dashboardData.upcomingReminderCount = mItemReminderDao.countUpcomingReminders(now);
                 mDashboardEmitter.onNext(dashboardData);

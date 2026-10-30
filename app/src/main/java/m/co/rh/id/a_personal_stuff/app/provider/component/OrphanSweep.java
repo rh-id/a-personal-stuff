@@ -31,6 +31,12 @@ import m.co.rh.id.aprovider.Provider;
  * InventoryAlertScheduler startup pattern), so registering this class via
  * registerAsync triggers it on every app start from
  * MainApplication.onCreate's Provider.createProvider.
+ * <p>
+ * Integration note: backup/export/import of these same module tables is
+ * handled by each module's {@code ModuleBackupContributor} registered in the
+ * {@code BackupContributorRegistry} — a new data-bearing module must add
+ * BOTH a contributor registration AND a sweep branch here (see the
+ * ModuleBackupContributor javadoc).
  */
 public class OrphanSweep {
 

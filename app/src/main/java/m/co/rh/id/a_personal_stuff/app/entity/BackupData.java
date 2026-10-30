@@ -1,17 +1,5 @@
 package m.co.rh.id.a_personal_stuff.app.entity;
 
-import m.co.rh.id.a_personal_stuff.base.entity.Item;
-import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
-import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
-import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -21,21 +9,25 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import m.co.rh.id.a_personal_stuff.base.entity.Item;
+import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
+import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
+
+/**
+ * The base-DB core of a backup: metadata plus the items anchor (items,
+ * item images, item tags). :app owns this section because the items table is
+ * the import anchor — it is imported first and supplies the old→new item id
+ * remap every module contributor needs. Each feature module's sections are
+ * written and parsed by its own
+ * {@link m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor};
+ * this class deliberately knows nothing about them.
+ */
 public class BackupData {
     private static final String KEY_VERSION = "version";
     private static final String KEY_EXPORTED_AT = "exportedAt";
     private static final String KEY_ITEMS = "items";
     private static final String KEY_ITEM_IMAGES = "itemImages";
     private static final String KEY_ITEM_TAGS = "itemTags";
-    private static final String KEY_ITEM_MAINTENANCES = "itemMaintenances";
-    private static final String KEY_ITEM_MAINTENANCE_IMAGES = "itemMaintenanceImages";
-    private static final String KEY_ITEM_USAGES = "itemUsages";
-    private static final String KEY_ITEM_USAGE_IMAGES = "itemUsageImages";
-    private static final String KEY_ITEM_PURCHASES = "itemPurchases";
-    private static final String KEY_ITEM_PURCHASE_IMAGES = "itemPurchaseImages";
-    private static final String KEY_ITEM_REMINDERS = "itemReminders";
-    private static final String KEY_ITEM_CHECKLISTS = "itemChecklists";
-    private static final String KEY_ITEM_CHECKLIST_ITEMS = "itemChecklistItems";
 
     private static final int CURRENT_VERSION = 2;
 
@@ -44,15 +36,6 @@ public class BackupData {
     public List<Item> items;
     public List<ItemImage> itemImages;
     public List<ItemTag> itemTags;
-    public List<ItemMaintenance> itemMaintenances;
-    public List<ItemMaintenanceImage> itemMaintenanceImages;
-    public List<ItemUsage> itemUsages;
-    public List<ItemUsageImage> itemUsageImages;
-    public List<ItemPurchase> itemPurchases;
-    public List<ItemPurchaseImage> itemPurchaseImages;
-    public List<ItemReminder> itemReminders;
-    public List<ItemChecklist> itemChecklists;
-    public List<ItemChecklistItem> itemChecklistItems;
 
     public BackupData() {
         version = CURRENT_VERSION;
@@ -60,15 +43,6 @@ public class BackupData {
         items = new ArrayList<>();
         itemImages = new ArrayList<>();
         itemTags = new ArrayList<>();
-        itemMaintenances = new ArrayList<>();
-        itemMaintenanceImages = new ArrayList<>();
-        itemUsages = new ArrayList<>();
-        itemUsageImages = new ArrayList<>();
-        itemPurchases = new ArrayList<>();
-        itemPurchaseImages = new ArrayList<>();
-        itemReminders = new ArrayList<>();
-        itemChecklists = new ArrayList<>();
-        itemChecklistItems = new ArrayList<>();
     }
 
     public JSONObject toJson() throws JSONException {
@@ -78,15 +52,6 @@ public class BackupData {
         json.put(KEY_ITEMS, itemListToJson(items));
         json.put(KEY_ITEM_IMAGES, imageListToJson(itemImages));
         json.put(KEY_ITEM_TAGS, tagListToJson(itemTags));
-        json.put(KEY_ITEM_MAINTENANCES, maintenanceListToJson(itemMaintenances));
-        json.put(KEY_ITEM_MAINTENANCE_IMAGES, maintenanceImageListToJson(itemMaintenanceImages));
-        json.put(KEY_ITEM_USAGES, usageListToJson(itemUsages));
-        json.put(KEY_ITEM_USAGE_IMAGES, usageImageListToJson(itemUsageImages));
-        json.put(KEY_ITEM_PURCHASES, purchaseListToJson(itemPurchases));
-        json.put(KEY_ITEM_PURCHASE_IMAGES, purchaseImageListToJson(itemPurchaseImages));
-        json.put(KEY_ITEM_REMINDERS, reminderListToJson(itemReminders));
-        json.put(KEY_ITEM_CHECKLISTS, checklistListToJson(itemChecklists));
-        json.put(KEY_ITEM_CHECKLIST_ITEMS, checklistItemListToJson(itemChecklistItems));
         return json;
     }
 
@@ -97,15 +62,6 @@ public class BackupData {
         data.items = jsonToItemList(json.optJSONArray(KEY_ITEMS));
         data.itemImages = jsonToImageList(json.optJSONArray(KEY_ITEM_IMAGES));
         data.itemTags = jsonToTagList(json.optJSONArray(KEY_ITEM_TAGS));
-        data.itemMaintenances = jsonToMaintenanceList(json.optJSONArray(KEY_ITEM_MAINTENANCES));
-        data.itemMaintenanceImages = jsonToMaintenanceImageList(json.optJSONArray(KEY_ITEM_MAINTENANCE_IMAGES));
-        data.itemUsages = jsonToUsageList(json.optJSONArray(KEY_ITEM_USAGES));
-        data.itemUsageImages = jsonToUsageImageList(json.optJSONArray(KEY_ITEM_USAGE_IMAGES));
-        data.itemPurchases = jsonToPurchaseList(json.optJSONArray(KEY_ITEM_PURCHASES));
-        data.itemPurchaseImages = jsonToPurchaseImageList(json.optJSONArray(KEY_ITEM_PURCHASE_IMAGES));
-        data.itemReminders = jsonToReminderList(json.optJSONArray(KEY_ITEM_REMINDERS));
-        data.itemChecklists = jsonToChecklistList(json.optJSONArray(KEY_ITEM_CHECKLISTS));
-        data.itemChecklistItems = jsonToChecklistItemList(json.optJSONArray(KEY_ITEM_CHECKLIST_ITEMS));
         return data;
     }
 
@@ -202,282 +158,6 @@ public class BackupData {
             tag.tag = obj.optString("tag", null);
             tag.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
             list.add(tag);
-        }
-        return list;
-    }
-
-    private static JSONArray maintenanceListToJson(List<ItemMaintenance> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemMaintenance e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemId", e.itemId);
-            obj.put("description", e.description);
-            obj.put("cost", e.cost != null ? e.cost.toString() : JSONObject.NULL);
-            obj.put("maintenanceDateTime", e.maintenanceDateTime != null ? e.maintenanceDateTime.getTime() : JSONObject.NULL);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemMaintenance> jsonToMaintenanceList(JSONArray arr) throws JSONException {
-        List<ItemMaintenance> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemMaintenance e = new ItemMaintenance();
-            e.id = obj.optLong("id", 0);
-            e.itemId = obj.optLong("itemId", 0);
-            e.description = obj.optString("description", null);
-            String costStr = obj.isNull("cost") ? null : obj.optString("cost", null);
-            e.cost = costStr != null && !costStr.isEmpty() ? new BigDecimal(costStr) : null;
-            e.maintenanceDateTime = obj.isNull("maintenanceDateTime") ? null : new Date(obj.getLong("maintenanceDateTime"));
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray maintenanceImageListToJson(List<ItemMaintenanceImage> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemMaintenanceImage e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemMaintenanceId", e.itemMaintenanceId);
-            obj.put("fileName", e.fileName);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemMaintenanceImage> jsonToMaintenanceImageList(JSONArray arr) throws JSONException {
-        List<ItemMaintenanceImage> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemMaintenanceImage e = new ItemMaintenanceImage();
-            e.id = obj.optLong("id", 0);
-            e.itemMaintenanceId = obj.optLong("itemMaintenanceId", 0);
-            e.fileName = obj.optString("fileName", null);
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray usageListToJson(List<ItemUsage> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemUsage e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemId", e.itemId);
-            obj.put("description", e.description);
-            obj.put("amount", e.amount);
-            obj.put("usageDateTime", e.usageDateTime != null ? e.usageDateTime.getTime() : JSONObject.NULL);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemUsage> jsonToUsageList(JSONArray arr) throws JSONException {
-        List<ItemUsage> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemUsage e = new ItemUsage();
-            e.id = obj.optLong("id", 0);
-            e.itemId = obj.optLong("itemId", 0);
-            e.description = obj.optString("description", null);
-            e.amount = obj.optInt("amount", 0);
-            e.usageDateTime = obj.isNull("usageDateTime") ? null : new Date(obj.getLong("usageDateTime"));
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray usageImageListToJson(List<ItemUsageImage> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemUsageImage e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemUsageId", e.itemUsageId);
-            obj.put("fileName", e.fileName);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemUsageImage> jsonToUsageImageList(JSONArray arr) throws JSONException {
-        List<ItemUsageImage> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemUsageImage e = new ItemUsageImage();
-            e.id = obj.optLong("id", 0);
-            e.itemUsageId = obj.optLong("itemUsageId", 0);
-            e.fileName = obj.optString("fileName", null);
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray reminderListToJson(List<ItemReminder> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemReminder e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemId", e.itemId);
-            obj.put("taskId", e.taskId);
-            obj.put("reminderDateTime", e.reminderDateTime != null ? e.reminderDateTime.getTime() : JSONObject.NULL);
-            obj.put("message", e.message);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemReminder> jsonToReminderList(JSONArray arr) throws JSONException {
-        List<ItemReminder> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemReminder e = new ItemReminder();
-            e.id = obj.optLong("id", 0);
-            e.itemId = obj.optLong("itemId", 0);
-            e.taskId = obj.optString("taskId", null);
-            e.reminderDateTime = obj.isNull("reminderDateTime") ? null : new Date(obj.getLong("reminderDateTime"));
-            e.message = obj.optString("message", null);
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray purchaseListToJson(List<ItemPurchase> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemPurchase e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemId", e.itemId);
-            obj.put("description", e.description);
-            obj.put("amount", e.amount);
-            obj.put("cost", e.cost != null ? e.cost.toString() : JSONObject.NULL);
-            obj.put("purchaseDateTime", e.purchaseDateTime != null ? e.purchaseDateTime.getTime() : JSONObject.NULL);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemPurchase> jsonToPurchaseList(JSONArray arr) throws JSONException {
-        List<ItemPurchase> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemPurchase e = new ItemPurchase();
-            e.id = obj.optLong("id", 0);
-            e.itemId = obj.optLong("itemId", 0);
-            e.description = obj.optString("description", null);
-            e.amount = obj.optInt("amount", 0);
-            String costStr = obj.isNull("cost") ? null : obj.optString("cost", null);
-            e.cost = costStr != null && !costStr.isEmpty() ? new BigDecimal(costStr) : null;
-            e.purchaseDateTime = obj.isNull("purchaseDateTime") ? null : new Date(obj.getLong("purchaseDateTime"));
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray purchaseImageListToJson(List<ItemPurchaseImage> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemPurchaseImage e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemPurchaseId", e.itemPurchaseId);
-            obj.put("fileName", e.fileName);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemPurchaseImage> jsonToPurchaseImageList(JSONArray arr) throws JSONException {
-        List<ItemPurchaseImage> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemPurchaseImage e = new ItemPurchaseImage();
-            e.id = obj.optLong("id", 0);
-            e.itemPurchaseId = obj.optLong("itemPurchaseId", 0);
-            e.fileName = obj.optString("fileName", null);
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray checklistListToJson(List<ItemChecklist> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemChecklist e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("title", e.title);
-            obj.put("description", e.description);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            obj.put("updatedDateTime", e.updatedDateTime != null ? e.updatedDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemChecklist> jsonToChecklistList(JSONArray arr) throws JSONException {
-        List<ItemChecklist> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemChecklist e = new ItemChecklist();
-            e.id = obj.optLong("id", 0);
-            e.title = obj.optString("title", null);
-            e.description = obj.optString("description", null);
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            e.updatedDateTime = obj.isNull("updatedDateTime") ? null : new Date(obj.getLong("updatedDateTime"));
-            list.add(e);
-        }
-        return list;
-    }
-
-    private static JSONArray checklistItemListToJson(List<ItemChecklistItem> entries) throws JSONException {
-        JSONArray arr = new JSONArray();
-        for (ItemChecklistItem e : entries) {
-            JSONObject obj = new JSONObject();
-            obj.put("id", e.id);
-            obj.put("itemChecklistId", e.itemChecklistId);
-            obj.put("itemId", e.itemId);
-            obj.put("checkedDateTime", e.checkedDateTime != null ? e.checkedDateTime.getTime() : JSONObject.NULL);
-            obj.put("createdDateTime", e.createdDateTime != null ? e.createdDateTime.getTime() : JSONObject.NULL);
-            arr.put(obj);
-        }
-        return arr;
-    }
-
-    private static List<ItemChecklistItem> jsonToChecklistItemList(JSONArray arr) throws JSONException {
-        List<ItemChecklistItem> list = new ArrayList<>();
-        if (arr == null) return list;
-        for (int i = 0; i < arr.length(); i++) {
-            JSONObject obj = arr.getJSONObject(i);
-            ItemChecklistItem e = new ItemChecklistItem();
-            e.id = obj.optLong("id", 0);
-            e.itemChecklistId = obj.optLong("itemChecklistId", 0);
-            e.itemId = obj.optLong("itemId", 0);
-            e.checkedDateTime = obj.isNull("checkedDateTime") ? null : new Date(obj.getLong("checkedDateTime"));
-            e.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
-            list.add(e);
         }
         return list;
     }

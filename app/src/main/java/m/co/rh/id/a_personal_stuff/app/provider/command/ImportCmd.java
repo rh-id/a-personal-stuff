@@ -1,10 +1,6 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
 import android.content.Context;
-import androidx.work.Data;
-import androidx.work.ExistingWorkPolicy;
-import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -14,14 +10,10 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -34,9 +26,11 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
-import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
@@ -44,34 +38,6 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
-import m.co.rh.id.a_personal_stuff.item_maintenance.model.ItemMaintenanceState;
-import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
-import m.co.rh.id.a_personal_stuff.item_maintenance.provider.notifier.ItemMaintenanceChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
-import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
-import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_reminder.workmanager.WorkManagerConstants;
-import m.co.rh.id.a_personal_stuff.item_reminder.workmanager.worker.ItemReminderNotificationWorker;
-import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
-import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageState;
-import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
-import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
-import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseState;
-import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
-import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
-import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
-import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
-import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 
@@ -85,22 +51,9 @@ public class ImportCmd {
     private final ILogger mLogger;
     private final FileHelper mFileHelper;
     private final ItemDao mItemDao;
-    private final ItemMaintenanceDao mItemMaintenanceDao;
-    private final ItemUsageDao mItemUsageDao;
-    private final ItemPurchaseDao mItemPurchaseDao;
-    private final ItemReminderDao mItemReminderDao;
     private final ItemFileHelper mItemFileHelper;
-    private final ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
-    private final ItemUsageFileHelper mItemUsageFileHelper;
-    private final ItemPurchaseFileHelper mItemPurchaseFileHelper;
-    private final WorkManager mWorkManager;
     private final ItemChangeNotifier mItemChangeNotifier;
-    private final ItemMaintenanceChangeNotifier mItemMaintenanceChangeNotifier;
-    private final ItemUsageChangeNotifier mItemUsageChangeNotifier;
-    private final ItemPurchaseChangeNotifier mItemPurchaseChangeNotifier;
-    private final ItemReminderChangeNotifier mItemReminderChangeNotifier;
-    private final ItemChecklistDao mItemChecklistDao;
-    private final ItemChecklistChangeNotifier mItemChecklistChangeNotifier;
+    private final BackupContributorRegistry mContributorRegistry;
     private final Subject<String> mProgressSubject = PublishSubject.create();
 
     public ImportCmd(Provider provider) {
@@ -109,22 +62,9 @@ public class ImportCmd {
         mLogger = provider.get(ILogger.class);
         mFileHelper = provider.get(FileHelper.class);
         mItemDao = provider.get(ItemDao.class);
-        mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
-        mItemUsageDao = provider.get(ItemUsageDao.class);
-        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
-        mItemReminderDao = provider.get(ItemReminderDao.class);
-        mItemChecklistDao = provider.get(ItemChecklistDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
-        mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
-        mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
-        mItemPurchaseFileHelper = provider.get(ItemPurchaseFileHelper.class);
-        mWorkManager = provider.get(WorkManager.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
-        mItemMaintenanceChangeNotifier = provider.get(ItemMaintenanceChangeNotifier.class);
-        mItemUsageChangeNotifier = provider.get(ItemUsageChangeNotifier.class);
-        mItemPurchaseChangeNotifier = provider.get(ItemPurchaseChangeNotifier.class);
-        mItemReminderChangeNotifier = provider.get(ItemReminderChangeNotifier.class);
-        mItemChecklistChangeNotifier = provider.get(ItemChecklistChangeNotifier.class);
+        mContributorRegistry = provider.get(BackupContributorRegistry.class);
     }
 
     public Flowable<String> getProgressFlow() {
@@ -148,7 +88,7 @@ public class ImportCmd {
                 reader.close();
                 JSONObject jsonObj = new JSONObject(sb.toString());
                 BackupData data = BackupData.fromJson(jsonObj);
-                int count = importData(data, tempDir);
+                int count = importData(data, jsonObj, tempDir);
                 return count;
             } finally {
                 deleteRecursive(tempDir);
@@ -189,17 +129,10 @@ public class ImportCmd {
         zis.close();
     }
 
-    private int importData(BackupData data, File tempDir) {
+    private int importData(BackupData data, JSONObject root, File tempDir) throws Exception {
         Map<Long, Long> oldToNewItemId = new HashMap<>();
-        Map<Long, Long> oldToNewMaintenanceId = new HashMap<>();
-        Map<Long, Long> oldToNewUsageId = new HashMap<>();
-        Map<Long, Long> oldToNewPurchaseId = new HashMap<>();
-        Map<Long, Long> oldToNewItemChecklistId = new HashMap<>();
         Map<Long, List<ItemImage>> imagesByOldItemId = groupImagesByItemId(data.itemImages);
         Map<Long, List<ItemTag>> tagsByOldItemId = groupTagsByItemId(data.itemTags);
-        Map<Long, List<ItemMaintenanceImage>> maintImagesByOldMaintId = groupMaintImagesByMaintId(data.itemMaintenanceImages);
-        Map<Long, List<ItemUsageImage>> usageImagesByOldUsageId = groupUsageImagesByUsageId(data.itemUsageImages);
-        Map<Long, List<ItemPurchaseImage>> purchaseImagesByOldPurchaseId = groupPurchaseImagesByPurchaseId(data.itemPurchaseImages);
         int count = 0;
         for (Item item : data.items) {
             long oldId = item.id;
@@ -243,162 +176,20 @@ public class ImportCmd {
             count++;
             mProgressSubject.onNext(mAppContext.getString(R.string.import_progress_importing, count, data.items.size()));
         }
-        for (ItemMaintenance e : data.itemMaintenances) {
-            Long newItemId = oldToNewItemId.get(e.itemId);
-            if (newItemId == null) continue;
-            long oldId = e.id;
-            e.id = null;
-            e.itemId = newItemId;
-            long newId = mItemMaintenanceDao.insert(e);
-            e.id = newId;
-            oldToNewMaintenanceId.put(oldId, newId);
-            List<ItemMaintenanceImage> relatedImages = maintImagesByOldMaintId.getOrDefault(oldId, new ArrayList<>());
-            ArrayList<ItemMaintenanceImage> maintImages = new ArrayList<>();
-            for (ItemMaintenanceImage ie : relatedImages) {
-                ie.id = null;
-                ie.itemMaintenanceId = newId;
-                String oldFileName = null;
-                String newFileName = null;
-                if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    oldFileName = ie.fileName;
-                    newFileName = mFileHelper.generateImageFileName();
-                    ie.fileName = newFileName;
-                }
-                // insert row before copying image files so file helper cleanUp passes never see an orphan file
-                ie.id = mItemMaintenanceDao.insert(ie);
-                if (oldFileName != null) {
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE, oldFileName, newFileName, mItemMaintenanceFileHelper.getItemMaintenanceImageParent());
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnailParent());
-                }
-                maintImages.add(ie);
-            }
-            ItemMaintenanceState maintState = new ItemMaintenanceState();
-            maintState.updateItemMaintenance(e);
-            if (!maintImages.isEmpty()) {
-                maintState.updateItemMaintenanceImages(maintImages);
-            }
-            mItemMaintenanceChangeNotifier.itemMaintenanceAdded(maintState.clone());
-        }
-        for (ItemUsage e : data.itemUsages) {
-            Long newItemId = oldToNewItemId.get(e.itemId);
-            if (newItemId == null) continue;
-            long oldId = e.id;
-            e.id = null;
-            e.itemId = newItemId;
-            // Handle null usageDateTime from old backups
-            if (e.usageDateTime == null) {
-                e.usageDateTime = e.createdDateTime;
-            }
-            long newId = mItemUsageDao.insert(e);
-            e.id = newId;
-            oldToNewUsageId.put(oldId, newId);
-            List<ItemUsageImage> relatedImages = usageImagesByOldUsageId.getOrDefault(oldId, new ArrayList<>());
-            ArrayList<ItemUsageImage> usageImages = new ArrayList<>();
-            for (ItemUsageImage ie : relatedImages) {
-                ie.id = null;
-                ie.itemUsageId = newId;
-                String oldFileName = null;
-                String newFileName = null;
-                if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    oldFileName = ie.fileName;
-                    newFileName = mFileHelper.generateImageFileName();
-                    ie.fileName = newFileName;
-                }
-                // insert row before copying image files so file helper cleanUp passes never see an orphan file
-                ie.id = mItemUsageDao.insert(ie);
-                if (oldFileName != null) {
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_USAGE_IMAGE, oldFileName, newFileName, mItemUsageFileHelper.getItemUsageImageParent());
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemUsageFileHelper.getItemUsageImageThumbnailParent());
-                }
-                usageImages.add(ie);
-            }
-            ItemUsageState usageState = new ItemUsageState();
-            usageState.updateItemUsage(e);
-            if (!usageImages.isEmpty()) {
-                usageState.updateItemUsageImages(usageImages);
-            }
-            mItemUsageChangeNotifier.itemUsageAdded(usageState.clone());
-        }
-        for (ItemPurchase e : data.itemPurchases) {
-            Long newItemId = oldToNewItemId.get(e.itemId);
-            if (newItemId == null) continue;
-            long oldId = e.id;
-            e.id = null;
-            e.itemId = newItemId;
-            long newId = mItemPurchaseDao.insert(e);
-            e.id = newId;
-            oldToNewPurchaseId.put(oldId, newId);
-            List<ItemPurchaseImage> relatedImages = purchaseImagesByOldPurchaseId.getOrDefault(oldId, new ArrayList<>());
-            ArrayList<ItemPurchaseImage> purchaseImages = new ArrayList<>();
-            for (ItemPurchaseImage ie : relatedImages) {
-                ie.id = null;
-                ie.itemPurchaseId = newId;
-                String oldFileName = null;
-                String newFileName = null;
-                if (ie.fileName != null && !ie.fileName.isEmpty()) {
-                    oldFileName = ie.fileName;
-                    newFileName = mFileHelper.generateImageFileName();
-                    ie.fileName = newFileName;
-                }
-                // insert row before copying image files so file helper cleanUp passes never see an orphan file
-                ie.id = mItemPurchaseDao.insert(ie);
-                if (oldFileName != null) {
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageParent());
-                    copyImageFromTemp(tempDir, Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL, oldFileName, newFileName, mItemPurchaseFileHelper.getItemPurchaseImageThumbnailParent());
-                }
-                purchaseImages.add(ie);
-            }
-            ItemPurchaseState purchaseState = new ItemPurchaseState();
-            purchaseState.updateItemPurchase(e);
-            if (!purchaseImages.isEmpty()) {
-                purchaseState.updateItemPurchaseImages(purchaseImages);
-            }
-            mItemPurchaseChangeNotifier.itemPurchaseAdded(purchaseState.clone());
-        }
-        for (ItemReminder e : data.itemReminders) {
-            Long newItemId = oldToNewItemId.get(e.itemId);
-            if (newItemId == null) continue;
-            e.id = null;
-            e.itemId = newItemId;
-            e.taskId = UUID.randomUUID().toString();
-            mItemReminderDao.insertItemReminder(e);
-            scheduleReminder(e);
-            mItemReminderChangeNotifier.added(e);
-        }
-        for (ItemChecklist e : data.itemChecklists) {
-            long oldId = e.id;
-            // Preserve original createdDateTime and updatedDateTime
-            Date originalCreatedDateTime = e.createdDateTime;
-            Date originalUpdatedDateTime = e.updatedDateTime;
-            e.id = null;
-            ItemChecklistState checklistState = new ItemChecklistState();
-            checklistState.updateItemChecklist(e);
-            // Set the dates explicitly to preserve them
-            if (originalCreatedDateTime != null) {
-                checklistState.setCreatedDateTime(originalCreatedDateTime);
-            }
-            if (originalUpdatedDateTime != null) {
-                checklistState.setUpdatedDateTime(originalUpdatedDateTime);
-            }
-            mItemChecklistDao.insertItemChecklist(checklistState);
-            long newId = checklistState.getChecklistId();
-            oldToNewItemChecklistId.put(oldId, newId);
-            mItemChecklistChangeNotifier.checklistAdded(checklistState.clone());
-        }
-        for (ItemChecklistItem e : data.itemChecklistItems) {
-            Long newItemChecklistId = oldToNewItemChecklistId.get(e.itemChecklistId);
-            Long newItemId = oldToNewItemId.get(e.itemId);
-            if (newItemChecklistId == null || newItemId == null) continue;
-            e.id = null;
-            e.itemChecklistId = newItemChecklistId;
-            e.itemId = newItemId;
-            // Preserve checkedDateTime and createdDateTime
-            List<Long> inserted = mItemChecklistDao.insertItemChecklistItems(
-                    Collections.singletonList(e));
-            if (!inserted.isEmpty() && inserted.get(0) != null && inserted.get(0) != -1) {
-                e.id = inserted.get(0);
-                mItemChecklistChangeNotifier.checklistItemAdded(e, null);
-            }
+        // module sections: each contributor parses its own JSON keys, remaps
+        // old→new item ids, restores its files, publishes its notifier events
+        // and (reminder) reschedules its WorkManager jobs. The contributor
+        // order (usage, purchase, maintenance, reminder, checklist) is
+        // functionally irrelevant — the modules are independent DBs and the
+        // item-id remap is fully built before this loop — it only fixes a
+        // stable insert order. A JSONException aborts the whole import; note
+        // the abort is then PARTIAL by design: the items core and any
+        // already-processed modules stay inserted. (Pre-contract,
+        // BackupData.fromJson parsed every section upfront, so malformed JSON
+        // aborted before any row was inserted — the trade-off for per-module
+        // parsing is a partial import on corrupt data.)
+        for (ModuleBackupContributor contributor : mContributorRegistry.getBackupContributors()) {
+            contributor.importJson(root, oldToNewItemId, tempDir);
         }
         return count;
     }
@@ -415,30 +206,6 @@ public class ImportCmd {
         Map<Long, List<ItemTag>> map = new HashMap<>();
         for (ItemTag tag : tags) {
             map.computeIfAbsent(tag.itemId, k -> new ArrayList<>()).add(tag);
-        }
-        return map;
-    }
-
-    private Map<Long, List<ItemMaintenanceImage>> groupMaintImagesByMaintId(List<ItemMaintenanceImage> images) {
-        Map<Long, List<ItemMaintenanceImage>> map = new HashMap<>();
-        for (ItemMaintenanceImage img : images) {
-            map.computeIfAbsent(img.itemMaintenanceId, k -> new ArrayList<>()).add(img);
-        }
-        return map;
-    }
-
-    private Map<Long, List<ItemUsageImage>> groupUsageImagesByUsageId(List<ItemUsageImage> images) {
-        Map<Long, List<ItemUsageImage>> map = new HashMap<>();
-        for (ItemUsageImage img : images) {
-            map.computeIfAbsent(img.itemUsageId, k -> new ArrayList<>()).add(img);
-        }
-        return map;
-    }
-
-    private Map<Long, List<ItemPurchaseImage>> groupPurchaseImagesByPurchaseId(List<ItemPurchaseImage> images) {
-        Map<Long, List<ItemPurchaseImage>> map = new HashMap<>();
-        for (ItemPurchaseImage img : images) {
-            map.computeIfAbsent(img.itemPurchaseId, k -> new ArrayList<>()).add(img);
         }
         return map;
     }
@@ -463,22 +230,6 @@ public class ImportCmd {
         } catch (Exception ex) {
             mLogger.e(TAG, "Failed to copy image: " + oldFileName, ex);
         }
-    }
-
-    private void scheduleReminder(ItemReminder itemReminder) {
-        if (itemReminder.reminderDateTime == null) return;
-        long currentMilis = new Date().getTime();
-        long reminderMilis = itemReminder.reminderDateTime.getTime();
-        long delay = reminderMilis - currentMilis;
-        if (delay <= 0) return;
-        OneTimeWorkRequest oneTimeWorkRequest = new OneTimeWorkRequest.Builder(ItemReminderNotificationWorker.class)
-                .setInputData(new Data.Builder()
-                        .putLong(WorkManagerConstants.KEY_LONG_ITEM_REMINDER_ID, itemReminder.id)
-                        .build())
-                .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-                .build();
-        mWorkManager.enqueueUniqueWork(itemReminder.taskId, ExistingWorkPolicy.KEEP,
-                oneTimeWorkRequest);
     }
 
     private void deleteRecursive(File file) {

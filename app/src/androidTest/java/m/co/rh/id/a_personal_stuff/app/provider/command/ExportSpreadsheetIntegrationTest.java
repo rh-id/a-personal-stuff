@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.rxjava3.observers.TestObserver;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
@@ -45,21 +46,26 @@ import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
 import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistSpreadsheetContributor;
 import m.co.rh.id.a_personal_stuff.item_checklist.room.ItemChecklistDatabase;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
+import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceSpreadsheetContributor;
 import m.co.rh.id.a_personal_stuff.item_maintenance.room.ItemMaintenanceDatabase;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseSpreadsheetContributor;
 import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
+import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.ItemReminderSpreadsheetContributor;
 import m.co.rh.id.a_personal_stuff.item_reminder.room.ItemReminderDatabase;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageSpreadsheetContributor;
 import m.co.rh.id.a_personal_stuff.item_usage.room.ItemUsageDatabase;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
@@ -788,6 +794,7 @@ public class ExportSpreadsheetIntegrationTest {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemMaintenanceDao.class, this::getItemMaintenanceDao);
             providerRegistry.register(ItemUsageDao.class, this::getItemUsageDao);
@@ -795,6 +802,13 @@ public class ExportSpreadsheetIntegrationTest {
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
             providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
+            // real per-module sheet contributors over this test's DAOs
+            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            contributorRegistry.register(new ItemUsageSpreadsheetContributor(provider));
+            contributorRegistry.register(new ItemPurchaseSpreadsheetContributor(provider));
+            contributorRegistry.register(new ItemMaintenanceSpreadsheetContributor(provider));
+            contributorRegistry.register(new ItemReminderSpreadsheetContributor(provider));
+            contributorRegistry.register(new ItemChecklistSpreadsheetContributor(provider));
         }
 
         private ILogger getLogger() {

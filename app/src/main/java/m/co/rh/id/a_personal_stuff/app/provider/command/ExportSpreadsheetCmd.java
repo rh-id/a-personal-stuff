@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
 
 import io.reactivex.rxjava3.core.BackpressureStrategy;
 import io.reactivex.rxjava3.core.Flowable;
@@ -24,26 +23,18 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
-import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
-import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
-import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
-import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
-import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
-import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
-import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
 import m.co.rh.id.apoi_spreadsheet.base.POISpreadsheetContext;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
@@ -75,16 +66,9 @@ import m.co.rh.id.aprovider.Provider;
  */
 public class ExportSpreadsheetCmd {
     private static final String SHEET_ITEMS = "Items";
-    private static final String SHEET_USAGES = "Usages";
-    private static final String SHEET_PURCHASES = "Purchases";
-    private static final String SHEET_MAINTENANCES = "Maintenances";
-    private static final String SHEET_REMINDERS = "Reminders";
-    private static final String SHEET_CHECKLISTS = "Checklists";
-    private static final String SHEET_CHECKLIST_ITEMS = "Checklist Items";
     private static final String DATE_FORMAT = "yyyyMMdd_HHmmss";
     private static final String XLSX_EXTENSION = ".xlsx";
     private static final String TAG_SEPARATOR = ", ";
-    private static final int TOTAL_SHEETS = 7;
     /**
      * Keyset page size. MUST stay below ~900: the per-page image lookup uses
      * {@code IN (:ids)} with one bind parameter per id, and SQLite on the
@@ -120,11 +104,11 @@ public class ExportSpreadsheetCmd {
             Schedulers.from(POISpreadsheetContext.getInstance());
     private final Object mExecuteLock = new Object();
     private final ItemDao mItemDao;
-    private final ItemMaintenanceDao mItemMaintenanceDao;
-    private final ItemUsageDao mItemUsageDao;
-    private final ItemPurchaseDao mItemPurchaseDao;
-    private final ItemReminderDao mItemReminderDao;
-    private final ItemChecklistDao mItemChecklistDao;
+    private final BackupContributorRegistry mContributorRegistry;
+    /** Items sheet + every contributed sheet; the progress denominator. */
+    private final int mTotalSheets;
+    /** Cache for the by-name resolution of the :app header string resources. */
+    private final Map<String, Integer> mHeaderIdCache = new HashMap<>();
     private volatile String mLastProgress;
     private Disposable mWorkDisposable;
     private Single<File> mSharedResult;
@@ -133,11 +117,14 @@ public class ExportSpreadsheetCmd {
         mAppContext = provider.getContext().getApplicationContext();
         mFileHelper = provider.get(FileHelper.class);
         mItemDao = provider.get(ItemDao.class);
-        mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
-        mItemUsageDao = provider.get(ItemUsageDao.class);
-        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
-        mItemReminderDao = provider.get(ItemReminderDao.class);
-        mItemChecklistDao = provider.get(ItemChecklistDao.class);
+        mContributorRegistry = provider.get(BackupContributorRegistry.class);
+        // Items sheet (:app-owned) plus every contributed sheet — derived so
+        // the progress denominator can never drift from the actual sheet count
+        int totalSheets = 1;
+        for (ModuleSpreadsheetContributor contributor : mContributorRegistry.getSpreadsheetContributors()) {
+            totalSheets += contributor.getSheets().size();
+        }
+        mTotalSheets = totalSheets;
     }
 
     public Flowable<String> getProgressFlow() {
@@ -226,9 +213,9 @@ public class ExportSpreadsheetCmd {
             throw new IllegalStateException("XLSX export requires Android 8.0 or newer");
         }
         emitProgress(mAppContext.getString(R.string.export_progress_gathering));
-        // Items and Checklists are small anchor tables, deliberately full-loaded:
-        // their rows feed the Items/Checklists sheets AND the item-name /
-        // checklist-title join maps used by the other sheets.
+        // The Items sheet is :app-owned (base-DB anchor). Items are
+        // deliberately full-loaded: their rows feed the Items sheet AND the
+        // item-name join map shared with every module sheet.
         List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
         Map<Long, Item> itemMap = new HashMap<>();
         Map<Long, String> itemTagsMap = new HashMap<>();
@@ -241,11 +228,7 @@ public class ExportSpreadsheetCmd {
                 addImageFileName(itemImagesByItemId, item.id, itemImage.fileName);
             }
         }
-        List<ItemChecklist> checklists = mItemChecklistDao.findAllItemChecklists();
-        Map<Long, String> checklistTitleMap = new HashMap<>();
-        for (ItemChecklist checklist : checklists) {
-            checklistTitleMap.put(checklist.id, checklist.title);
-        }
+        SpreadsheetJoinData joinData = new SpreadsheetJoinData(itemMap);
 
         SXSSFWorkbook workbook = new SXSSFWorkbook(100);
         File xlsxFile;
@@ -255,13 +238,18 @@ public class ExportSpreadsheetCmd {
 
             writeItemsSheet(workbook, headerStyle, dateStyle, itemStates, itemTagsMap,
                     itemImagesByItemId, 1);
-            writeUsagesSheet(workbook, headerStyle, dateStyle, itemMap, 2);
-            writePurchasesSheet(workbook, headerStyle, dateStyle, itemMap, 3);
-            writeMaintenancesSheet(workbook, headerStyle, dateStyle, itemMap, 4);
-            writeRemindersSheet(workbook, headerStyle, dateStyle, itemMap, 5);
-            writeChecklistsSheet(workbook, headerStyle, dateStyle, checklists, 6);
-            writeChecklistItemsSheet(workbook, headerStyle, dateStyle,
-                    checklistTitleMap, itemMap, 7);
+            // module sheets in contributor registration order (usage,
+            // purchase, maintenance, reminder, checklist) followed by each
+            // contributor's own sheet order (checklist: Checklists, Checklist
+            // Items) — keeping the sheet order of the pre-contract format.
+            int sheetIndex = 2;
+            for (ModuleSpreadsheetContributor contributor
+                    : mContributorRegistry.getSpreadsheetContributors()) {
+                for (ModuleSpreadsheetSheet sheet : contributor.getSheets()) {
+                    writeContributedSheet(workbook, headerStyle, dateStyle,
+                            sheet, joinData, sheetIndex++);
+                }
+            }
 
             emitProgress(mAppContext.getString(R.string.export_spreadsheet_progress_writing));
             String fileName = "personal_stuff_export_"
@@ -330,20 +318,112 @@ public class ExportSpreadsheetCmd {
         return cellStyle;
     }
 
-    private String resolveItemName(Map<Long, Item> itemMap, Long itemId) {
-        if (itemId == null) {
-            return "";
+    /**
+     * Resolves one contributor header key to its localized :app string. The
+     * sheet header strings live in :app resources (feature modules must not
+     * depend on :app), so contributors declare the stable resource NAMES and
+     * this command resolves them by name, cached per export command; an
+     * unresolved key falls back to the raw name so a rename is visible in the
+     * export instead of silently blank.
+     */
+    private String resolveHeader(String headerKey) {
+        Integer id = mHeaderIdCache.get(headerKey);
+        if (id == null) {
+            id = mAppContext.getResources().getIdentifier(
+                    headerKey, "string", mAppContext.getPackageName());
+            mHeaderIdCache.put(headerKey, id);
         }
-        Item item = itemMap.get(itemId);
-        if (item == null || item.name == null) {
-            return "";
+        return id != 0 ? mAppContext.getString(id) : headerKey;
+    }
+
+    /**
+     * Writes one contributed sheet: localized headers from the declared
+     * header keys, then the contributor's (keyset-paged) row writer adapted
+     * to the streaming workbook.
+     */
+    private void writeContributedSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
+                                       CellStyle dateStyle, ModuleSpreadsheetSheet sheet,
+                                       SpreadsheetJoinData joinData, int sheetIndex) {
+        emitSheetProgress(sheetIndex);
+        Sheet poiSheet = workbook.createSheet(sheet.getName());
+        List<String> headerKeys = sheet.getHeaderKeys();
+        String[] headers = new String[headerKeys.size()];
+        for (int i = 0; i < headerKeys.size(); i++) {
+            headers[i] = resolveHeader(headerKeys.get(i));
         }
-        return item.name;
+        int[] columnChars = writeHeaderRow(poiSheet, headerStyle, headers);
+        sheet.writeRows(new PoiSheetRowSink(poiSheet, columnChars, dateStyle), joinData);
+        applyColumnWidths(poiSheet, columnChars);
+    }
+
+    /**
+     * Adapts a contributed row writer to the streaming workbook: creates each
+     * physical row and routes the typed cell writes through the shared cell
+     * helpers so column-width tracking stays identical to the :app-owned
+     * sheets.
+     */
+    private class PoiSheetRowSink implements ModuleSheetRowSink {
+
+        private final Sheet mSheet;
+        private final int[] mColumnChars;
+        private final CellStyle mDateStyle;
+        private int mRowIndex = 1;
+
+        private PoiSheetRowSink(Sheet sheet, int[] columnChars, CellStyle dateStyle) {
+            mSheet = sheet;
+            mColumnChars = columnChars;
+            mDateStyle = dateStyle;
+        }
+
+        @Override
+        public ModuleSheetRow nextRow() {
+            Row row = mSheet.createRow(mRowIndex++);
+            return new PoiSheetRow(row, mColumnChars, mDateStyle);
+        }
+    }
+
+    private static class PoiSheetRow implements ModuleSheetRow {
+
+        private final Row mRow;
+        private final int[] mColumnChars;
+        private final CellStyle mDateStyle;
+
+        private PoiSheetRow(Row row, int[] columnChars, CellStyle dateStyle) {
+            mRow = row;
+            mColumnChars = columnChars;
+            mDateStyle = dateStyle;
+        }
+
+        @Override
+        public void longCell(int column, Long value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeLongCell(mRow, column, value));
+        }
+
+        @Override
+        public void stringCell(int column, String value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeStringCell(mRow, column, value));
+        }
+
+        @Override
+        public void amountCell(int column, int value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeAmountCell(mRow, column, value));
+        }
+
+        @Override
+        public void decimalCell(int column, java.math.BigDecimal value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeDecimalCell(mRow, column, value));
+        }
+
+        @Override
+        public void dateCell(int column, java.util.Date value) {
+            mColumnChars[column] = Math.max(mColumnChars[column],
+                    writeDateCell(mRow, column, value, mDateStyle));
+        }
     }
 
     private void emitSheetProgress(int sheetIndex) {
         emitProgress(mAppContext.getString(
-                R.string.export_spreadsheet_progress_sheet, sheetIndex, TOTAL_SHEETS));
+                R.string.export_spreadsheet_progress_sheet, sheetIndex, mTotalSheets));
     }
 
     /**
@@ -378,7 +458,7 @@ public class ExportSpreadsheetCmd {
      *
      * @return the display length of the written value, 0 when null.
      */
-    private int writeLongCell(Row row, int column, Long value) {
+    private static int writeLongCell(Row row, int column, Long value) {
         if (value == null) {
             return 0;
         }
@@ -390,7 +470,7 @@ public class ExportSpreadsheetCmd {
     /**
      * @return the display length of the written value, 0 when null.
      */
-    private int writeStringCell(Row row, int column, String value) {
+    private static int writeStringCell(Row row, int column, String value) {
         if (value == null) {
             return 0;
         }
@@ -406,7 +486,7 @@ public class ExportSpreadsheetCmd {
      *
      * @return the display length of the written value.
      */
-    private int writeAmountCell(Row row, int column, int value) {
+    private static int writeAmountCell(Row row, int column, int value) {
         row.createCell(column).setCellValue(value);
         return String.valueOf(value).length();
     }
@@ -418,7 +498,7 @@ public class ExportSpreadsheetCmd {
      *
      * @return the display length of the written value, 0 when null.
      */
-    private int writeNullableAmountCell(Row row, int column, Integer value) {
+    private static int writeNullableAmountCell(Row row, int column, Integer value) {
         if (value == null) {
             return 0;
         }
@@ -429,7 +509,7 @@ public class ExportSpreadsheetCmd {
     /**
      * @return the approximate display length of the written value, 0 when null.
      */
-    private int writeDecimalCell(Row row, int column, BigDecimal value) {
+    private static int writeDecimalCell(Row row, int column, BigDecimal value) {
         if (value == null) {
             return 0;
         }
@@ -441,7 +521,7 @@ public class ExportSpreadsheetCmd {
      * @return the display length of the rendered date
      * ("yyyy-mm-dd HH:mm:ss"), 0 when null.
      */
-    private int writeDateCell(Row row, int column, Date value, CellStyle dateStyle) {
+    private static int writeDateCell(Row row, int column, Date value, CellStyle dateStyle) {
         if (value == null) {
             return 0;
         }
@@ -527,266 +607,4 @@ public class ExportSpreadsheetCmd {
         applyColumnWidths(sheet, columnChars);
     }
 
-    /**
-     * Usages are keyset-paged: each iteration loads one page ordered by id,
-     * fetches the page's images in a single query, writes its rows, then
-     * advances {@code lastId} so the page can be garbage collected.
-     */
-    private void writeUsagesSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                  CellStyle dateStyle, Map<Long, Item> itemMap, int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_USAGES);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_item_id),
-                mAppContext.getString(R.string.header_item_name),
-                mAppContext.getString(R.string.form_description),
-                mAppContext.getString(R.string.form_amount),
-                mAppContext.getString(R.string.header_usage_date_time),
-                mAppContext.getString(R.string.header_created_date_time),
-                mAppContext.getString(R.string.header_images),
-        });
-        int rowIndex = 1;
-        long lastId = 0L;
-        List<ItemUsage> page;
-        while (!(page = mItemUsageDao.findItemUsagesAfter(lastId, PAGE_SIZE)).isEmpty()) {
-            List<Long> pageIds = page.stream().map(usage -> usage.id)
-                    .collect(Collectors.toList());
-            Map<Long, String> imagesByUsageId = new HashMap<>();
-            for (ItemUsageImage image : mItemUsageDao.findItemUsageImagesByItemUsageIds(pageIds)) {
-                addImageFileName(imagesByUsageId, image.itemUsageId, image.fileName);
-            }
-            for (ItemUsage usage : page) {
-                Row row = sheet.createRow(rowIndex++);
-                columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, usage.id));
-                columnChars[1] = Math.max(columnChars[1], writeLongCell(row, 1, usage.itemId));
-                columnChars[2] = Math.max(columnChars[2],
-                        writeStringCell(row, 2, resolveItemName(itemMap, usage.itemId)));
-                columnChars[3] = Math.max(columnChars[3],
-                        writeStringCell(row, 3, usage.description));
-                columnChars[4] = Math.max(columnChars[4],
-                        writeAmountCell(row, 4, usage.amount));
-                columnChars[5] = Math.max(columnChars[5],
-                        writeDateCell(row, 5, usage.usageDateTime, dateStyle));
-                columnChars[6] = Math.max(columnChars[6],
-                        writeDateCell(row, 6, usage.createdDateTime, dateStyle));
-                columnChars[7] = Math.max(columnChars[7],
-                        writeStringCell(row, 7, imagesByUsageId.get(usage.id)));
-            }
-            lastId = page.get(page.size() - 1).id;
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
-
-    /**
-     * Purchases are keyset-paged like {@link #writeUsagesSheet} (see its javadoc).
-     */
-    private void writePurchasesSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                     CellStyle dateStyle, Map<Long, Item> itemMap, int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_PURCHASES);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_item_id),
-                mAppContext.getString(R.string.header_item_name),
-                mAppContext.getString(R.string.form_description),
-                mAppContext.getString(R.string.form_amount),
-                mAppContext.getString(R.string.header_cost),
-                mAppContext.getString(R.string.header_purchase_date_time),
-                mAppContext.getString(R.string.header_created_date_time),
-                mAppContext.getString(R.string.header_images),
-        });
-        int rowIndex = 1;
-        long lastId = 0L;
-        List<ItemPurchase> page;
-        while (!(page = mItemPurchaseDao.findItemPurchasesAfter(lastId, PAGE_SIZE)).isEmpty()) {
-            List<Long> pageIds = page.stream().map(purchase -> purchase.id)
-                    .collect(Collectors.toList());
-            Map<Long, String> imagesByPurchaseId = new HashMap<>();
-            for (ItemPurchaseImage image : mItemPurchaseDao.findItemPurchaseImagesByItemPurchaseIds(pageIds)) {
-                addImageFileName(imagesByPurchaseId, image.itemPurchaseId, image.fileName);
-            }
-            for (ItemPurchase purchase : page) {
-                Row row = sheet.createRow(rowIndex++);
-                columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, purchase.id));
-                columnChars[1] = Math.max(columnChars[1], writeLongCell(row, 1, purchase.itemId));
-                columnChars[2] = Math.max(columnChars[2],
-                        writeStringCell(row, 2, resolveItemName(itemMap, purchase.itemId)));
-                columnChars[3] = Math.max(columnChars[3],
-                        writeStringCell(row, 3, purchase.description));
-                columnChars[4] = Math.max(columnChars[4],
-                        writeAmountCell(row, 4, purchase.amount));
-                columnChars[5] = Math.max(columnChars[5], writeDecimalCell(row, 5, purchase.cost));
-                columnChars[6] = Math.max(columnChars[6],
-                        writeDateCell(row, 6, purchase.purchaseDateTime, dateStyle));
-                columnChars[7] = Math.max(columnChars[7],
-                        writeDateCell(row, 7, purchase.createdDateTime, dateStyle));
-                columnChars[8] = Math.max(columnChars[8],
-                        writeStringCell(row, 8, imagesByPurchaseId.get(purchase.id)));
-            }
-            lastId = page.get(page.size() - 1).id;
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
-
-    /**
-     * Maintenances are keyset-paged like {@link #writeUsagesSheet} (see its javadoc).
-     */
-    private void writeMaintenancesSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                        CellStyle dateStyle, Map<Long, Item> itemMap, int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_MAINTENANCES);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_item_id),
-                mAppContext.getString(R.string.header_item_name),
-                mAppContext.getString(R.string.form_description),
-                mAppContext.getString(R.string.header_cost),
-                mAppContext.getString(R.string.header_maintenance_date_time),
-                mAppContext.getString(R.string.header_created_date_time),
-                mAppContext.getString(R.string.header_images),
-        });
-        int rowIndex = 1;
-        long lastId = 0L;
-        List<ItemMaintenance> page;
-        while (!(page = mItemMaintenanceDao.findItemMaintenancesAfter(lastId, PAGE_SIZE)).isEmpty()) {
-            List<Long> pageIds = page.stream().map(maintenance -> maintenance.id)
-                    .collect(Collectors.toList());
-            Map<Long, String> imagesByMaintenanceId = new HashMap<>();
-            for (ItemMaintenanceImage image : mItemMaintenanceDao.findItemMaintenanceImagesByItemMaintenanceIds(pageIds)) {
-                addImageFileName(imagesByMaintenanceId, image.itemMaintenanceId, image.fileName);
-            }
-            for (ItemMaintenance maintenance : page) {
-                Row row = sheet.createRow(rowIndex++);
-                columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, maintenance.id));
-                columnChars[1] = Math.max(columnChars[1],
-                        writeLongCell(row, 1, maintenance.itemId));
-                columnChars[2] = Math.max(columnChars[2],
-                        writeStringCell(row, 2, resolveItemName(itemMap, maintenance.itemId)));
-                columnChars[3] = Math.max(columnChars[3],
-                        writeStringCell(row, 3, maintenance.description));
-                columnChars[4] = Math.max(columnChars[4],
-                        writeDecimalCell(row, 4, maintenance.cost));
-                columnChars[5] = Math.max(columnChars[5],
-                        writeDateCell(row, 5, maintenance.maintenanceDateTime, dateStyle));
-                columnChars[6] = Math.max(columnChars[6],
-                        writeDateCell(row, 6, maintenance.createdDateTime, dateStyle));
-                columnChars[7] = Math.max(columnChars[7],
-                        writeStringCell(row, 7, imagesByMaintenanceId.get(maintenance.id)));
-            }
-            lastId = page.get(page.size() - 1).id;
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
-
-    /**
-     * Reminders are keyset-paged like {@link #writeUsagesSheet} (see its javadoc);
-     * they have no image table.
-     */
-    private void writeRemindersSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                     CellStyle dateStyle, Map<Long, Item> itemMap, int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_REMINDERS);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_item_id),
-                mAppContext.getString(R.string.header_item_name),
-                mAppContext.getString(R.string.header_message),
-                mAppContext.getString(R.string.header_reminder_date_time),
-                mAppContext.getString(R.string.header_created_date_time),
-        });
-        int rowIndex = 1;
-        long lastId = 0L;
-        List<ItemReminder> page;
-        while (!(page = mItemReminderDao.findItemRemindersAfter(lastId, PAGE_SIZE)).isEmpty()) {
-            for (ItemReminder reminder : page) {
-                Row row = sheet.createRow(rowIndex++);
-                columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, reminder.id));
-                columnChars[1] = Math.max(columnChars[1], writeLongCell(row, 1, reminder.itemId));
-                columnChars[2] = Math.max(columnChars[2],
-                        writeStringCell(row, 2, resolveItemName(itemMap, reminder.itemId)));
-                columnChars[3] = Math.max(columnChars[3],
-                        writeStringCell(row, 3, reminder.message));
-                columnChars[4] = Math.max(columnChars[4],
-                        writeDateCell(row, 4, reminder.reminderDateTime, dateStyle));
-                columnChars[5] = Math.max(columnChars[5],
-                        writeDateCell(row, 5, reminder.createdDateTime, dateStyle));
-            }
-            lastId = page.get(page.size() - 1).id;
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
-
-    private void writeChecklistsSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                      CellStyle dateStyle, List<ItemChecklist> checklists,
-                                      int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_CHECKLISTS);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_title),
-                mAppContext.getString(R.string.form_description),
-                mAppContext.getString(R.string.header_created_date_time),
-                mAppContext.getString(R.string.header_updated_date_time),
-        });
-        int rowIndex = 1;
-        for (ItemChecklist checklist : checklists) {
-            Row row = sheet.createRow(rowIndex++);
-            columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, checklist.id));
-            columnChars[1] = Math.max(columnChars[1], writeStringCell(row, 1, checklist.title));
-            columnChars[2] = Math.max(columnChars[2],
-                    writeStringCell(row, 2, checklist.description));
-            columnChars[3] = Math.max(columnChars[3],
-                    writeDateCell(row, 3, checklist.createdDateTime, dateStyle));
-            columnChars[4] = Math.max(columnChars[4],
-                    writeDateCell(row, 4, checklist.updatedDateTime, dateStyle));
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
-
-    /**
-     * Checklist items are keyset-paged like {@link #writeUsagesSheet} (see its
-     * javadoc); checklist titles and item names resolve from the fully loaded
-     * anchor maps.
-     */
-    private void writeChecklistItemsSheet(SXSSFWorkbook workbook, CellStyle headerStyle,
-                                          CellStyle dateStyle,
-                                          Map<Long, String> checklistTitleMap,
-                                          Map<Long, Item> itemMap, int sheetIndex) {
-        emitSheetProgress(sheetIndex);
-        Sheet sheet = workbook.createSheet(SHEET_CHECKLIST_ITEMS);
-        int[] columnChars = writeHeaderRow(sheet, headerStyle, new String[]{
-                mAppContext.getString(R.string.header_id),
-                mAppContext.getString(R.string.header_checklist_id),
-                mAppContext.getString(R.string.header_title),
-                mAppContext.getString(R.string.header_item_id),
-                mAppContext.getString(R.string.header_item_name),
-                mAppContext.getString(R.string.header_checked_date_time),
-                mAppContext.getString(R.string.header_created_date_time),
-        });
-        int rowIndex = 1;
-        long lastId = 0L;
-        List<ItemChecklistItem> page;
-        while (!(page = mItemChecklistDao.findItemChecklistItemsAfter(lastId, PAGE_SIZE)).isEmpty()) {
-            for (ItemChecklistItem checklistItem : page) {
-                Row row = sheet.createRow(rowIndex++);
-                columnChars[0] = Math.max(columnChars[0],
-                        writeLongCell(row, 0, checklistItem.id));
-                columnChars[1] = Math.max(columnChars[1],
-                        writeLongCell(row, 1, checklistItem.itemChecklistId));
-                columnChars[2] = Math.max(columnChars[2],
-                        writeStringCell(row, 2, checklistTitleMap.get(checklistItem.itemChecklistId)));
-                columnChars[3] = Math.max(columnChars[3],
-                        writeLongCell(row, 3, checklistItem.itemId));
-                columnChars[4] = Math.max(columnChars[4],
-                        writeStringCell(row, 4, resolveItemName(itemMap, checklistItem.itemId)));
-                columnChars[5] = Math.max(columnChars[5],
-                        writeDateCell(row, 5, checklistItem.checkedDateTime, dateStyle));
-                columnChars[6] = Math.max(columnChars[6],
-                        writeDateCell(row, 6, checklistItem.createdDateTime, dateStyle));
-            }
-            lastId = page.get(page.size() - 1).id;
-        }
-        applyColumnWidths(sheet, columnChars);
-    }
 }

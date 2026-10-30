@@ -22,6 +22,7 @@ import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,6 +38,8 @@ import java.util.zip.ZipOutputStream;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
 import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleExport;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
@@ -48,25 +51,30 @@ import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
+import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.notifier.ItemMaintenanceChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_maintenance.room.ItemMaintenanceDatabase;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
+import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.ItemReminderBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_reminder.room.ItemReminderDatabase;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_usage.room.ItemUsageDatabase;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
@@ -85,6 +93,7 @@ import androidx.work.testing.WorkManagerTestInitHelper;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -189,27 +198,62 @@ public class BackupIntegrationTest {
     }
 
     @Test
+    public void exportedBackupHasExactTopLevelKeySet() throws Exception {
+        // key parity: exported backups must carry exactly the golden top-level
+        // key set (2 metadata + 12 data sections). A module adding a section
+        // without updating this list — or dropping its contributor — fails here.
+        File zipFile = new ExportCmd(mProvider).execute().blockingGet();
+
+        JSONObject json = extractJsonFromZip(zipFile);
+        List<String> actualKeys = new ArrayList<>();
+        JSONArray names = json.names();
+        for (int i = 0; i < names.length(); i++) {
+            actualKeys.add(names.getString(i));
+        }
+        List<String> expectedKeys = Arrays.asList(
+                "version",
+                "exportedAt",
+                "items",
+                "itemImages",
+                "itemTags",
+                "itemUsages",
+                "itemUsageImages",
+                "itemPurchases",
+                "itemPurchaseImages",
+                "itemMaintenances",
+                "itemMaintenanceImages",
+                "itemReminders",
+                "itemChecklists",
+                "itemChecklistItems");
+        Collections.sort(actualKeys);
+        Collections.sort(expectedKeys);
+        assertEquals(expectedKeys, actualKeys);
+
+        zipFile.delete();
+    }
+
+    @Test
     public void exportEmptyDatabase() throws Exception {
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
 
         assertNotNull(zipFile);
         assertTrue(zipFile.exists());
 
-        BackupData data = extractJsonFromZip(zipFile);
-        assertEquals(2, data.version);
-        assertTrue(data.exportedAt > 0);
-        assertTrue(data.items.isEmpty());
-        assertTrue(data.itemImages.isEmpty());
-        assertTrue(data.itemTags.isEmpty());
-        assertTrue(data.itemMaintenances.isEmpty());
-        assertTrue(data.itemMaintenanceImages.isEmpty());
-        assertTrue(data.itemUsages.isEmpty());
-        assertTrue(data.itemUsageImages.isEmpty());
-        assertTrue(data.itemReminders.isEmpty());
-        assertTrue(data.itemPurchases.isEmpty());
-        assertTrue(data.itemPurchaseImages.isEmpty());
-        assertTrue(data.itemChecklists.isEmpty());
-        assertTrue(data.itemChecklistItems.isEmpty());
+        JSONObject json = extractJsonFromZip(zipFile);
+        assertEquals(2, json.getInt("version"));
+        assertTrue(json.getLong("exportedAt") > 0);
+        assertSectionSize(json, "items", 0);
+        assertSectionSize(json, "itemImages", 0);
+        assertSectionSize(json, "itemTags", 0);
+        assertSectionSize(json, "itemMaintenances", 0);
+        assertSectionSize(json, "itemMaintenanceImages", 0);
+        assertSectionSize(json, "itemUsages", 0);
+        assertSectionSize(json, "itemUsageImages", 0);
+        assertSectionSize(json, "itemPurchases", 0);
+        assertSectionSize(json, "itemPurchaseImages", 0);
+        assertSectionSize(json, "itemReminders", 0);
+        assertSectionSize(json, "itemChecklists", 0);
+        assertSectionSize(json, "itemChecklistItems", 0);
 
         Set<String> entries = getZipEntryNames(zipFile);
         assertEquals(1, entries.size());
@@ -271,30 +315,33 @@ public class BackupIntegrationTest {
         mAppDb.itemDao().insertItem(itemState2);
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
-        BackupData data = extractJsonFromZip(zipFile);
+        JSONObject json = extractJsonFromZip(zipFile);
 
-        assertEquals(2, data.items.size());
-        assertEquals(2, data.itemImages.size());
-        assertEquals(1, data.itemTags.size());
+        JSONArray items = json.getJSONArray("items");
+        assertEquals(2, items.length());
+        assertEquals(2, json.getJSONArray("itemImages").length());
+        assertEquals(1, json.getJSONArray("itemTags").length());
 
-        assertEquals("Item A", data.items.get(0).name);
-        assertEquals(5, data.items.get(0).amount);
-        assertEquals(Integer.valueOf(2), data.items.get(0).minAmount);
-        assertEquals(new BigDecimal("19.99"), data.items.get(0).price);
-        assertEquals("Test item A", data.items.get(0).description);
-        assertEquals("111222333", data.items.get(0).barcode);
-        assertNotNull(data.items.get(0).expiredDateTime);
-        assertNotNull(data.items.get(0).updatedDateTime);
+        JSONObject itemA = items.getJSONObject(0);
+        assertEquals("Item A", itemA.getString("name"));
+        assertEquals(5, itemA.getInt("amount"));
+        assertEquals(2, itemA.getInt("minAmount"));
+        assertEquals("19.99", itemA.getString("price"));
+        assertEquals("Test item A", itemA.getString("description"));
+        assertEquals("111222333", itemA.getString("barcode"));
+        assertFalse(itemA.isNull("expiredDateTime"));
+        assertFalse(itemA.isNull("updatedDateTime"));
 
-        assertEquals("Item B", data.items.get(1).name);
-        assertEquals(10, data.items.get(1).amount);
-        assertNull(data.items.get(1).minAmount);
-        assertNull(data.items.get(1).price);
-        assertNull(data.items.get(1).description);
-        assertNull(data.items.get(1).barcode);
-        assertNull(data.items.get(1).expiredDateTime);
+        JSONObject itemB = items.getJSONObject(1);
+        assertEquals("Item B", itemB.getString("name"));
+        assertEquals(10, itemB.getInt("amount"));
+        assertTrue(itemB.isNull("minAmount"));
+        assertTrue(itemB.isNull("price"));
+        assertTrue(itemB.isNull("description"));
+        assertTrue(itemB.isNull("barcode"));
+        assertTrue(itemB.isNull("expiredDateTime"));
 
-        assertEquals("electronics", data.itemTags.get(0).tag);
+        assertEquals("electronics", json.getJSONArray("itemTags").getJSONObject(0).getString("tag"));
 
         zipFile.delete();
     }
@@ -382,55 +429,64 @@ public class BackupIntegrationTest {
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
-        BackupData data = extractJsonFromZip(zipFile);
+        JSONObject json = extractJsonFromZip(zipFile);
 
-        assertEquals(1, data.items.size());
-        assertEquals(1, data.itemImages.size());
-        assertEquals(1, data.itemTags.size());
-        assertEquals(1, data.itemMaintenances.size());
-        assertEquals(1, data.itemMaintenanceImages.size());
-        assertEquals(1, data.itemUsages.size());
-        assertEquals(1, data.itemUsageImages.size());
-        assertEquals(1, data.itemPurchases.size());
-        assertEquals("Bought 3 units", data.itemPurchases.get(0).description);
-        assertEquals(3, data.itemPurchases.get(0).amount);
-        assertEquals(new BigDecimal("12.50"), data.itemPurchases.get(0).cost);
-        assertEquals(1, data.itemPurchaseImages.size());
-        assertEquals("purchase.jpg", data.itemPurchaseImages.get(0).fileName);
-        assertEquals(1, data.itemReminders.size());
+        assertSectionSize(json, "items", 1);
+        assertSectionSize(json, "itemImages", 1);
+        assertSectionSize(json, "itemTags", 1);
+        assertSectionSize(json, "itemMaintenances", 1);
+        assertSectionSize(json, "itemMaintenanceImages", 1);
+        assertSectionSize(json, "itemUsages", 1);
+        assertSectionSize(json, "itemUsageImages", 1);
+        assertSectionSize(json, "itemPurchases", 1);
+        assertSectionSize(json, "itemReminders", 1);
+        assertSectionSize(json, "itemChecklists", 0);
+        assertSectionSize(json, "itemChecklistItems", 0);
 
-        assertEquals("Full Item", data.items.get(0).name);
-        assertEquals(3, data.items.get(0).amount);
-        assertEquals(new BigDecimal("29.99"), data.items.get(0).price);
-        assertEquals("Complete test item", data.items.get(0).description);
+        assertEquals("Full Item", json.getJSONArray("items").getJSONObject(0).getString("name"));
+        assertEquals(3, json.getJSONArray("items").getJSONObject(0).getInt("amount"));
+        assertEquals("29.99", json.getJSONArray("items").getJSONObject(0).getString("price"));
+        assertEquals("Complete test item", json.getJSONArray("items").getJSONObject(0).getString("description"));
 
-        assertEquals("item.jpg", data.itemImages.get(0).fileName);
-        assertEquals(Long.valueOf(itemId), data.itemImages.get(0).itemId);
+        assertEquals("item.jpg", json.getJSONArray("itemImages").getJSONObject(0).getString("fileName"));
+        assertEquals(itemId, json.getJSONArray("itemImages").getJSONObject(0).getLong("itemId"));
 
-        assertEquals("fulltest", data.itemTags.get(0).tag);
-        assertEquals(Long.valueOf(itemId), data.itemTags.get(0).itemId);
+        assertEquals("fulltest", json.getJSONArray("itemTags").getJSONObject(0).getString("tag"));
+        assertEquals(itemId, json.getJSONArray("itemTags").getJSONObject(0).getLong("itemId"));
 
-        assertEquals("Oil change", data.itemMaintenances.get(0).description);
-        assertEquals(new BigDecimal("50.00"), data.itemMaintenances.get(0).cost);
-        assertEquals(Long.valueOf(itemId), data.itemMaintenances.get(0).itemId);
+        JSONObject maintenanceJson = json.getJSONArray("itemMaintenances").getJSONObject(0);
+        assertEquals("Oil change", maintenanceJson.getString("description"));
+        assertEquals("50.00", maintenanceJson.getString("cost"));
+        assertEquals(itemId, maintenanceJson.getLong("itemId"));
 
-        assertEquals("maint.jpg", data.itemMaintenanceImages.get(0).fileName);
-        assertEquals(maintId, data.itemMaintenanceImages.get(0).itemMaintenanceId.longValue());
+        JSONObject maintImgJson = json.getJSONArray("itemMaintenanceImages").getJSONObject(0);
+        assertEquals("maint.jpg", maintImgJson.getString("fileName"));
+        assertEquals(maintId, maintImgJson.getLong("itemMaintenanceId"));
 
-        assertEquals("Used for project", data.itemUsages.get(0).description);
-        assertEquals(1, data.itemUsages.get(0).amount);
-        assertEquals(Long.valueOf(itemId), data.itemUsages.get(0).itemId);
-        assertNotNull(data.itemUsages.get(0).usageDateTime);
-        assertEquals(now.getTime(), data.itemUsages.get(0).usageDateTime.getTime());
-        assertNotNull(data.itemUsages.get(0).createdDateTime);
-        assertEquals(now.getTime(), data.itemUsages.get(0).createdDateTime.getTime());
+        JSONObject usageJson = json.getJSONArray("itemUsages").getJSONObject(0);
+        assertEquals("Used for project", usageJson.getString("description"));
+        assertEquals(1, usageJson.getInt("amount"));
+        assertEquals(itemId, usageJson.getLong("itemId"));
+        assertFalse(usageJson.isNull("usageDateTime"));
+        assertEquals(now.getTime(), usageJson.getLong("usageDateTime"));
+        assertFalse(usageJson.isNull("createdDateTime"));
+        assertEquals(now.getTime(), usageJson.getLong("createdDateTime"));
 
-        assertEquals("usage.jpg", data.itemUsageImages.get(0).fileName);
-        assertEquals(usageId, data.itemUsageImages.get(0).itemUsageId.longValue());
+        JSONObject usageImgJson = json.getJSONArray("itemUsageImages").getJSONObject(0);
+        assertEquals("usage.jpg", usageImgJson.getString("fileName"));
+        assertEquals(usageId, usageImgJson.getLong("itemUsageId"));
 
-        assertEquals("Check item status", data.itemReminders.get(0).message);
-        assertEquals("task-123", data.itemReminders.get(0).taskId);
-        assertEquals(Long.valueOf(itemId), data.itemReminders.get(0).itemId);
+        JSONObject purchaseJson = json.getJSONArray("itemPurchases").getJSONObject(0);
+        assertEquals("Bought 3 units", purchaseJson.getString("description"));
+        assertEquals(3, purchaseJson.getInt("amount"));
+        assertEquals("12.50", purchaseJson.getString("cost"));
+        assertSectionSize(json, "itemPurchaseImages", 1);
+        assertEquals("purchase.jpg", json.getJSONArray("itemPurchaseImages").getJSONObject(0).getString("fileName"));
+
+        JSONObject reminderJson = json.getJSONArray("itemReminders").getJSONObject(0);
+        assertEquals("Check item status", reminderJson.getString("message"));
+        assertEquals("task-123", reminderJson.getString("taskId"));
+        assertEquals(itemId, reminderJson.getLong("itemId"));
 
         zipFile.delete();
     }
@@ -725,6 +781,7 @@ public class BackupIntegrationTest {
         itemTag.createdDateTime = now;
         data.itemTags.add(itemTag);
 
+        List<ItemMaintenance> maintEntries = new ArrayList<>();
         ItemMaintenance maintEntry = new ItemMaintenance();
         maintEntry.id = 1L;
         maintEntry.itemId = 1L;
@@ -732,39 +789,34 @@ public class BackupIntegrationTest {
         maintEntry.cost = new BigDecimal("120.00");
         maintEntry.maintenanceDateTime = now;
         maintEntry.createdDateTime = now;
-        data.itemMaintenances.add(maintEntry);
+        maintEntries.add(maintEntry);
 
+        List<ItemMaintenanceImage> maintImgEntries = new ArrayList<>();
         ItemMaintenanceImage maintImgEntry = new ItemMaintenanceImage();
         maintImgEntry.id = 1L;
         maintImgEntry.itemMaintenanceId = 1L;
         maintImgEntry.fileName = "maint.jpg";
         maintImgEntry.createdDateTime = now;
-        data.itemMaintenanceImages.add(maintImgEntry);
+        maintImgEntries.add(maintImgEntry);
 
+        List<ItemUsage> usageEntries = new ArrayList<>();
         ItemUsage usageEntry = new ItemUsage();
         usageEntry.id = 1L;
         usageEntry.itemId = 1L;
         usageEntry.description = "Daily use";
         usageEntry.amount = 1;
         usageEntry.createdDateTime = now;
-        data.itemUsages.add(usageEntry);
+        usageEntries.add(usageEntry);
 
+        List<ItemUsageImage> usageImgEntries = new ArrayList<>();
         ItemUsageImage usageImgEntry = new ItemUsageImage();
         usageImgEntry.id = 1L;
         usageImgEntry.itemUsageId = 1L;
         usageImgEntry.fileName = "usage.jpg";
         usageImgEntry.createdDateTime = now;
-        data.itemUsageImages.add(usageImgEntry);
+        usageImgEntries.add(usageImgEntry);
 
-        ItemReminder reminderEntry = new ItemReminder();
-        reminderEntry.id = 1L;
-        reminderEntry.itemId = 1L;
-        reminderEntry.taskId = "old-task";
-        reminderEntry.reminderDateTime = new Date(now.getTime() + 86400000);
-        reminderEntry.message = "Reminder message";
-        reminderEntry.createdDateTime = now;
-        data.itemReminders.add(reminderEntry);
-
+        List<ItemPurchase> purchaseEntries = new ArrayList<>();
         ItemPurchase purchaseEntry = new ItemPurchase();
         purchaseEntry.id = 1L;
         purchaseEntry.itemId = 1L;
@@ -773,14 +825,25 @@ public class BackupIntegrationTest {
         purchaseEntry.cost = new BigDecimal("25.00");
         purchaseEntry.purchaseDateTime = now;
         purchaseEntry.createdDateTime = now;
-        data.itemPurchases.add(purchaseEntry);
+        purchaseEntries.add(purchaseEntry);
 
+        List<ItemPurchaseImage> purchaseImgEntries = new ArrayList<>();
         ItemPurchaseImage purchaseImgEntry = new ItemPurchaseImage();
         purchaseImgEntry.id = 1L;
         purchaseImgEntry.itemPurchaseId = 1L;
         purchaseImgEntry.fileName = "purchase.jpg";
         purchaseImgEntry.createdDateTime = now;
-        data.itemPurchaseImages.add(purchaseImgEntry);
+        purchaseImgEntries.add(purchaseImgEntry);
+
+        List<ItemReminder> reminderEntries = new ArrayList<>();
+        ItemReminder reminderEntry = new ItemReminder();
+        reminderEntry.id = 1L;
+        reminderEntry.itemId = 1L;
+        reminderEntry.taskId = "old-task";
+        reminderEntry.reminderDateTime = new Date(now.getTime() + 86400000);
+        reminderEntry.message = "Reminder message";
+        reminderEntry.createdDateTime = now;
+        reminderEntries.add(reminderEntry);
 
         HashMap<String, byte[]> extraFiles = new HashMap<>();
         extraFiles.put(Constants.FILE_DIR_ITEM_IMAGE + "/item.jpg", "item-data".getBytes());
@@ -792,7 +855,16 @@ public class BackupIntegrationTest {
         extraFiles.put(Constants.FILE_DIR_ITEM_PURCHASE_IMAGE + "/purchase.jpg", "purchase-data".getBytes());
         extraFiles.put(Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL + "/purchase.jpg", "purchase-thumb".getBytes());
 
-        File zipFile = createBackupZip(data, extraFiles);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemMaintenanceBackupContributor.maintenancesSection(maintEntries),
+                        ItemMaintenanceBackupContributor.maintenanceImagesSection(maintImgEntries),
+                        ItemUsageBackupContributor.usagesSection(usageEntries),
+                        ItemUsageBackupContributor.usageImagesSection(usageImgEntries),
+                        ItemPurchaseBackupContributor.purchasesSection(purchaseEntries),
+                        ItemPurchaseBackupContributor.purchaseImagesSection(purchaseImgEntries),
+                        ItemReminderBackupContributor.remindersSection(reminderEntries)),
+                extraFiles);
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -878,6 +950,200 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(newItemId), reminders.get(0).itemId);
         assertEquals("Reminder message", reminders.get(0).message);
         assertTrue(!"old-task".equals(reminders.get(0).taskId));
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void perContributorRoundTripRestoresRowsAndImages() throws Exception {
+        // Per-contributor round-trip template: seed every module, export,
+        // WIPE all module tables, restore, and assert each module's rows and
+        // images came back. A future module that forgets to register its
+        // backup contributor fails this test with its rows missing.
+        Date now = new Date();
+
+        ItemState itemState = new ItemState();
+        Item item = new Item();
+        item.name = "Round Trip Template Item";
+        item.amount = 2;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        itemState.updateItem(item);
+        mAppDb.itemDao().insertItem(itemState);
+        long itemId = itemState.getItemId();
+
+        File usageImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE);
+        usageImageDir.mkdirs();
+        File usageImageFile = new File(usageImageDir, "rt_usage.jpg");
+        writeBytes(usageImageFile, "rt-usage-data".getBytes());
+        File usageThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL);
+        usageThumbDir.mkdirs();
+        File usageThumbFile = new File(usageThumbDir, "rt_usage.jpg");
+        writeBytes(usageThumbFile, "rt-usage-thumb".getBytes());
+
+        ItemUsage usage = new ItemUsage();
+        usage.itemId = itemId;
+        usage.description = "RT usage";
+        usage.amount = 1;
+        usage.usageDateTime = now;
+        usage.createdDateTime = now;
+        long usageId = mUsageDb.itemUsageDao().insert(usage);
+        ItemUsageImage usageImg = new ItemUsageImage();
+        usageImg.itemUsageId = usageId;
+        usageImg.fileName = "rt_usage.jpg";
+        usageImg.createdDateTime = now;
+        mUsageDb.itemUsageDao().insert(usageImg);
+
+        File purchaseImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE);
+        purchaseImageDir.mkdirs();
+        File purchaseImageFile = new File(purchaseImageDir, "rt_purchase.jpg");
+        writeBytes(purchaseImageFile, "rt-purchase-data".getBytes());
+        File purchaseThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL);
+        purchaseThumbDir.mkdirs();
+        File purchaseThumbFile = new File(purchaseThumbDir, "rt_purchase.jpg");
+        writeBytes(purchaseThumbFile, "rt-purchase-thumb".getBytes());
+
+        ItemPurchase purchase = new ItemPurchase();
+        purchase.itemId = itemId;
+        purchase.description = "RT purchase";
+        purchase.amount = 4;
+        purchase.cost = new BigDecimal("40.00");
+        purchase.purchaseDateTime = now;
+        purchase.createdDateTime = now;
+        long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
+        ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
+        purchaseImg.itemPurchaseId = purchaseId;
+        purchaseImg.fileName = "rt_purchase.jpg";
+        purchaseImg.createdDateTime = now;
+        mPurchaseDb.itemPurchaseDao().insert(purchaseImg);
+
+        File maintImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE);
+        maintImageDir.mkdirs();
+        File maintImageFile = new File(maintImageDir, "rt_maint.jpg");
+        writeBytes(maintImageFile, "rt-maint-data".getBytes());
+        File maintThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL);
+        maintThumbDir.mkdirs();
+        File maintThumbFile = new File(maintThumbDir, "rt_maint.jpg");
+        writeBytes(maintThumbFile, "rt-maint-thumb".getBytes());
+
+        ItemMaintenance maintenance = new ItemMaintenance();
+        maintenance.itemId = itemId;
+        maintenance.description = "RT maintenance";
+        maintenance.cost = new BigDecimal("75.00");
+        maintenance.maintenanceDateTime = now;
+        maintenance.createdDateTime = now;
+        long maintId = mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
+        ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
+        maintImg.itemMaintenanceId = maintId;
+        maintImg.fileName = "rt_maint.jpg";
+        maintImg.createdDateTime = now;
+        mMaintenanceDb.itemMaintenanceDao().insert(maintImg);
+
+        ItemReminder reminder = new ItemReminder();
+        reminder.itemId = itemId;
+        reminder.taskId = "rt-task";
+        reminder.reminderDateTime = new Date(now.getTime() + 172800000);
+        reminder.message = "RT reminder";
+        reminder.createdDateTime = now;
+        mReminderDb.itemReminderDao().insertItemReminder(reminder);
+
+        ItemChecklist checklist = new ItemChecklist();
+        checklist.title = "RT checklist";
+        checklist.createdDateTime = now;
+        checklist.updatedDateTime = new Date(now.getTime() + 1000);
+        ItemChecklistState checklistState = new ItemChecklistState();
+        checklistState.updateItemChecklist(checklist);
+        mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
+        long checklistId = checklistState.getChecklistId();
+        ItemChecklistItem checklistItem = new ItemChecklistItem();
+        checklistItem.itemChecklistId = checklistId;
+        checklistItem.itemId = itemId;
+        checklistItem.createdDateTime = now;
+        checklistItem.checkedDateTime = now;
+        mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem));
+
+        File zipFile = new ExportCmd(mProvider).execute().blockingGet();
+
+        // wipe every module table (in-memory): only the contributor pipeline
+        // can bring the rows back
+        mUsageDb.clearAllTables();
+        mPurchaseDb.clearAllTables();
+        mMaintenanceDb.clearAllTables();
+        mReminderDb.clearAllTables();
+        mChecklistDb.clearAllTables();
+        assertTrue(mUsageDb.itemUsageDao().findAllItemUsages().isEmpty());
+        assertTrue(mPurchaseDb.itemPurchaseDao().findAllItemPurchases().isEmpty());
+        assertTrue(mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances().isEmpty());
+        assertTrue(mReminderDb.itemReminderDao().findAllItemReminders().isEmpty());
+        assertTrue(mChecklistDb.itemChecklistDao().findAllItemChecklists().isEmpty());
+
+        new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        // the zip's items core is re-imported as NEW rows (only module tables
+        // were wiped), so every module row must reference the REMAPPED item
+        // id, not the seeded one
+        List<ItemState> importedItems = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null);
+        assertEquals(2, importedItems.size());
+        long restoredItemId = Long.MIN_VALUE;
+        for (ItemState imported : importedItems) {
+            if (imported.getItemId() != itemId) {
+                restoredItemId = imported.getItemId();
+            }
+        }
+        assertTrue("item id must be remapped on import", restoredItemId != itemId);
+
+        List<ItemUsage> usages = mUsageDb.itemUsageDao().findAllItemUsages();
+        assertEquals(1, usages.size());
+        assertEquals("RT usage", usages.get(0).description);
+        assertEquals(Long.valueOf(restoredItemId), usages.get(0).itemId);
+        List<ItemUsageImage> usageImages = mUsageDb.itemUsageDao().findAllItemUsageImages();
+        assertEquals(1, usageImages.size());
+        assertEquals(usages.get(0).id, usageImages.get(0).itemUsageId);
+        File restoredUsageImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE), usageImages.get(0).fileName);
+        assertTrue(restoredUsageImage.exists());
+        File restoredUsageThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL), usageImages.get(0).fileName);
+        assertTrue(restoredUsageThumb.exists());
+
+        List<ItemPurchase> purchases = mPurchaseDb.itemPurchaseDao().findAllItemPurchases();
+        assertEquals(1, purchases.size());
+        assertEquals("RT purchase", purchases.get(0).description);
+        assertEquals(Long.valueOf(restoredItemId), purchases.get(0).itemId);
+        List<ItemPurchaseImage> purchaseImages = mPurchaseDb.itemPurchaseDao().findAllItemPurchaseImages();
+        assertEquals(1, purchaseImages.size());
+        assertEquals(purchases.get(0).id, purchaseImages.get(0).itemPurchaseId);
+        File restoredPurchaseImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseImage.exists());
+        File restoredPurchaseThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL), purchaseImages.get(0).fileName);
+        assertTrue(restoredPurchaseThumb.exists());
+
+        List<ItemMaintenance> maintenances = mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances();
+        assertEquals(1, maintenances.size());
+        assertEquals("RT maintenance", maintenances.get(0).description);
+        assertEquals(Long.valueOf(restoredItemId), maintenances.get(0).itemId);
+        List<ItemMaintenanceImage> maintImages = mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenanceImages();
+        assertEquals(1, maintImages.size());
+        assertEquals(maintenances.get(0).id, maintImages.get(0).itemMaintenanceId);
+        File restoredMaintImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE), maintImages.get(0).fileName);
+        assertTrue(restoredMaintImage.exists());
+        File restoredMaintThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL), maintImages.get(0).fileName);
+        assertTrue(restoredMaintThumb.exists());
+
+        List<ItemReminder> reminders = mReminderDb.itemReminderDao().findAllItemReminders();
+        assertEquals(1, reminders.size());
+        assertEquals("RT reminder", reminders.get(0).message);
+        assertEquals(Long.valueOf(restoredItemId), reminders.get(0).itemId);
+        assertNotEquals("rt-task", reminders.get(0).taskId);
+
+        List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
+        assertEquals(1, checklists.size());
+        assertEquals("RT checklist", checklists.get(0).title);
+        assertEquals(now.getTime(), checklists.get(0).createdDateTime.getTime());
+        assertEquals(now.getTime() + 1000, checklists.get(0).updatedDateTime.getTime());
+        List<ItemChecklistItem> checklistItems = mChecklistDb.itemChecklistDao().findAllItemChecklistItems();
+        assertEquals(1, checklistItems.size());
+        assertEquals(checklists.get(0).id, checklistItems.get(0).itemChecklistId);
+        assertEquals(Long.valueOf(restoredItemId), checklistItems.get(0).itemId);
+        assertNotNull(checklistItems.get(0).checkedDateTime);
 
         zipFile.delete();
     }
@@ -1317,6 +1583,7 @@ public class BackupIntegrationTest {
         img.createdDateTime = now;
         data.itemImages.add(img);
 
+        List<ItemMaintenance> maintEntries = new ArrayList<>();
         ItemMaintenance maint = new ItemMaintenance();
         maint.id = 1L;
         maint.itemId = 1L;
@@ -1324,16 +1591,20 @@ public class BackupIntegrationTest {
         maint.cost = new BigDecimal("10.00");
         maint.maintenanceDateTime = now;
         maint.createdDateTime = now;
-        data.itemMaintenances.add(maint);
+        maintEntries.add(maint);
 
+        List<ItemMaintenanceImage> maintImgEntries = new ArrayList<>();
         ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
         maintImg.id = 1L;
         maintImg.itemMaintenanceId = 1L;
         maintImg.fileName = null;
         maintImg.createdDateTime = now;
-        data.itemMaintenanceImages.add(maintImg);
+        maintImgEntries.add(maintImg);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemMaintenanceBackupContributor.maintenancesSection(maintEntries),
+                        ItemMaintenanceBackupContributor.maintenanceImagesSection(maintImgEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1366,6 +1637,7 @@ public class BackupIntegrationTest {
         item.createdDateTime = now;
         data.items.add(item);
 
+        List<ItemReminder> reminderEntries = new ArrayList<>();
         ItemReminder reminder1 = new ItemReminder();
         reminder1.id = 1L;
         reminder1.itemId = 1L;
@@ -1373,7 +1645,7 @@ public class BackupIntegrationTest {
         reminder1.reminderDateTime = new Date(now.getTime() + 86400000);
         reminder1.message = "Reminder 1";
         reminder1.createdDateTime = now;
-        data.itemReminders.add(reminder1);
+        reminderEntries.add(reminder1);
 
         ItemReminder reminder2 = new ItemReminder();
         reminder2.id = 2L;
@@ -1382,9 +1654,10 @@ public class BackupIntegrationTest {
         reminder2.reminderDateTime = new Date(now.getTime() + 172800000);
         reminder2.message = "Reminder 2";
         reminder2.createdDateTime = now;
-        data.itemReminders.add(reminder2);
+        reminderEntries.add(reminder2);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(ItemReminderBackupContributor.remindersSection(reminderEntries)));
 
         new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1405,6 +1678,7 @@ public class BackupIntegrationTest {
 
         BackupData data = new BackupData();
 
+        List<ItemMaintenance> maintEntries = new ArrayList<>();
         ItemMaintenance orphanMaint = new ItemMaintenance();
         orphanMaint.id = 1L;
         orphanMaint.itemId = 999L;
@@ -1412,30 +1686,34 @@ public class BackupIntegrationTest {
         orphanMaint.cost = new BigDecimal("10.00");
         orphanMaint.maintenanceDateTime = now;
         orphanMaint.createdDateTime = now;
-        data.itemMaintenances.add(orphanMaint);
+        maintEntries.add(orphanMaint);
 
+        List<ItemMaintenanceImage> maintImgEntries = new ArrayList<>();
         ItemMaintenanceImage orphanMaintImg = new ItemMaintenanceImage();
         orphanMaintImg.id = 1L;
         orphanMaintImg.itemMaintenanceId = 1L;
         orphanMaintImg.fileName = "orphan_maint.jpg";
         orphanMaintImg.createdDateTime = now;
-        data.itemMaintenanceImages.add(orphanMaintImg);
+        maintImgEntries.add(orphanMaintImg);
 
+        List<ItemUsage> usageEntries = new ArrayList<>();
         ItemUsage orphanUsage = new ItemUsage();
         orphanUsage.id = 1L;
         orphanUsage.itemId = 999L;
         orphanUsage.description = "Orphan usage";
         orphanUsage.amount = 1;
         orphanUsage.createdDateTime = now;
-        data.itemUsages.add(orphanUsage);
+        usageEntries.add(orphanUsage);
 
+        List<ItemUsageImage> usageImgEntries = new ArrayList<>();
         ItemUsageImage orphanUsageImg = new ItemUsageImage();
         orphanUsageImg.id = 1L;
         orphanUsageImg.itemUsageId = 1L;
         orphanUsageImg.fileName = "orphan_usage.jpg";
         orphanUsageImg.createdDateTime = now;
-        data.itemUsageImages.add(orphanUsageImg);
+        usageImgEntries.add(orphanUsageImg);
 
+        List<ItemReminder> reminderEntries = new ArrayList<>();
         ItemReminder orphanReminder = new ItemReminder();
         orphanReminder.id = 1L;
         orphanReminder.itemId = 999L;
@@ -1443,9 +1721,15 @@ public class BackupIntegrationTest {
         orphanReminder.reminderDateTime = new Date(now.getTime() + 86400000);
         orphanReminder.message = "Orphan reminder";
         orphanReminder.createdDateTime = now;
-        data.itemReminders.add(orphanReminder);
+        reminderEntries.add(orphanReminder);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemMaintenanceBackupContributor.maintenancesSection(maintEntries),
+                        ItemMaintenanceBackupContributor.maintenanceImagesSection(maintImgEntries),
+                        ItemUsageBackupContributor.usagesSection(usageEntries),
+                        ItemUsageBackupContributor.usageImagesSection(usageImgEntries),
+                        ItemReminderBackupContributor.remindersSection(reminderEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1473,6 +1757,7 @@ public class BackupIntegrationTest {
         item.updatedDateTime = now;
         data.items.add(item);
 
+        List<ItemMaintenance> maintEntries = new ArrayList<>();
         ItemMaintenance orphanMaint = new ItemMaintenance();
         orphanMaint.id = 99L;
         orphanMaint.itemId = 999L;
@@ -1480,31 +1765,39 @@ public class BackupIntegrationTest {
         orphanMaint.cost = new BigDecimal("10.00");
         orphanMaint.maintenanceDateTime = now;
         orphanMaint.createdDateTime = now;
-        data.itemMaintenances.add(orphanMaint);
+        maintEntries.add(orphanMaint);
 
+        List<ItemMaintenanceImage> maintImgEntries = new ArrayList<>();
         ItemMaintenanceImage orphanMaintImg = new ItemMaintenanceImage();
         orphanMaintImg.id = 1L;
         orphanMaintImg.itemMaintenanceId = 99L;
         orphanMaintImg.fileName = "orphan_maint.jpg";
         orphanMaintImg.createdDateTime = now;
-        data.itemMaintenanceImages.add(orphanMaintImg);
+        maintImgEntries.add(orphanMaintImg);
 
+        List<ItemUsage> usageEntries = new ArrayList<>();
         ItemUsage orphanUsage = new ItemUsage();
         orphanUsage.id = 99L;
         orphanUsage.itemId = 999L;
         orphanUsage.description = "Orphan usage";
         orphanUsage.amount = 1;
         orphanUsage.createdDateTime = now;
-        data.itemUsages.add(orphanUsage);
+        usageEntries.add(orphanUsage);
 
+        List<ItemUsageImage> usageImgEntries = new ArrayList<>();
         ItemUsageImage orphanUsageImg = new ItemUsageImage();
         orphanUsageImg.id = 1L;
         orphanUsageImg.itemUsageId = 99L;
         orphanUsageImg.fileName = "orphan_usage.jpg";
         orphanUsageImg.createdDateTime = now;
-        data.itemUsageImages.add(orphanUsageImg);
+        usageImgEntries.add(orphanUsageImg);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemMaintenanceBackupContributor.maintenancesSection(maintEntries),
+                        ItemMaintenanceBackupContributor.maintenanceImagesSection(maintImgEntries),
+                        ItemUsageBackupContributor.usagesSection(usageEntries),
+                        ItemUsageBackupContributor.usageImagesSection(usageImgEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1525,6 +1818,8 @@ public class BackupIntegrationTest {
 
     @Test
     public void backupDataJsonRoundTrip() throws Exception {
+        // BackupData owns only the items core; per-module sections are
+        // round-tripped by the per-contributor template and fixture tests.
         Date now = new Date();
 
         BackupData original = new BackupData();
@@ -1558,79 +1853,6 @@ public class BackupIntegrationTest {
         tag.createdDateTime = now;
         original.itemTags.add(tag);
 
-        ItemMaintenance maint = new ItemMaintenance();
-        maint.id = 1L;
-        maint.itemId = 1L;
-        maint.description = "Test maintenance";
-        maint.cost = new BigDecimal("50.00");
-        maint.maintenanceDateTime = now;
-        maint.createdDateTime = now;
-        original.itemMaintenances.add(maint);
-
-        ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
-        maintImg.id = 1L;
-        maintImg.itemMaintenanceId = 1L;
-        maintImg.fileName = "maint.jpg";
-        maintImg.createdDateTime = now;
-        original.itemMaintenanceImages.add(maintImg);
-
-        ItemUsage usage = new ItemUsage();
-        usage.id = 1L;
-        usage.itemId = 1L;
-        usage.description = "Test usage";
-        usage.amount = 1;
-        usage.usageDateTime = now;
-        usage.createdDateTime = now;
-        original.itemUsages.add(usage);
-
-        ItemUsageImage usageImg = new ItemUsageImage();
-        usageImg.id = 1L;
-        usageImg.itemUsageId = 1L;
-        usageImg.fileName = "usage.jpg";
-        usageImg.createdDateTime = now;
-        original.itemUsageImages.add(usageImg);
-
-        ItemPurchase purchase = new ItemPurchase();
-        purchase.id = 1L;
-        purchase.itemId = 1L;
-        purchase.description = "Test purchase";
-        purchase.amount = 5;
-        purchase.cost = new BigDecimal("25.00");
-        purchase.purchaseDateTime = now;
-        purchase.createdDateTime = now;
-        original.itemPurchases.add(purchase);
-
-        ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
-        purchaseImg.id = 1L;
-        purchaseImg.itemPurchaseId = 1L;
-        purchaseImg.fileName = "purchase.jpg";
-        purchaseImg.createdDateTime = now;
-        original.itemPurchaseImages.add(purchaseImg);
-
-        ItemReminder reminder = new ItemReminder();
-        reminder.id = 1L;
-        reminder.itemId = 1L;
-        reminder.taskId = "test-task";
-        reminder.reminderDateTime = new Date(now.getTime() + 86400000);
-        reminder.message = "Test reminder";
-        reminder.createdDateTime = now;
-        original.itemReminders.add(reminder);
-
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.id = 1L;
-        checklist.title = "Test checklist";
-        checklist.createdDateTime = now;
-        checklist.updatedDateTime = new Date(now.getTime() + 1000);
-        original.itemChecklists.add(checklist);
-
-        ItemChecklistItem checklistItem = new ItemChecklistItem();
-        checklistItem.id = 1L;
-        checklistItem.itemChecklistId = 1L;
-        checklistItem.itemId = 1L;
-        checklistItem.createdDateTime = now;
-        checklistItem.checkedDateTime = now;
-        original.itemChecklistItems.add(checklistItem);
-
         JSONObject json = original.toJson();
         BackupData restored = BackupData.fromJson(json);
 
@@ -1663,79 +1885,24 @@ public class BackupIntegrationTest {
         assertEquals(Long.valueOf(1L), restored.itemTags.get(0).itemId);
         assertEquals("testtag", restored.itemTags.get(0).tag);
         assertNotNull(restored.itemTags.get(0).createdDateTime);
-
-        assertEquals(1, restored.itemMaintenances.size());
-        assertEquals(Long.valueOf(1L), restored.itemMaintenances.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemMaintenances.get(0).itemId);
-        assertEquals("Test maintenance", restored.itemMaintenances.get(0).description);
-        assertEquals(new BigDecimal("50.00"), restored.itemMaintenances.get(0).cost);
-        assertNotNull(restored.itemMaintenances.get(0).maintenanceDateTime);
-        assertEquals(now.getTime(), restored.itemMaintenances.get(0).maintenanceDateTime.getTime());
-
-        assertEquals(1, restored.itemMaintenanceImages.size());
-        assertEquals(Long.valueOf(1L), restored.itemMaintenanceImages.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemMaintenanceImages.get(0).itemMaintenanceId);
-        assertEquals("maint.jpg", restored.itemMaintenanceImages.get(0).fileName);
-
-        assertEquals(1, restored.itemUsages.size());
-        assertEquals(Long.valueOf(1L), restored.itemUsages.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemUsages.get(0).itemId);
-        assertEquals("Test usage", restored.itemUsages.get(0).description);
-        assertEquals(1, restored.itemUsages.get(0).amount);
-        assertNotNull(restored.itemUsages.get(0).usageDateTime);
-        assertEquals(now.getTime(), restored.itemUsages.get(0).usageDateTime.getTime());
-        assertNotNull(restored.itemUsages.get(0).createdDateTime);
-        assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
-
-        assertEquals(1, restored.itemUsageImages.size());
-        assertEquals(Long.valueOf(1L), restored.itemUsageImages.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemUsageImages.get(0).itemUsageId);
-        assertEquals("usage.jpg", restored.itemUsageImages.get(0).fileName);
-
-        assertEquals(1, restored.itemReminders.size());
-        assertEquals(Long.valueOf(1L), restored.itemReminders.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemReminders.get(0).itemId);
-        assertEquals("test-task", restored.itemReminders.get(0).taskId);
-        assertEquals("Test reminder", restored.itemReminders.get(0).message);
-        assertNotNull(restored.itemReminders.get(0).reminderDateTime);
-        assertEquals(now.getTime() + 86400000, restored.itemReminders.get(0).reminderDateTime.getTime());
-
-        assertEquals(1, restored.itemPurchases.size());
-        assertEquals(Long.valueOf(1L), restored.itemPurchases.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemPurchases.get(0).itemId);
-        assertEquals("Test purchase", restored.itemPurchases.get(0).description);
-        assertEquals(5, restored.itemPurchases.get(0).amount);
-        assertEquals(new BigDecimal("25.00"), restored.itemPurchases.get(0).cost);
-        assertNotNull(restored.itemPurchases.get(0).purchaseDateTime);
-        assertEquals(now.getTime(), restored.itemPurchases.get(0).purchaseDateTime.getTime());
-
-        assertEquals(1, restored.itemPurchaseImages.size());
-        assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemPurchaseImages.get(0).itemPurchaseId);
-        assertEquals("purchase.jpg", restored.itemPurchaseImages.get(0).fileName);
-
-        assertEquals(1, restored.itemChecklists.size());
-        assertEquals(Long.valueOf(1L), restored.itemChecklists.get(0).id);
-        assertEquals("Test checklist", restored.itemChecklists.get(0).title);
-        assertNotNull(restored.itemChecklists.get(0).createdDateTime);
-        assertEquals(now.getTime(), restored.itemChecklists.get(0).createdDateTime.getTime());
-        assertNotNull(restored.itemChecklists.get(0).updatedDateTime);
-        assertEquals(now.getTime() + 1000, restored.itemChecklists.get(0).updatedDateTime.getTime());
-
-        assertEquals(1, restored.itemChecklistItems.size());
-        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).id);
-        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).itemChecklistId);
-        assertEquals(Long.valueOf(1L), restored.itemChecklistItems.get(0).itemId);
-        assertNotNull(restored.itemChecklistItems.get(0).checkedDateTime);
-        assertEquals(now.getTime(), restored.itemChecklistItems.get(0).checkedDateTime.getTime());
     }
 
     @Test
-    public void backupDataJsonRoundTripOldBackupWithoutUsageDateTime() throws Exception {
+    public void importOldBackupWithoutUsageDateTimeFallsBackToCreatedDateTime() throws Exception {
         // Simulates an old backup (pre usage_date_time) where the itemUsage
-        // entry omits the usageDateTime key entirely. BackupData.fromJson must
-        // yield usageDateTime == null so ImportCmd can fall back to createdDateTime.
+        // entry omits the usageDateTime key entirely. The usage contributor's
+        // import must fall back to createdDateTime so the row keeps a usage
+        // date.
         Date now = new Date();
+        BackupData data = new BackupData();
+        Item item = new Item();
+        item.id = 1L;
+        item.name = "Old Backup Item";
+        item.amount = 1;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        data.items.add(item);
+
         JSONObject usageObj = new JSONObject();
         usageObj.put("id", 1L);
         usageObj.put("itemId", 1L);
@@ -1746,19 +1913,23 @@ public class BackupIntegrationTest {
         JSONArray usages = new JSONArray();
         usages.put(usageObj);
 
-        JSONObject json = new JSONObject();
-        json.put("version", 1);
-        json.put("exportedAt", now.getTime());
-        json.put("itemUsages", usages);
+        File zipFile = createBackupZip(data, sections(
+                ItemUsageBackupContributor.usagesSection(
+                        ItemUsageBackupContributor.usagesFromJson(usages))));
 
-        BackupData restored = BackupData.fromJson(json);
-        assertEquals(1, restored.itemUsages.size());
-        assertEquals("Old backup usage", restored.itemUsages.get(0).description);
-        assertEquals(3, restored.itemUsages.get(0).amount);
-        assertNotNull(restored.itemUsages.get(0).createdDateTime);
-        assertEquals(now.getTime(), restored.itemUsages.get(0).createdDateTime.getTime());
-        assertNull("Old backups without usageDateTime must deserialize to null",
-                restored.itemUsages.get(0).usageDateTime);
+        new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        List<ItemUsage> importedUsages = mUsageDb.itemUsageDao().findAllItemUsages();
+        assertEquals(1, importedUsages.size());
+        assertEquals("Old backup usage", importedUsages.get(0).description);
+        assertEquals(3, importedUsages.get(0).amount);
+        assertNotNull(importedUsages.get(0).createdDateTime);
+        assertEquals(now.getTime(), importedUsages.get(0).createdDateTime.getTime());
+        assertNotNull("Old backups without usageDateTime must fall back to createdDateTime",
+                importedUsages.get(0).usageDateTime);
+        assertEquals(now.getTime(), importedUsages.get(0).usageDateTime.getTime());
+
+        zipFile.delete();
     }
 
     @Test
@@ -1844,25 +2015,28 @@ public class BackupIntegrationTest {
         mChecklistDb.itemChecklistDao().updateItemChecklist(checklist);
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
-        BackupData data = extractJsonFromZip(zipFile);
+        JSONObject json = extractJsonFromZip(zipFile);
 
-        assertEquals(1, data.itemChecklists.size());
-        assertEquals("Moving home", data.itemChecklists.get(0).title);
-        assertNotNull(data.itemChecklists.get(0).createdDateTime);
-        assertNotNull(data.itemChecklists.get(0).updatedDateTime);
+        JSONArray checklistsJson = json.getJSONArray("itemChecklists");
+        assertEquals(1, checklistsJson.length());
+        assertEquals("Moving home", checklistsJson.getJSONObject(0).getString("title"));
+        assertFalse(checklistsJson.getJSONObject(0).isNull("createdDateTime"));
+        assertFalse(checklistsJson.getJSONObject(0).isNull("updatedDateTime"));
 
-        assertEquals(2, data.itemChecklistItems.size());
+        JSONArray checklistItemsJson = json.getJSONArray("itemChecklistItems");
+        assertEquals(2, checklistItemsJson.length());
         // Verify one checked and one unchecked
         boolean hasCheckedItem = false;
         boolean hasUncheckedItem = false;
-        for (ItemChecklistItem item : data.itemChecklistItems) {
-            if (item.checkedDateTime != null) {
-                hasCheckedItem = true;
-            } else {
+        for (int i = 0; i < checklistItemsJson.length(); i++) {
+            JSONObject item = checklistItemsJson.getJSONObject(i);
+            if (item.isNull("checkedDateTime")) {
                 hasUncheckedItem = true;
+            } else {
+                hasCheckedItem = true;
             }
-            assertNotNull(item.itemChecklistId);
-            assertNotNull(item.itemId);
+            assertFalse(item.isNull("itemChecklistId"));
+            assertFalse(item.isNull("itemId"));
         }
         assertTrue(hasCheckedItem);
         assertTrue(hasUncheckedItem);
@@ -1891,20 +2065,22 @@ public class BackupIntegrationTest {
         item2.updatedDateTime = now;
         data.items.add(item2);
 
+        List<ItemChecklist> checklistEntries = new ArrayList<>();
         ItemChecklist checklist = new ItemChecklist();
         checklist.id = 1L;
         checklist.title = "Moving home";
         checklist.createdDateTime = now;
         checklist.updatedDateTime = new Date(now.getTime() + 1000);
-        data.itemChecklists.add(checklist);
+        checklistEntries.add(checklist);
 
+        List<ItemChecklistItem> checklistItemEntries = new ArrayList<>();
         ItemChecklistItem checklistItem1 = new ItemChecklistItem();
         checklistItem1.id = 1L;
         checklistItem1.itemChecklistId = 1L;
         checklistItem1.itemId = 1L;
         checklistItem1.createdDateTime = now;
         checklistItem1.checkedDateTime = null;
-        data.itemChecklistItems.add(checklistItem1);
+        checklistItemEntries.add(checklistItem1);
 
         ItemChecklistItem checklistItem2 = new ItemChecklistItem();
         checklistItem2.id = 2L;
@@ -1912,9 +2088,12 @@ public class BackupIntegrationTest {
         checklistItem2.itemId = 2L;
         checklistItem2.createdDateTime = now;
         checklistItem2.checkedDateTime = now;
-        data.itemChecklistItems.add(checklistItem2);
+        checklistItemEntries.add(checklistItem2);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemChecklistBackupContributor.checklistsSection(checklistEntries),
+                        ItemChecklistBackupContributor.checklistItemsSection(checklistItemEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1994,13 +2173,14 @@ public class BackupIntegrationTest {
         item.updatedDateTime = now;
         data.items.add(item);
 
+        List<ItemChecklistItem> checklistItemEntries = new ArrayList<>();
         // Orphan checklist item with non-existent checklist
         ItemChecklistItem orphanChecklistItem = new ItemChecklistItem();
         orphanChecklistItem.id = 1L;
         orphanChecklistItem.itemChecklistId = 999L; // non-existent checklist
         orphanChecklistItem.itemId = 1L;
         orphanChecklistItem.createdDateTime = now;
-        data.itemChecklistItems.add(orphanChecklistItem);
+        checklistItemEntries.add(orphanChecklistItem);
 
         // Orphan checklist item with non-existent item
         ItemChecklistItem orphanItem = new ItemChecklistItem();
@@ -2008,9 +2188,10 @@ public class BackupIntegrationTest {
         orphanItem.itemChecklistId = 1L; // this checklist doesn't exist in backup
         orphanItem.itemId = 888L; // non-existent item
         orphanItem.createdDateTime = now;
-        data.itemChecklistItems.add(orphanItem);
+        checklistItemEntries.add(orphanItem);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(ItemChecklistBackupContributor.checklistItemsSection(checklistItemEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -2046,14 +2227,15 @@ public class BackupIntegrationTest {
         mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
-        BackupData data = extractJsonFromZip(zipFile);
+        JSONObject json = extractJsonFromZip(zipFile);
 
-        assertEquals(1, data.items.size());
-        assertEquals(1, data.itemChecklists.size());
-        assertEquals("Empty checklist", data.itemChecklists.get(0).title);
-        assertNotNull(data.itemChecklists.get(0).createdDateTime);
-        assertNotNull(data.itemChecklists.get(0).updatedDateTime);
-        assertTrue(data.itemChecklistItems.isEmpty());
+        assertSectionSize(json, "items", 1);
+        JSONArray checklistsJson = json.getJSONArray("itemChecklists");
+        assertEquals(1, checklistsJson.length());
+        assertEquals("Empty checklist", checklistsJson.getJSONObject(0).getString("title"));
+        assertFalse(checklistsJson.getJSONObject(0).isNull("createdDateTime"));
+        assertFalse(checklistsJson.getJSONObject(0).isNull("updatedDateTime"));
+        assertSectionSize(json, "itemChecklistItems", 0);
 
         zipFile.delete();
     }
@@ -2071,14 +2253,16 @@ public class BackupIntegrationTest {
         item.updatedDateTime = now;
         data.items.add(item);
 
+        List<ItemChecklist> checklistEntries = new ArrayList<>();
         ItemChecklist checklist = new ItemChecklist();
         checklist.id = 1L;
         checklist.title = "Empty checklist";
         checklist.createdDateTime = now;
         checklist.updatedDateTime = new Date(now.getTime() + 1000);
-        data.itemChecklists.add(checklist);
+        checklistEntries.add(checklist);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(ItemChecklistBackupContributor.checklistsSection(checklistEntries)));
 
         int count = new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -2107,22 +2291,27 @@ public class BackupIntegrationTest {
         item.updatedDateTime = now;
         data.items.add(item);
 
+        List<ItemChecklist> checklistEntries = new ArrayList<>();
         ItemChecklist checklist = new ItemChecklist();
         checklist.id = 1L;
         checklist.title = "Duplicate checklist";
         checklist.createdDateTime = now;
         checklist.updatedDateTime = now;
-        data.itemChecklists.add(checklist);
+        checklistEntries.add(checklist);
 
+        List<ItemChecklistItem> checklistItemEntries = new ArrayList<>();
         ItemChecklistItem checklistItem = new ItemChecklistItem();
         checklistItem.id = 1L;
         checklistItem.itemChecklistId = 1L;
         checklistItem.itemId = 1L;
         checklistItem.createdDateTime = now;
         checklistItem.checkedDateTime = null;
-        data.itemChecklistItems.add(checklistItem);
+        checklistItemEntries.add(checklistItem);
 
-        File zipFile = createBackupZip(data);
+        File zipFile = createBackupZip(data,
+                sections(
+                        ItemChecklistBackupContributor.checklistsSection(checklistEntries),
+                        ItemChecklistBackupContributor.checklistItemsSection(checklistItemEntries)));
 
         new ImportCmd(mProvider).execute(zipFile).blockingGet();
         Long firstPassItemId = mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null).get(0).getItemId();
@@ -2172,16 +2361,51 @@ public class BackupIntegrationTest {
         zipFile.delete();
     }
 
+    private static void assertSectionSize(JSONObject json, String key, int expected) {
+        JSONArray arr = json.optJSONArray(key);
+        assertEquals("section " + key, expected, arr == null ? 0 : arr.length());
+    }
+
+    /**
+     * Merges the given module sections (one JSONObject per section, each
+     * carrying its contributor-owned top-level keys) into one section bundle
+     * for {@link #createBackupZip(BackupData, JSONObject, Map)}.
+     */
+    private static JSONObject sections(JSONObject... moduleSections) throws Exception {
+        JSONObject bundle = new JSONObject();
+        ModuleExport.ofSections(moduleSections).mergeInto(bundle);
+        return bundle;
+    }
+
+    private File createBackupZip(BackupData data, JSONObject sectionBundle) throws Exception {
+        return createBackupZip(data, sectionBundle, null);
+    }
+
     private File createBackupZip(BackupData data) throws Exception {
+        return createBackupZip(data, new JSONObject(), null);
+    }
+
+    private File createBackupZip(BackupData data, JSONObject sectionBundle, Map<String, byte[]> extraFiles) throws Exception {
         File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".zip");
         FileOutputStream fos = new FileOutputStream(zipFile);
         ZipOutputStream zos = new ZipOutputStream(fos);
         try {
+            JSONObject json = data.toJson();
+            // same merge path production uses (duplicate keys abort)
+            ModuleExport.ofSections(sectionBundle).mergeInto(json);
             ZipEntry jsonEntry = new ZipEntry("backup.json");
             zos.putNextEntry(jsonEntry);
-            byte[] jsonBytes = data.toJson().toString().getBytes(StandardCharsets.UTF_8);
+            byte[] jsonBytes = json.toString().getBytes(StandardCharsets.UTF_8);
             zos.write(jsonBytes);
             zos.closeEntry();
+            if (extraFiles != null) {
+                for (Map.Entry<String, byte[]> entry : extraFiles.entrySet()) {
+                    ZipEntry fileEntry = new ZipEntry(entry.getKey());
+                    zos.putNextEntry(fileEntry);
+                    zos.write(entry.getValue());
+                    zos.closeEntry();
+                }
+            }
         } finally {
             zos.close();
             fos.close();
@@ -2190,28 +2414,10 @@ public class BackupIntegrationTest {
     }
 
     private File createBackupZip(BackupData data, Map<String, byte[]> extraFiles) throws Exception {
-        File zipFile = new File(mTempZipDir, "test_backup_" + System.currentTimeMillis() + ".zip");
-        FileOutputStream fos = new FileOutputStream(zipFile);
-        ZipOutputStream zos = new ZipOutputStream(fos);
-        try {
-            ZipEntry jsonEntry = new ZipEntry("backup.json");
-            zos.putNextEntry(jsonEntry);
-            byte[] jsonBytes = data.toJson().toString().getBytes(StandardCharsets.UTF_8);
-            zos.write(jsonBytes);
-            zos.closeEntry();
-            for (Map.Entry<String, byte[]> entry : extraFiles.entrySet()) {
-                ZipEntry fileEntry = new ZipEntry(entry.getKey());
-                zos.putNextEntry(fileEntry);
-                zos.write(entry.getValue());
-                zos.closeEntry();
-            }
-        } finally {
-            zos.close();
-        }
-        return zipFile;
+        return createBackupZip(data, new JSONObject(), extraFiles);
     }
 
-    private BackupData extractJsonFromZip(File zipFile) throws Exception {
+    private JSONObject extractJsonFromZip(File zipFile) throws Exception {
         FileInputStream fis = new FileInputStream(zipFile);
         ZipInputStream zis = new ZipInputStream(fis);
         ZipEntry entry;
@@ -2225,7 +2431,7 @@ public class BackupIntegrationTest {
                 }
                 zis.closeEntry();
                 zis.close();
-                return BackupData.fromJson(new JSONObject(sb.toString()));
+                return new JSONObject(sb.toString());
             }
             zis.closeEntry();
         }
@@ -2254,7 +2460,7 @@ public class BackupIntegrationTest {
             ByteArrayOutputStream buffer = new ByteArrayOutputStream();
             byte[] chunk = new byte[4096];
             int read;
-            while ((read = fis.read(chunk)) != -1) {
+            while ((read = fis.read(chunk, 0, 4096)) != -1) {
                 buffer.write(chunk, 0, read);
             }
             return buffer.toByteArray();
@@ -2337,6 +2543,10 @@ public class BackupIntegrationTest {
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
             providerRegistry.register(ILogger.class, this::getLogger);
+            // eager contributor registry (mirrors BaseProviderModule) + the
+            // REAL module backup contributors, so every import/export in this
+            // suite exercises the production contributor contract
+            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemMaintenanceDao.class, this::getItemMaintenanceDao);
             providerRegistry.register(ItemUsageDao.class, this::getItemUsageDao);
@@ -2356,6 +2566,12 @@ public class BackupIntegrationTest {
             providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new NoOpCleanUpItemUsageFileHelper(provider));
             providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new NoOpCleanUpItemPurchaseFileHelper(provider));
             providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
+            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            contributorRegistry.register(new ItemUsageBackupContributor(provider));
+            contributorRegistry.register(new ItemPurchaseBackupContributor(provider));
+            contributorRegistry.register(new ItemMaintenanceBackupContributor(provider));
+            contributorRegistry.register(new ItemReminderBackupContributor(provider));
+            contributorRegistry.register(new ItemChecklistBackupContributor(provider));
         }
 
         private ExecutorService getExecutorService() {

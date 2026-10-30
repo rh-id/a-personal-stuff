@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
@@ -167,11 +166,7 @@ public class StockMovementsListSV extends StatefulView<Activity> implements Requ
                         .subscribe(change -> loadMovements(swipeRefreshLayout)));
 
         mRxDisposer.add("createView_onItemChanged",
-                Flowable.merge(
-                        mItemChangeNotifier.getAddedItemFlow(),
-                        mItemChangeNotifier.getUpdatedItemFlow(),
-                        mItemChangeNotifier.getDeletedItemFlow()
-                )
+                mItemChangeNotifier.getAnyItemChangeFlow()
                         .filter(itemState -> itemState != null && itemState.getItemId() != null && itemState.getItemId().equals(mItemId))
                         .subscribeOn(Schedulers.from(mExecutorService))
                         .observeOn(AndroidSchedulers.mainThread())

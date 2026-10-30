@@ -8,12 +8,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
-import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
-import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseTotal;
-import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
-import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageTotal;
 import m.co.rh.id.aprovider.Provider;
 
 /**
@@ -21,6 +19,13 @@ import m.co.rh.id.aprovider.Provider;
  * the inventory alert digest notification. All reads are blocking Room
  * queries — callers must invoke {@link #compute(Date, int)} on a background
  * thread.
+ * <p>
+ * The derived remaining stock (amount − Σusage + Σpurchase, matching the
+ * item card badge) spans the usage and purchase databases, so the calculator
+ * consumes the SIGNED per-item stock deltas contributed through the
+ * {@link ModuleDashboardContributor} contract (usage −Σ, purchase +Σ) and
+ * never touches those module DAOs itself. The same numbers feed both the
+ * dashboard and the alert digest — do not approximate.
  */
 public class InventoryStatsCalculator {
 
@@ -30,13 +35,11 @@ public class InventoryStatsCalculator {
     public enum AlertType { EXPIRED, EXPIRING_SOON, LOW_STOCK }
 
     private ItemDao mItemDao;
-    private ItemUsageDao mItemUsageDao;
-    private ItemPurchaseDao mItemPurchaseDao;
+    private BackupContributorRegistry mContributorRegistry;
 
     public InventoryStatsCalculator(Provider provider) {
         mItemDao = provider.get(ItemDao.class);
-        mItemUsageDao = provider.get(ItemUsageDao.class);
-        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
+        mContributorRegistry = provider.get(BackupContributorRegistry.class);
     }
 
     public AlertSummary compute(Date now, int leadDays) {
@@ -45,15 +48,14 @@ public class InventoryStatsCalculator {
         alertSummary.totalItems = mItemDao.countItems();
         alertSummary.inventoryValue = mItemDao.sumInventoryValue();
         // the derived remaining stock spans the usage and purchase databases,
-        // so the totals are loaded once here and shared by both the expiry
-        // filter and the low-stock check
-        Map<Long, Integer> usageTotals = buildUsageTotals();
-        Map<Long, Integer> purchaseTotals = buildPurchaseTotals();
+        // so the deltas are aggregated once here and shared by both the
+        // expiry filter and the low-stock check
+        Map<Long, Integer> stockDeltas = buildStockDeltas();
         alertSummary.expiringItems = filterItemsInStock(
                 mItemDao.findItemsExpiringBefore(leadEnd),
-                usageTotals, purchaseTotals);
+                stockDeltas);
         computeExpiryCounts(alertSummary, now);
-        computeLowStock(alertSummary, usageTotals, purchaseTotals);
+        computeLowStock(alertSummary, stockDeltas);
         return alertSummary;
     }
 
@@ -67,15 +69,14 @@ public class InventoryStatsCalculator {
     public List<Long> findAlertItemIds(Set<AlertType> types, Date now, int leadDays) {
         Date leadEnd = new Date(now.getTime() + leadDays * MILLIS_PER_DAY);
         // the derived remaining stock spans the usage and purchase databases,
-        // so the totals are loaded once here and shared by the expiry filter
-        // and the low-stock check
-        Map<Long, Integer> usageTotals = buildUsageTotals();
-        Map<Long, Integer> purchaseTotals = buildPurchaseTotals();
+        // so the deltas are aggregated once here and shared by the expiry
+        // filter and the low-stock check
+        Map<Long, Integer> stockDeltas = buildStockDeltas();
         Set<Long> alertItemIds = new LinkedHashSet<>();
         if (types.contains(AlertType.EXPIRED) || types.contains(AlertType.EXPIRING_SOON)) {
             List<Item> expiringItems = filterItemsInStock(
                     mItemDao.findItemsExpiringBefore(leadEnd),
-                    usageTotals, purchaseTotals);
+                    stockDeltas);
             // same split rule as computeExpiryCounts: items at or before now
             // are expired, the rest are expiring soon
             for (Item item : expiringItems) {
@@ -89,42 +90,38 @@ public class InventoryStatsCalculator {
             }
         }
         if (types.contains(AlertType.LOW_STOCK)) {
-            for (Item item : findLowStockItems(usageTotals, purchaseTotals)) {
+            for (Item item : findLowStockItems(stockDeltas)) {
                 alertItemIds.add(item.id);
             }
         }
         return new ArrayList<>(alertItemIds);
     }
 
-    private Map<Long, Integer> buildUsageTotals() {
-        Map<Long, Integer> usageTotals = new HashMap<>();
-        for (ItemUsageTotal itemUsageTotal : mItemUsageDao.sumAmountGroupByItem()) {
-            usageTotals.put(itemUsageTotal.itemId, itemUsageTotal.total);
+    /**
+     * Aggregates the signed per-item stock deltas of every registered
+     * dashboard contributor (usage contributes −Σamount, purchase +Σamount);
+     * deltas for the same item are summed.
+     */
+    private Map<Long, Integer> buildStockDeltas() {
+        Map<Long, Integer> stockDeltas = new HashMap<>();
+        for (ModuleDashboardContributor contributor : mContributorRegistry.getDashboardContributors()) {
+            for (Map.Entry<Long, Integer> entry : contributor.getStockDeltas().entrySet()) {
+                stockDeltas.merge(entry.getKey(), entry.getValue(), Integer::sum);
+            }
         }
-        return usageTotals;
-    }
-
-    private Map<Long, Integer> buildPurchaseTotals() {
-        Map<Long, Integer> purchaseTotals = new HashMap<>();
-        for (ItemPurchaseTotal itemPurchaseTotal : mItemPurchaseDao.sumAmountGroupByItem()) {
-            purchaseTotals.put(itemPurchaseTotal.itemId, itemPurchaseTotal.total);
-        }
-        return purchaseTotals;
+        return stockDeltas;
     }
 
     /**
      * Derived remaining stock: amount − Σusage + Σpurchase, matching the
-     * item card badge. Items with no usage/purchase records simply have
-     * full stock (missing totals default to 0).
+     * item card badge, from the aggregated signed deltas. Items with no
+     * usage/purchase records simply have full stock (missing deltas default
+     * to 0).
      */
     private static int computeRemainingStock(Item item,
-                                             Map<Long, Integer> usageTotals,
-                                             Map<Long, Integer> purchaseTotals) {
-        Integer usage = usageTotals.get(item.id);
-        Integer purchase = purchaseTotals.get(item.id);
-        return item.amount
-                - (usage != null ? usage : 0)
-                + (purchase != null ? purchase : 0);
+                                             Map<Long, Integer> stockDeltas) {
+        Integer delta = stockDeltas.get(item.id);
+        return item.amount + (delta != null ? delta : 0);
     }
 
     /**
@@ -133,11 +130,10 @@ public class InventoryStatsCalculator {
      * its expiry date.
      */
     private static List<Item> filterItemsInStock(List<Item> items,
-                                                 Map<Long, Integer> usageTotals,
-                                                 Map<Long, Integer> purchaseTotals) {
+                                                 Map<Long, Integer> stockDeltas) {
         List<Item> inStockItems = new ArrayList<>(items.size());
         for (Item item : items) {
-            if (computeRemainingStock(item, usageTotals, purchaseTotals) > 0) {
+            if (computeRemainingStock(item, stockDeltas) > 0) {
                 inStockItems.add(item);
             }
         }
@@ -167,9 +163,8 @@ public class InventoryStatsCalculator {
      * comparison.
      */
     private void computeLowStock(AlertSummary alertSummary,
-                                 Map<Long, Integer> usageTotals,
-                                 Map<Long, Integer> purchaseTotals) {
-        alertSummary.lowStockItems = findLowStockItems(usageTotals, purchaseTotals);
+                                 Map<Long, Integer> stockDeltas) {
+        alertSummary.lowStockItems = findLowStockItems(stockDeltas);
     }
 
     /**
@@ -177,12 +172,11 @@ public class InventoryStatsCalculator {
      * and {@link #findAlertItemIds(Set, Date, int)}: an item is low when its
      * derived remaining stock is at or below min_amount.
      */
-    private List<Item> findLowStockItems(Map<Long, Integer> usageTotals,
-                                         Map<Long, Integer> purchaseTotals) {
+    private List<Item> findLowStockItems(Map<Long, Integer> stockDeltas) {
         List<Item> lowStockItems = new ArrayList<>();
         List<Item> candidates = mItemDao.findItemsWithMinAmount();
         for (Item item : candidates) {
-            int remaining = computeRemainingStock(item, usageTotals, purchaseTotals);
+            int remaining = computeRemainingStock(item, stockDeltas);
             if (remaining <= item.minAmount) {
                 lowStockItems.add(item);
             }

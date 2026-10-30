@@ -7,37 +7,34 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import org.json.JSONObject;
+
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.backup.ExportImageDir;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleExport;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
-import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
-import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
-import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenanceImage;
-import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
-import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
-import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseFileHelper;
-import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
-import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
-import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
-import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageFileHelper;
 import m.co.rh.id.aprovider.Provider;
 
 /**
- * Stateless backup builder: gathers every entity and its referenced images
- * into a single zip archive. Holds only final injected collaborators and is
- * safe to share; callers own the threading (the work is blocking).
+ * Stateless backup builder: gathers the base-DB items core plus every
+ * module contributor's sections and referenced images into a single zip
+ * archive. Holds only final injected collaborators and is safe to share;
+ * callers own the threading (the work is blocking).
  */
 public class ExportService {
 
@@ -52,29 +49,15 @@ public class ExportService {
     private final Context mAppContext;
     private final FileHelper mFileHelper;
     private final ItemDao mItemDao;
-    private final ItemMaintenanceDao mItemMaintenanceDao;
-    private final ItemUsageDao mItemUsageDao;
-    private final ItemPurchaseDao mItemPurchaseDao;
-    private final ItemReminderDao mItemReminderDao;
-    private final ItemChecklistDao mItemChecklistDao;
     private final ItemFileHelper mItemFileHelper;
-    private final ItemMaintenanceFileHelper mItemMaintenanceFileHelper;
-    private final ItemUsageFileHelper mItemUsageFileHelper;
-    private final ItemPurchaseFileHelper mItemPurchaseFileHelper;
+    private final BackupContributorRegistry mContributorRegistry;
 
     public ExportService(Provider provider) {
         mAppContext = provider.getContext().getApplicationContext();
         mFileHelper = provider.get(FileHelper.class);
         mItemDao = provider.get(ItemDao.class);
-        mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
-        mItemUsageDao = provider.get(ItemUsageDao.class);
-        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
-        mItemReminderDao = provider.get(ItemReminderDao.class);
-        mItemChecklistDao = provider.get(ItemChecklistDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
-        mItemMaintenanceFileHelper = provider.get(ItemMaintenanceFileHelper.class);
-        mItemUsageFileHelper = provider.get(ItemUsageFileHelper.class);
-        mItemPurchaseFileHelper = provider.get(ItemPurchaseFileHelper.class);
+        mContributorRegistry = provider.get(BackupContributorRegistry.class);
     }
 
     /**
@@ -88,8 +71,28 @@ public class ExportService {
     public File createBackupZip(ProgressListener progressListener) throws Exception {
         progress(progressListener, R.string.export_progress_gathering);
         BackupData backupData = gatherData();
+        JSONObject root = backupData.toJson();
+
+        // module sections and their referenced image dirs come from the
+        // contributors; the base items core and its image dirs stay here
+        // (the items anchor is :app-owned)
+        List<ExportImageDir> imageDirs = new ArrayList<>();
+        Set<String> itemImageFileNames = new HashSet<>();
+        for (ItemImage img : backupData.itemImages) {
+            if (img.fileName != null) itemImageFileNames.add(img.fileName);
+        }
+        imageDirs.add(new ExportImageDir(Constants.FILE_DIR_ITEM_IMAGE,
+                mItemFileHelper.getItemImageParent(), itemImageFileNames));
+        imageDirs.add(new ExportImageDir(Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL,
+                mItemFileHelper.getItemImageThumbnailParent(), itemImageFileNames));
+        for (ModuleBackupContributor contributor : mContributorRegistry.getBackupContributors()) {
+            ModuleExport moduleExport = contributor.exportData();
+            moduleExport.mergeInto(root);
+            imageDirs.addAll(moduleExport.getImageDirs());
+        }
+
         progress(progressListener, R.string.export_progress_writing);
-        String json = backupData.toJson().toString();
+        String json = root.toString();
         File zipFile = mFileHelper.createTempFile("backup.zip");
         ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(zipFile));
         try {
@@ -97,38 +100,12 @@ public class ExportService {
             zos.putNextEntry(jsonEntry);
             zos.write(json.getBytes(StandardCharsets.UTF_8));
             zos.closeEntry();
-            Set<String> itemImageFileNames = new HashSet<>();
-            for (ItemImage img : backupData.itemImages) {
-                if (img.fileName != null) itemImageFileNames.add(img.fileName);
+            for (int i = 0; i < imageDirs.size(); i++) {
+                progress(progressListener, R.string.export_progress_images, i + 1);
+                ExportImageDir imageDir = imageDirs.get(i);
+                addImageDirToZip(zos, imageDir.getParentDir(),
+                        imageDir.getEntryPrefix(), imageDir.getReferencedFileNames());
             }
-            Set<String> maintImageFileNames = new HashSet<>();
-            for (ItemMaintenanceImage itemMaintenanceImage : backupData.itemMaintenanceImages) {
-                if (itemMaintenanceImage.fileName != null) maintImageFileNames.add(itemMaintenanceImage.fileName);
-            }
-            Set<String> usageImageFileNames = new HashSet<>();
-            for (ItemUsageImage itemUsageImage : backupData.itemUsageImages) {
-                if (itemUsageImage.fileName != null) usageImageFileNames.add(itemUsageImage.fileName);
-            }
-            Set<String> purchaseImageFileNames = new HashSet<>();
-            for (ItemPurchaseImage itemPurchaseImage : backupData.itemPurchaseImages) {
-                if (itemPurchaseImage.fileName != null) purchaseImageFileNames.add(itemPurchaseImage.fileName);
-            }
-            progress(progressListener, R.string.export_progress_images, 1);
-            addImageDirToZip(zos, mItemFileHelper.getItemImageParent(), Constants.FILE_DIR_ITEM_IMAGE, itemImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 2);
-            addImageDirToZip(zos, mItemMaintenanceFileHelper.getItemMaintenanceImageParent(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE, maintImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 3);
-            addImageDirToZip(zos, mItemUsageFileHelper.getItemUsageImageParent(), Constants.FILE_DIR_ITEM_USAGE_IMAGE, usageImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 4);
-            addImageDirToZip(zos, mItemFileHelper.getItemImageThumbnailParent(), Constants.FILE_DIR_ITEM_IMAGE_THUMBNAIL, itemImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 5);
-            addImageDirToZip(zos, mItemMaintenanceFileHelper.getItemMaintenanceImageThumbnailParent(), Constants.FILE_DIR_ITEM_MAINTENANCE_IMAGE_THUMBNAIL, maintImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 6);
-            addImageDirToZip(zos, mItemUsageFileHelper.getItemUsageImageThumbnailParent(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL, usageImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 7);
-            addImageDirToZip(zos, mItemPurchaseFileHelper.getItemPurchaseImageParent(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE, purchaseImageFileNames);
-            progress(progressListener, R.string.export_progress_images, 8);
-            addImageDirToZip(zos, mItemPurchaseFileHelper.getItemPurchaseImageThumbnailParent(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL, purchaseImageFileNames);
         } finally {
             zos.close();
         }
@@ -157,15 +134,6 @@ public class ExportService {
             data.itemImages.addAll(state.getItemImages());
             data.itemTags.addAll(state.getItemTags());
         }
-        data.itemMaintenances.addAll(mItemMaintenanceDao.findAllItemMaintenances());
-        data.itemMaintenanceImages.addAll(mItemMaintenanceDao.findAllItemMaintenanceImages());
-        data.itemUsages.addAll(mItemUsageDao.findAllItemUsages());
-        data.itemUsageImages.addAll(mItemUsageDao.findAllItemUsageImages());
-        data.itemPurchases.addAll(mItemPurchaseDao.findAllItemPurchases());
-        data.itemPurchaseImages.addAll(mItemPurchaseDao.findAllItemPurchaseImages());
-        data.itemReminders.addAll(mItemReminderDao.findAllItemReminders());
-        data.itemChecklists.addAll(mItemChecklistDao.findAllItemChecklists());
-        data.itemChecklistItems.addAll(mItemChecklistDao.findAllItemChecklistItems());
         return data;
     }
 

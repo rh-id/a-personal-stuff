@@ -18,12 +18,15 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
+import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseTotal;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchaseDashboardContributor;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.model.ItemUsageTotal;
+import m.co.rh.id.a_personal_stuff.item_usage.provider.component.ItemUsageDashboardContributor;
 import m.co.rh.id.aprovider.Provider;
 
 public class InventoryStatsCalculatorTest {
@@ -46,6 +49,13 @@ public class InventoryStatsCalculatorTest {
         when(mProvider.get(ItemDao.class)).thenReturn(mItemDao);
         when(mProvider.get(ItemUsageDao.class)).thenReturn(mItemUsageDao);
         when(mProvider.get(ItemPurchaseDao.class)).thenReturn(mItemPurchaseDao);
+        // the calculator consumes the signed per-item stock deltas through
+        // the contributor contract: register the REAL usage/purchase
+        // dashboard contributors over the mocked DAOs (usage −Σ, purchase +Σ)
+        BackupContributorRegistry contributorRegistry = new BackupContributorRegistry();
+        contributorRegistry.register(new ItemUsageDashboardContributor(mProvider));
+        contributorRegistry.register(new ItemPurchaseDashboardContributor(mProvider));
+        when(mProvider.get(BackupContributorRegistry.class)).thenReturn(contributorRegistry);
         // defaults for the collection-returning DAO methods so compute() never
         // sees a null list; individual tests override what they care about
         when(mItemUsageDao.sumAmountGroupByItem()).thenReturn(new ArrayList<>());
