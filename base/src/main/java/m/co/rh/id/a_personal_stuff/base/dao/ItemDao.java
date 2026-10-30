@@ -4,9 +4,12 @@ import androidx.room.Dao;
 import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.RawQuery;
 import androidx.room.Transaction;
 import androidx.room.TypeConverters;
 import androidx.room.Update;
+import androidx.sqlite.db.SimpleSQLiteQuery;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,7 +17,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Supplier;
 
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
@@ -189,71 +191,53 @@ public abstract class ItemDao {
     public abstract List<ItemTag> searchItemTag(String search);
 
     public List<ItemState> findItemStateWithLimit(int limit, QueryOrderBy queryOrderBy) {
-        Supplier<List<Item>> itemSupplier;
-
-        if (queryOrderBy == null) {
-            itemSupplier = () -> findItemsWithLimit(limit);
-        } else {
-            switch (queryOrderBy) {
-                case EXPIRED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemsWithLimit_orderByExpiredDateTime(limit);
-                    break;
-                case EXPIRED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemsWithLimit_orderByExpiredDateTimeDesc(limit);
-                    break;
-                case UPDATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemsWithLimit_orderByUpdatedDateTime(limit);
-                    break;
-                case UPDATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemsWithLimit_orderByUpdatedDateTimeDesc(limit);
-                    break;
-                case CREATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemsWithLimit_orderByCreatedDateTime(limit);
-                    break;
-                case CREATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemsWithLimit_orderByCreatedDateTimeDesc(limit);
-                    break;
-                default:
-                    itemSupplier = () -> findItemsWithLimit(limit);
-            }
-        }
-        return prepareItemState(itemSupplier.get());
+        String sql = "SELECT * FROM item" + orderClause(queryOrderBy) + " LIMIT ?";
+        return prepareItemState(findItemsRaw(new SimpleSQLiteQuery(sql, new Object[]{limit})));
     }
 
-    @Query("SELECT * FROM item ORDER BY" +
-            " expired_date_time DESC, updated_date_time DESC, created_date_time DESC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit(int limit);
+    @RawQuery
+    protected abstract List<Item> findItemsRaw(SupportSQLiteQuery query);
 
-    @Query("SELECT * FROM item ORDER BY" +
-            " expired_date_time ASC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByExpiredDateTime(int limit);
+    /**
+     * ORDER BY fragment per {@link QueryOrderBy}, identical to the former
+     * hand-written @Query sort matrix: the null/default composite is
+     * expired DESC, updated DESC, created DESC and the single-key variants
+     * have no tiebreaker. The fragment comes ONLY from this enum - never
+     * user input - which is the injection boundary that makes the string
+     * concatenation in the @RawQuery wrappers safe.
+     */
+    private static String orderClause(QueryOrderBy queryOrderBy) {
+        if (queryOrderBy == null) {
+            return " ORDER BY expired_date_time DESC, updated_date_time DESC, created_date_time DESC";
+        }
+        switch (queryOrderBy) {
+            case EXPIRED_DATE_TIME_ASC:
+                return " ORDER BY expired_date_time ASC";
+            case EXPIRED_DATE_TIME_DESC:
+                return " ORDER BY expired_date_time DESC";
+            case UPDATED_DATE_TIME_ASC:
+                return " ORDER BY updated_date_time ASC";
+            case UPDATED_DATE_TIME_DESC:
+                return " ORDER BY updated_date_time DESC";
+            case CREATED_DATE_TIME_ASC:
+                return " ORDER BY created_date_time ASC";
+            case CREATED_DATE_TIME_DESC:
+                return " ORDER BY created_date_time DESC";
+            default:
+                return " ORDER BY expired_date_time DESC, updated_date_time DESC, created_date_time DESC";
+        }
+    }
 
-    @Query("SELECT * FROM item ORDER BY" +
-            " expired_date_time DESC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByExpiredDateTimeDesc(int limit);
-
-    @Query("SELECT * FROM item ORDER BY" +
-            " updated_date_time ASC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByUpdatedDateTime(int limit);
-
-    @Query("SELECT * FROM item ORDER BY" +
-            " updated_date_time DESC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByUpdatedDateTimeDesc(int limit);
-
-    @Query("SELECT * FROM item ORDER BY" +
-            " created_date_time ASC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByCreatedDateTime(int limit);
-
-    @Query("SELECT * FROM item ORDER BY" +
-            " created_date_time DESC" +
-            " LIMIT :limit ")
-    public abstract List<Item> findItemsWithLimit_orderByCreatedDateTimeDesc(int limit);
+    private static String placeholders(int count) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            if (i > 0) {
+                stringBuilder.append(',');
+            }
+            stringBuilder.append('?');
+        }
+        return stringBuilder.toString();
+    }
 
     @Insert
     protected abstract long insert(ItemImage itemImage);
@@ -278,110 +262,18 @@ public abstract class ItemDao {
     }
 
     public List<ItemState> findItemStatesByIds(List<Long> itemId, QueryOrderBy queryOrderBy) {
-        Supplier<List<Item>> itemSupplier;
-        if (queryOrderBy == null) {
-            itemSupplier = () -> findItemByIds(itemId);
-        } else {
-            switch (queryOrderBy) {
-                case EXPIRED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIds_orderByExpiredDateTime(itemId);
-                    break;
-                case EXPIRED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIds_orderByExpiredDateTimeDesc(itemId);
-                    break;
-                case UPDATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIds_orderByUpdatedDateTime(itemId);
-                    break;
-                case UPDATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIds_orderByUpdatedDateTimeDesc(itemId);
-                    break;
-                case CREATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIds_orderByCreatedDateTime(itemId);
-                    break;
-                case CREATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIds_orderByCreatedDateTimeDesc(itemId);
-                    break;
-                default:
-                    itemSupplier = () -> findItemByIds(itemId);
-            }
-        }
-        return prepareItemState(itemSupplier.get());
+        String sql = "SELECT * FROM item WHERE id IN (" + placeholders(itemId.size()) + ")"
+                + orderClause(queryOrderBy);
+        return prepareItemState(findItemsRaw(new SimpleSQLiteQuery(sql, itemId.toArray())));
     }
-
-    @Query("SELECT * FROM item WHERE id IN (:ids)")
-    protected abstract List<Item> findItemByIds(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time ASC")
-    protected abstract List<Item> findItemByIds_orderByExpiredDateTime(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time DESC")
-    protected abstract List<Item> findItemByIds_orderByExpiredDateTimeDesc(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time ASC")
-    protected abstract List<Item> findItemByIds_orderByUpdatedDateTime(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time DESC")
-    protected abstract List<Item> findItemByIds_orderByUpdatedDateTimeDesc(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time ASC")
-    protected abstract List<Item> findItemByIds_orderByCreatedDateTime(List<Long> ids);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time DESC")
-    protected abstract List<Item> findItemByIds_orderByCreatedDateTimeDesc(List<Long> ids);
 
     public List<ItemState> findItemStateByIdsWithLimit(List<Long> itemIds, QueryOrderBy queryOrderBy, int limit) {
-        Supplier<List<Item>> itemSupplier;
-        if (queryOrderBy == null) {
-            itemSupplier = () -> findItemByIdsWithLimit(itemIds, limit);
-        } else {
-            switch (queryOrderBy) {
-                case EXPIRED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByExpiredDateTime(itemIds, limit);
-                    break;
-                case EXPIRED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByExpiredDateTimeDesc(itemIds, limit);
-                    break;
-                case UPDATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByUpdatedDateTime(itemIds, limit);
-                    break;
-                case UPDATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByUpdatedDateTimeDesc(itemIds, limit);
-                    break;
-                case CREATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByCreatedDateTime(itemIds, limit);
-                    break;
-                case CREATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemByIdsWithLimit_orderByCreatedDateTimeDesc(itemIds, limit);
-                    break;
-                default:
-                    itemSupplier = () -> findItemByIdsWithLimit(itemIds, limit);
-            }
-        }
-        return prepareItemState(itemSupplier.get());
+        String sql = "SELECT * FROM item WHERE id IN (" + placeholders(itemIds.size()) + ")"
+                + orderClause(queryOrderBy) + " LIMIT ?";
+        List<Object> args = new ArrayList<>(itemIds);
+        args.add(limit);
+        return prepareItemState(findItemsRaw(new SimpleSQLiteQuery(sql, args.toArray())));
     }
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY" +
-            " expired_date_time DESC, updated_date_time DESC, created_date_time DESC" +
-            " LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time ASC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByExpiredDateTime(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY expired_date_time DESC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByExpiredDateTimeDesc(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time ASC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByUpdatedDateTime(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY updated_date_time DESC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByUpdatedDateTimeDesc(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time ASC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByCreatedDateTime(List<Long> ids, int limit);
-
-    @Query("SELECT * FROM item WHERE id IN (:ids) ORDER BY created_date_time DESC LIMIT :limit")
-    protected abstract List<Item> findItemByIdsWithLimit_orderByCreatedDateTimeDesc(List<Long> ids, int limit);
 
     @Transaction
     public void insertItemImage(ItemImage itemImage) {

@@ -5,15 +5,17 @@ import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.OnConflictStrategy;
 import androidx.room.Query;
+import androidx.room.RawQuery;
 import androidx.room.Transaction;
 import androidx.room.Update;
+import androidx.sqlite.db.SimpleSQLiteQuery;
+import androidx.sqlite.db.SupportSQLiteQuery;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.function.Supplier;
 
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
@@ -107,45 +109,39 @@ public abstract class ItemChecklistDao {
     public abstract List<Long> findDistinctItemIds();
 
     public List<ItemChecklistState> findItemChecklistWithLimit(int limit, QueryOrderBy orderBy) {
-        Supplier<List<ItemChecklist>> itemSupplier;
-
-        if (orderBy == null) {
-            itemSupplier = () -> findItemChecklistsWithLimit(limit);
-        } else {
-            switch (orderBy) {
-                case UPDATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemChecklistsWithLimit_orderByUpdatedDateTime(limit);
-                    break;
-                case UPDATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemChecklistsWithLimit_orderByUpdatedDateTimeDesc(limit);
-                    break;
-                case CREATED_DATE_TIME_ASC:
-                    itemSupplier = () -> findItemChecklistsWithLimit_orderByCreatedDateTime(limit);
-                    break;
-                case CREATED_DATE_TIME_DESC:
-                    itemSupplier = () -> findItemChecklistsWithLimit_orderByCreatedDateTimeDesc(limit);
-                    break;
-                default:
-                    itemSupplier = () -> findItemChecklistsWithLimit(limit);
-            }
-        }
-        return prepareItemChecklistState(itemSupplier.get());
+        String sql = "SELECT * FROM item_checklist" + orderClause(orderBy) + " LIMIT ?";
+        return prepareItemChecklistState(
+                findItemChecklistRaw(new SimpleSQLiteQuery(sql, new Object[]{limit})));
     }
 
-    @Query("SELECT * FROM item_checklist ORDER BY updated_date_time DESC, created_date_time DESC LIMIT :limit")
-    public abstract List<ItemChecklist> findItemChecklistsWithLimit(int limit);
+    @RawQuery
+    protected abstract List<ItemChecklist> findItemChecklistRaw(SupportSQLiteQuery query);
 
-    @Query("SELECT * FROM item_checklist ORDER BY updated_date_time ASC LIMIT :limit")
-    public abstract List<ItemChecklist> findItemChecklistsWithLimit_orderByUpdatedDateTime(int limit);
-
-    @Query("SELECT * FROM item_checklist ORDER BY updated_date_time DESC LIMIT :limit")
-    public abstract List<ItemChecklist> findItemChecklistsWithLimit_orderByUpdatedDateTimeDesc(int limit);
-
-    @Query("SELECT * FROM item_checklist ORDER BY created_date_time ASC LIMIT :limit")
-    public abstract List<ItemChecklist> findItemChecklistsWithLimit_orderByCreatedDateTime(int limit);
-
-    @Query("SELECT * FROM item_checklist ORDER BY created_date_time DESC LIMIT :limit")
-    public abstract List<ItemChecklist> findItemChecklistsWithLimit_orderByCreatedDateTimeDesc(int limit);
+    /**
+     * ORDER BY fragment per {@link QueryOrderBy}, identical to the former
+     * hand-written @Query sort matrix: the null/default composite is
+     * updated DESC, created DESC and the single-key variants
+     * have no tiebreaker. The fragment comes ONLY from this enum - never
+     * user input - which is the injection boundary that makes the string
+     * concatenation in the @RawQuery wrapper safe.
+     */
+    private static String orderClause(QueryOrderBy orderBy) {
+        if (orderBy == null) {
+            return " ORDER BY updated_date_time DESC, created_date_time DESC";
+        }
+        switch (orderBy) {
+            case UPDATED_DATE_TIME_ASC:
+                return " ORDER BY updated_date_time ASC";
+            case UPDATED_DATE_TIME_DESC:
+                return " ORDER BY updated_date_time DESC";
+            case CREATED_DATE_TIME_ASC:
+                return " ORDER BY created_date_time ASC";
+            case CREATED_DATE_TIME_DESC:
+                return " ORDER BY created_date_time DESC";
+            default:
+                return " ORDER BY updated_date_time DESC, created_date_time DESC";
+        }
+    }
 
     @Query("SELECT * FROM item_checklist WHERE title LIKE '%'||:search||'%' OR description LIKE '%'||:search||'%'")
     public abstract List<ItemChecklist> searchItemChecklist(String search);

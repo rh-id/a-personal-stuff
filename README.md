@@ -793,18 +793,19 @@ This structure allows for version-controlled store presence management. There ar
 Testing is split between JVM unit tests and instrumented tests.
 
 ### JVM Unit Tests
-Four suites, run on the local JVM by `./gradlew test`:
+Three suites, run on the local JVM by `./gradlew test`:
 
-- **`:base/src/test/` — ItemDaoTest.java**: unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
 - **`:app/src/test/` — PagedItemCmdTest.java**: tests the paged item search command against a Mockito-mocked DAO — state emission from DAO results, empty-list fallback when the DAO throws, DAO argument passing, and page-size doubling on `loadNextPage`.
 - **`:app/src/test/` — InventoryStatsCalculatorTest.java**: tests inventory statistics computation — zeroed summary for empty data, inventory value aggregation, expiry boundary splitting (expired vs. expiring within lead days), and low-stock detection from derived remaining stock.
 - **`:app/src/test/` — AutoBackupFileUtilTest.java**: 7 tests covering auto-backup rotation — backup file name format, fixed keep-newest-5 rotation (7 backups → the oldest 2 deleted, fewer than 5 → nothing deleted), order independence, ignoring non-matching file names, and null/empty input handling.
 
-### Instrumented Tests (`:app/src/androidTest/`)
-Two suites, run on the emulator matrix in CI (see Automation & CI/CD above):
+### Instrumented Tests
+Suites, run on the emulator matrix in CI (see Automation & CI/CD above):
 
-- **BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
-- **ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+- **`:app/src/androidTest/` — BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
+- **`:app/src/androidTest/` — ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+- **`:base/src/androidTest/` — ItemDaoTest.java**: pins the exact ordering of every `ItemDao` sort-matrix entry across all query families, and unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
+- **`:item-checklist/src/androidTest/` — ItemChecklistDaoTest.java**: pins the exact ordering of `findItemChecklistWithLimit` for every order key plus the composite default.
 
 Available tooling:
 - JUnit 4.13.2
