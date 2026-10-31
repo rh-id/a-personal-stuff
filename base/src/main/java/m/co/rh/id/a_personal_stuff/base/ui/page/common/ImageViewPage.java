@@ -153,7 +153,8 @@ public class ImageViewPage extends StatefulView<Activity>
             imageView.setImageURI(null);
         }
         if (imagePositionText != null && mFiles.size() > 1) {
-            imagePositionText.setText((mCurrentIndex + 1) + "/" + mFiles.size());
+            imagePositionText.setText(imagePositionText.getContext()
+                    .getString(R.string.image_position_counter, mCurrentIndex + 1, mFiles.size()));
         }
     }
 

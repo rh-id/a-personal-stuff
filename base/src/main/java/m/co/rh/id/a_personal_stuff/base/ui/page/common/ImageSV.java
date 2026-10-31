@@ -123,7 +123,8 @@ public class ImageSV extends StatefulView<Activity> implements RequireNavigator,
                 mImageState.getSubject().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(imageState -> {
                             if (!imageState.files.isEmpty()) {
-                                imagePositionText.setText((imageState.currentIndex + 1) + "/" + imageState.files.size());
+                                imagePositionText.setText(imagePositionText.getContext()
+                                        .getString(R.string.image_position_counter, imageState.currentIndex + 1, imageState.files.size()));
                                 setImage(imageView, imageState.files.get(imageState.currentIndex));
                                 imageViewContainer.setVisibility(View.VISIBLE);
                             } else {
