@@ -55,6 +55,7 @@ public class ItemChecklistListSV extends StatefulView<Activity> implements Requi
     private transient QueryItemChecklistCmd mQueryItemChecklistCmd;
     private transient DeleteItemChecklistCmd mDeleteItemChecklistCmd;
     private transient PagedItemChecklistCmd mPagedItemChecklistCmd;
+    private transient SettingsSharedPreferences mSettingsSharedPreferences;
 
     private SerialBehaviorSubject<String> mSearchString;
     private final Long mFilterItemId;
@@ -105,9 +106,9 @@ public class ItemChecklistListSV extends StatefulView<Activity> implements Requi
             };
         }
         mItemChecklistRecyclerViewAdapter = new ItemChecklistRecyclerViewAdapter(this, this, mNavigator, this);
-        SettingsSharedPreferences settings = mSvProvider.get(SettingsSharedPreferences.class);
+        mSettingsSharedPreferences = mSvProvider.get(SettingsSharedPreferences.class);
         mRxDisposer.add("provideComponent_itemViewModeChanged",
-                settings.getItemViewModeFlow()
+                mSettingsSharedPreferences.getItemViewModeFlow()
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mode ->
                                 mItemChecklistRecyclerViewAdapter.setCompact(
@@ -183,6 +184,36 @@ public class ItemChecklistListSV extends StatefulView<Activity> implements Requi
                                 mItemChecklistRecyclerViewAdapter.notifyItemUpdated(itemChecklistState);
                                 loadProgress();
                             }));
+            // The designated shopping-list badge must never show on a stale
+            // id: the settings-stored checklist id can dangle after its
+            // checklist was deleted, so every candidate (the BehaviorSubject
+            // emits the stored id on subscribe) is validated with a DB count
+            // — and any checklist change (delete/rename/update) re-validates
+            // the currently stored id to keep the badge truthful. switchMap
+            // keeps only the newest validation; the settings' 0 sentinel
+            // encodes "none" because RxJava streams reject null.
+            mRxDisposer.add("createView_onDesignatedShoppingListChanged",
+                    Flowable.merge(
+                            mSettingsSharedPreferences.getShoppingListChecklistIdFlow(),
+                            mItemChecklistChangeNotifier.getAnyItemChecklistChangeFlow()
+                                    .map(ignored -> mSettingsSharedPreferences
+                                            .getShoppingListChecklistId()))
+                            .switchMap(designatedId -> {
+                                if (designatedId == null || designatedId <= 0) {
+                                    return Flowable.just(
+                                            SettingsSharedPreferences.DEFAULT_SHOPPING_LIST_CHECKLIST_ID);
+                                }
+                                return mQueryItemChecklistCmd.existsById(designatedId)
+                                        .map(exists -> exists ? designatedId
+                                                : SettingsSharedPreferences.DEFAULT_SHOPPING_LIST_CHECKLIST_ID)
+                                        .toFlowable();
+                            })
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe(validatedId ->
+                                    // adapter expects null so no row matches
+                                    mItemChecklistRecyclerViewAdapter.setDesignatedChecklistId(
+                                            validatedId != null && validatedId > 0
+                                                    ? validatedId : null)));
         } else {
             mRxDisposer.add("createView_onAnyChecklistChanged_reload",
                     Flowable.merge(mItemChecklistChangeNotifier.getAnyItemChecklistChangeFlow(),

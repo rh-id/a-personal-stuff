@@ -25,4 +25,8 @@
     <string name="title_view_mode">Modus da visualisaziun</string>
     <string name="title_view_mode_detailed">Midar a la vista detagliada</string>
     <string name="title_view_mode_compact">Midar a la vista compacta</string>
+    <string name="designated_shopping_list">Lista da cumpras designada</string>
+    <string name="designated_shopping_list_hint">Tia lista da cumpras designada per emplenir provisiuns bassas</string>
+    <string name="menu_edit">Modifitgar</string>
+    <string name="menu_delete">Stizzar</string>
 </resources>

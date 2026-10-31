@@ -146,4 +146,11 @@
     <string name="filter_label_expiring">即将到期（%1$d）</string>
     <string name="filter_label_low_stock">库存不足（%1$d）</string>
     <string name="filter_label_inventory_alerts">库存警报（%1$d）</string>
+
+    <!-- Shopping list generation from the low-stock dashboard row -->
+    <string name="shopping_list_title">购物清单</string>
+    <string name="dashboard_generate_shopping_list">根据库存不足的条目生成购物清单</string>
+    <string name="shopping_list_added_">已将 %1$d 个新条目加入购物清单</string>
+    <string name="shopping_list_up_to_date_">所有库存不足的条目都已在购物清单中</string>
+    <string name="no_low_stock_items">没有库存不足的条目</string>
 </resources>

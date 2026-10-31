@@ -104,6 +104,19 @@ public abstract class ItemChecklistDao {
     @Query("DELETE FROM item_checklist_item WHERE item_id IN (:itemIds)")
     public abstract void deleteItemChecklistItemsByItemIds(List<Long> itemIds);
 
+    /**
+     * Un-checks the given rows of one checklist (regeneration for the
+     * designated shopping list): a re-tap must move already-checked low-stock
+     * items back to the open section, otherwise a fully-checked stale list
+     * would never surface its restock reminders again. Returns the number of
+     * rows actually cleared so the caller only bumps/notifies when something
+     * changed. Same plain IN clause as
+     * {@link #deleteItemChecklistItemsByItemIds(List)} — low-stock result
+     * sets are small.
+     */
+    @Query("UPDATE item_checklist_item SET checked_date_time = NULL WHERE item_checklist_id = :checklistId AND item_id IN (:itemIds) AND checked_date_time IS NOT NULL")
+    public abstract int uncheckItems(long checklistId, List<Long> itemIds);
+
     // used by the startup orphan sweep to compute referenced child ids
     @Query("SELECT DISTINCT item_id FROM item_checklist_item WHERE item_id IS NOT NULL")
     public abstract List<Long> findDistinctItemIds();
@@ -145,6 +158,24 @@ public abstract class ItemChecklistDao {
 
     @Query("SELECT * FROM item_checklist WHERE title LIKE '%'||:search||'%' OR description LIKE '%'||:search||'%'")
     public abstract List<ItemChecklist> searchItemChecklist(String search);
+
+    /**
+     * Adopt-once lookup for the designated shopping list: title is NOT unique
+     * in the schema, so the most recently updated match wins — that is the
+     * list the user actually worked with. Case-insensitive so an exact-title
+     * adoption survives locale-driven capitalization differences.
+     */
+    @Query("SELECT * FROM item_checklist WHERE title = :title COLLATE NOCASE ORDER BY updated_date_time DESC LIMIT 1")
+    public abstract ItemChecklist findItemChecklistByTitle(String title);
+
+    /**
+     * Cheap existence check for the stored designated-shopping-list id:
+     * {@link #findItemChecklistStateById(long)} cannot answer "missing" — its
+     * state builder NPEs on a stale id — so a stored id is validated here
+     * before any state is materialized.
+     */
+    @Query("SELECT COUNT(*) FROM item_checklist WHERE id = :id")
+    public abstract int countItemChecklistsById(long id);
 
     @Query("SELECT * FROM item_checklist_item WHERE item_checklist_id = :checklistId ORDER BY created_date_time ASC, id ASC")
     public abstract List<ItemChecklistItem> findItemChecklistItemsByChecklistId(long checklistId);

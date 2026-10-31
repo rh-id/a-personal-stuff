@@ -25,4 +25,8 @@
     <string name="title_view_mode">Ansichtsmodus</string>
     <string name="title_view_mode_detailed">Zur Detailansicht wechseln</string>
     <string name="title_view_mode_compact">Zur kompakten Ansicht wechseln</string>
+    <string name="designated_shopping_list">Festgelegte Einkaufsliste</string>
+    <string name="designated_shopping_list_hint">Ihre festgelegte Einkaufsliste zum Auffüllen geringer Bestände</string>
+    <string name="menu_edit">Bearbeiten</string>
+    <string name="menu_delete">Löschen</string>
 </resources>

@@ -25,4 +25,8 @@
     <string name="title_view_mode">Modalità di visualizzazione</string>
     <string name="title_view_mode_detailed">Passa alla vista dettagliata</string>
     <string name="title_view_mode_compact">Passa alla vista compatta</string>
+    <string name="designated_shopping_list">Lista della spesa designata</string>
+    <string name="designated_shopping_list_hint">La tua lista della spesa designata per il riassortimento delle scorte basse</string>
+    <string name="menu_edit">Modifica</string>
+    <string name="menu_delete">Elimina</string>
 </resources>

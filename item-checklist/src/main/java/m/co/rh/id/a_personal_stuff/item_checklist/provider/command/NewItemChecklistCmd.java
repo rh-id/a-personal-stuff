@@ -11,16 +11,14 @@ import io.reactivex.rxjava3.schedulers.Schedulers;
 import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.item_checklist.R;
-import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
-import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistService;
 import m.co.rh.id.aprovider.Provider;
 
 public class NewItemChecklistCmd {
     protected Context mContext;
     protected ExecutorService mExecutorService;
-    protected ItemChecklistChangeNotifier mItemChecklistChangeNotifier;
-    protected ItemChecklistDao mItemChecklistDao;
+    protected ItemChecklistService mItemChecklistService;
 
     protected BehaviorSubject<String> mTitleValidSubject;
     protected Subject<String> mTitleValidEmitter;
@@ -28,18 +26,18 @@ public class NewItemChecklistCmd {
     public NewItemChecklistCmd(Provider provider) {
         mContext = provider.getContext().getApplicationContext();
         mExecutorService = provider.get(ExecutorService.class);
-        mItemChecklistChangeNotifier = provider.get(ItemChecklistChangeNotifier.class);
-        mItemChecklistDao = provider.get(ItemChecklistDao.class);
+        mItemChecklistService = provider.get(ItemChecklistService.class);
         mTitleValidSubject = BehaviorSubject.create();
         mTitleValidEmitter = mTitleValidSubject.toSerialized();
     }
 
     public Single<ItemChecklistState> execute(ItemChecklistState itemChecklistState) {
-        return Single.fromCallable(() -> {
-                    mItemChecklistDao.insertItemChecklist(itemChecklistState);
-                    mItemChecklistChangeNotifier.checklistAdded(itemChecklistState.clone());
-                    return itemChecklistState;
-                }).subscribeOn(Schedulers.from(mExecutorService));
+        // the insert + checklistAdded notification is shared checklist domain
+        // logic (the app-level shopping-list orchestrator creates the same
+        // designated checklist), so it lives in ItemChecklistService
+        return Single.fromCallable(() ->
+                        mItemChecklistService.createChecklist(itemChecklistState))
+                .subscribeOn(Schedulers.from(mExecutorService));
     }
 
     public boolean valid(ItemChecklistState itemChecklistState) {

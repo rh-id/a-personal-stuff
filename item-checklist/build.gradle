@@ -46,6 +46,9 @@ dependencies {
     implementation project(path: ':settings')
     annotationProcessor libs.room.compiler
 
+    testImplementation libs.junit
+    testImplementation libs.mockito.core
+
     androidTestImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit
     androidTestImplementation libs.espresso.core

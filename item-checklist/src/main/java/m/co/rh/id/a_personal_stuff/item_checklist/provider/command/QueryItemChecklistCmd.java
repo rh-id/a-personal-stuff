@@ -25,6 +25,19 @@ public class QueryItemChecklistCmd {
                 mItemChecklistDao.findItemChecklistStateById(id)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
+    /**
+     * Cheap DB-backed existence check for an id that may be stale (e.g. the
+     * settings-stored designated shopping-list id after its checklist was
+     * deleted). Wraps {@link ItemChecklistDao#countItemChecklistsById(long)}
+     * because {@link #findItemChecklistStateById(long)} cannot answer
+     * "missing" — its DAO state builder NPEs on a stale id.
+     */
+    public Single<Boolean> existsById(long id) {
+        return Single.fromCallable(() ->
+                mItemChecklistDao.countItemChecklistsById(id) > 0)
+                .subscribeOn(Schedulers.from(mExecutorService));
+    }
+
     public Single<List<ItemChecklistItem>> findItemsByChecklistId(long checklistId) {
         return Single.fromCallable(() ->
                 mItemChecklistDao.findItemChecklistItemsByChecklistId(checklistId)).subscribeOn(Schedulers.from(mExecutorService));

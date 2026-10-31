@@ -33,6 +33,14 @@ public class ItemChecklistRecyclerViewAdapter extends RecyclerView.Adapter<Recyc
     private final boolean mSelectMode;
     // Whether newly created rows should start in compact mode.
     private boolean mCompact;
+    /**
+     * The checklist currently designated as the shopping list, or null when
+     * none is configured/validated. Held as bind-time state so a change
+     * re-renders through notifyDataSetChanged and every update path (paged
+     * setItems, notifier added/updated/deleted) re-evaluates the badge with
+     * no special-casing.
+     */
+    private Long mDesignatedChecklistId;
 
     public ItemChecklistRecyclerViewAdapter(ItemChecklistItemSV.OnItemChecklistEditClicked onItemChecklistEditClicked,
                                             ItemChecklistItemSV.OnItemChecklistDeleteClicked onItemChecklistDeleteClicked,
@@ -92,6 +100,17 @@ public class ItemChecklistRecyclerViewAdapter extends RecyclerView.Adapter<Recyc
         }
     }
 
+    /**
+     * Marks the row whose checklist id matches the designated shopping list
+     * (or clears the marker with null — also the initial state). A full
+     * rebind is cheap here and keeps the badge consistent across all row
+     * mutations.
+     */
+    public void setDesignatedChecklistId(Long designatedChecklistId) {
+        mDesignatedChecklistId = designatedChecklistId;
+        notifyDataSetChanged();
+    }
+
     public void setItems(List<ItemChecklistState> items) {
         mItems.clear();
         if (items != null) {
@@ -136,6 +155,8 @@ public class ItemChecklistRecyclerViewAdapter extends RecyclerView.Adapter<Recyc
                 progress = new ItemChecklistProgress(item.getChecklistId(), 0, 0);
             }
             itemViewHolder.setProgress(progress);
+            itemViewHolder.setDesignated(mDesignatedChecklistId != null
+                    && mDesignatedChecklistId.equals(item.getChecklistId()));
         }
     }
 
@@ -224,6 +245,10 @@ public class ItemChecklistRecyclerViewAdapter extends RecyclerView.Adapter<Recyc
 
         public void setProgress(ItemChecklistProgress progress) {
             mItemChecklistItemSV.setItemChecklistProgress(progress);
+        }
+
+        public void setDesignated(boolean designated) {
+            mItemChecklistItemSV.setDesignated(designated);
         }
 
         public ItemChecklistState getItem() {

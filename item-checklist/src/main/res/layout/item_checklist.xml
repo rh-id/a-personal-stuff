@@ -27,7 +27,7 @@
             android:maxLines="2"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
             android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/container_action_button"
+            app:layout_constraintEnd_toStartOf="@id/image_designated"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="Checklist Title" />
@@ -72,6 +72,18 @@
             app:layout_constraintTop_toBottomOf="@id/text_progress"
             tools:text="Updated: 20 Jan 2023, 12:00" />
 
+        <!-- Edit/delete actions in a bottom band, mirroring the item-list
+             card (item_item.xml): top chained below the last content row,
+             bottom pinned to the parent, right-aligned. The card is
+             wrap_content, so longer text grows the card and keeps the
+             buttons fully inside, clear of the text above. In compact mode
+             item_checklist_compact_constraints.xml re-anchors this container
+             into its own bottom band below the rows (top to text_progress's
+             bottom, bottom and end to the parent), mirroring the item card's
+             bottom-band action row; only the overflow button shows there —
+             edit/delete are collapsed in code (see ItemChecklistItemSV, which
+             mirrors ItemItemSV) because ConstraintSet targets direct children
+             only. Detailed mode never shows the overflow. -->
         <LinearLayout
             android:id="@+id/container_action_button"
             android:layout_width="wrap_content"
@@ -79,7 +91,7 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+            app:layout_constraintTop_toBottomOf="@id/text_updated_date_time">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_edit"
@@ -96,6 +108,42 @@
                 android:layout_height="48dp"
                 app:icon="@drawable/ic_delete_forever_black"
                 app:iconTint="@color/red" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_more_action"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:visibility="gone"
+                app:icon="@drawable/ic_more_vert_black"
+                app:iconTint="@color/daynight_black_white" />
         </LinearLayout>
+
+        <!-- Trailing cart badge for the designated shopping list; hidden by
+             default and toggled from ItemChecklistItemSV.setDesignated. Pinned
+             to the parent end in both view modes (the compact constraint set
+             does the same), matching the item-list card's right-aligned
+             status badges. When gone it collapses to a point at the parent
+             end, leaving the title's reach unchanged. Declared last so it
+             still wins draw + touch dispatch against any overlapping
+             sibling — defensive, since nothing is expected to overlap it:
+             the title ends at the badge's start, and the action container
+             sits in its own bottom band in both modes instead of sharing
+             this row. -->
+        <ImageView
+            android:id="@+id/image_designated"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginEnd="8dp"
+            android:clickable="true"
+            android:contentDescription="@string/designated_shopping_list"
+            android:focusable="true"
+            android:src="@drawable/ic_dashboard_shopping_list"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="@id/text_title"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/text_title"
+            app:tint="@color/daynight_black_white"
+            tools:visibility="visible" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.cardview.widget.CardView>

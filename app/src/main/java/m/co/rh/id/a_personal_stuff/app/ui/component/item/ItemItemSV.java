@@ -84,6 +84,15 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient QueryItemUsageCmd mQueryItemUsageCmd;
     private transient QueryItemPurchaseCmd mQueryItemPurchaseCmd;
     private transient QueryItemChecklistCmd mQueryItemChecklistCmd;
+    /**
+     * The currently shown more-actions popup, if any. Kept so it can be
+     * dismissed when this card's view tree detaches (BACK navigation) or when
+     * this SV is disposed — the popup lives in its own window and would
+     * otherwise stay floating above the resumed screen until an outside tap.
+     * Transient: ListPopupWindow is not serializable and never survives a
+     * state restore.
+     */
+    private transient ListPopupWindow mMoreActionPopup;
 
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
@@ -163,6 +172,22 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         deleteButton.setOnClickListener(this);
         Button moreActionButton = rootLayout.findViewById(R.id.button_more_action);
         moreActionButton.setOnClickListener(this);
+        // The overflow popup opens in its own window, so it outlives this card's
+        // view tree: if BACK (or any navigation) detaches the page while it is
+        // open, it keeps floating above the resumed screen until an outside tap
+        // (orphaned-popup defect). Dismiss it when this card detaches;
+        // dispose() covers the teardown path where no detach happens first.
+        rootLayout.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+                // nothing to do
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                dismissMoreActionPopup();
+            }
+        });
         Button usageCountButton = rootLayout.findViewById(R.id.button_usage_count);
         usageCountButton.setOnClickListener(this);
         Button checklistCountButton = rootLayout.findViewById(R.id.button_checklist_count);
@@ -409,6 +434,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void dispose(Activity activity) {
         super.dispose(activity);
+        dismissMoreActionPopup();
         if (mSvProvider != null) {
             mSvProvider.dispose();
             mSvProvider = null;
@@ -548,8 +574,27 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 handleMoreAction(actionIds[actionIndex]);
             }
             listPopupWindow.dismiss();
+            mMoreActionPopup = null;
         });
+        mMoreActionPopup = listPopupWindow;
         listPopupWindow.show();
+    }
+
+    /**
+     * Dismisses the shown overflow popup, if any. Called when this card's view
+     * tree detaches from the window (e.g. BACK pops the page while the popup
+     * is open) and from {@link #dispose(Activity)}: the popup lives in its own
+     * window, so without this it stays floating above whatever screen is
+     * resumed, orphaned, until an outside tap. Dismissing inside the detach
+     * callback is safe — the popup is a separate window from this view tree.
+     */
+    private void dismissMoreActionPopup() {
+        if (mMoreActionPopup != null) {
+            if (mMoreActionPopup.isShowing()) {
+                mMoreActionPopup.dismiss();
+            }
+            mMoreActionPopup = null;
+        }
     }
 
     private static int measureMaxContentWidth(Context context, MoreActionAdapter adapter) {

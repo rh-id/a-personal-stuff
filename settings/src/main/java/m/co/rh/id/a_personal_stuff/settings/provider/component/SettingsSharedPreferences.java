@@ -43,6 +43,8 @@ public class SettingsSharedPreferences {
     public static final String DEFAULT_AUTO_BACKUP_LAST_FAILURE = "";
     /** Default last successful backup timestamp (never backed up). */
     public static final long DEFAULT_AUTO_BACKUP_LAST_SUCCESS_DATE_TIME = 0L;
+    /** Sentinel for "no designated shopping-list checklist" — checklist ids start at 1. */
+    public static final long DEFAULT_SHOPPING_LIST_CHECKLIST_ID = 0L;
 
     private ExecutorService mExecutorService;
     private SharedPreferences mSharedPreferences;
@@ -71,6 +73,8 @@ public class SettingsSharedPreferences {
     private String mAutoBackupLastSuccessDateTimeKey;
     private BehaviorSubject<String> mAutoBackupLastFailure;
     private String mAutoBackupLastFailureKey;
+    private BehaviorSubject<Long> mShoppingListChecklistId;
+    private String mShoppingListChecklistIdKey;
 
     public SettingsSharedPreferences(Provider provider) {
         mExecutorService = provider.get(ExecutorService.class);
@@ -89,6 +93,7 @@ public class SettingsSharedPreferences {
         mAutoBackupTreeUri = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_TREE_URI);
         mAutoBackupLastSuccessDateTime = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_LAST_SUCCESS_DATE_TIME);
         mAutoBackupLastFailure = BehaviorSubject.createDefault(DEFAULT_AUTO_BACKUP_LAST_FAILURE);
+        mShoppingListChecklistId = BehaviorSubject.createDefault(DEFAULT_SHOPPING_LIST_CHECKLIST_ID);
         initValue();
     }
 
@@ -177,6 +182,13 @@ public class SettingsSharedPreferences {
                 mAutoBackupLastFailureKey,
                 mAutoBackupLastFailure.getValue());
         setAutoBackupLastFailure(autoBackupLastFailure);
+
+        mShoppingListChecklistIdKey = SHARED_PREFERENCES_NAME
+                + ".shoppingListChecklistId";
+        long shoppingListChecklistId = mSharedPreferences.getLong(
+                mShoppingListChecklistIdKey,
+                mShoppingListChecklistId.getValue());
+        setShoppingListChecklistId(shoppingListChecklistId);
     }
 
     private void selectedTheme(int setting) {
@@ -420,5 +432,25 @@ public class SettingsSharedPreferences {
 
     public Flowable<String> getAutoBackupLastFailureFlow() {
         return Flowable.fromObservable(mAutoBackupLastFailure, BackpressureStrategy.BUFFER);
+    }
+
+    private void shoppingListChecklistId(long checklistId) {
+        mShoppingListChecklistId.onNext(checklistId);
+        mExecutorService.execute(() ->
+                mSharedPreferences.edit().putLong(mShoppingListChecklistIdKey, checklistId)
+                        .commit());
+    }
+
+    public void setShoppingListChecklistId(long checklistId) {
+        shoppingListChecklistId(checklistId);
+    }
+
+    public long getShoppingListChecklistId() {
+        Long current = mShoppingListChecklistId.getValue();
+        return current != null ? current : DEFAULT_SHOPPING_LIST_CHECKLIST_ID;
+    }
+
+    public Flowable<Long> getShoppingListChecklistIdFlow() {
+        return Flowable.fromObservable(mShoppingListChecklistId, BackpressureStrategy.BUFFER);
     }
 }

@@ -25,4 +25,8 @@
     <string name="title_view_mode">Skoðunarhamur</string>
     <string name="title_view_mode_detailed">Skipta yfir í ítarlega skoðun</string>
     <string name="title_view_mode_compact">Skipta yfir í þjappaða skoðun</string>
+    <string name="designated_shopping_list">Tilnefndur innkaupalisti</string>
+    <string name="designated_shopping_list_hint">Tilnefndur innkaupalisti þinn til að fylla á lágar birgðir</string>
+    <string name="menu_edit">Breyta</string>
+    <string name="menu_delete">Eyða</string>
 </resources>

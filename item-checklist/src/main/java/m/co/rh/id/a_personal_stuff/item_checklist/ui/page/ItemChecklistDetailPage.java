@@ -534,5 +534,14 @@ public class ItemChecklistDetailPage extends StatefulView<Activity> implements R
         }
 
         private Long checklistId;
+
+        /**
+         * Exposes the pushed checklist id so callers holding the route's
+         * {@link NavRoute} can compare it against their own target (e.g.
+         * HomePage's duplicate-push guard) without reflection or reparsing.
+         */
+        public Long getChecklistId() {
+            return checklistId;
+        }
     }
 }

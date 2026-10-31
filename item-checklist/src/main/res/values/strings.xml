@@ -25,4 +25,8 @@
     <string name="title_view_mode">View mode</string>
     <string name="title_view_mode_detailed">Switch to detailed view</string>
     <string name="title_view_mode_compact">Switch to compact view</string>
+    <string name="designated_shopping_list">Designated shopping list</string>
+    <string name="designated_shopping_list_hint">Your designated shopping list for low-stock restocking</string>
+    <string name="menu_edit">Edit</string>
+    <string name="menu_delete">Delete</string>
 </resources>

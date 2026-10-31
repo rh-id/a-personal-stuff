@@ -25,4 +25,8 @@
     <string name="title_view_mode">查看模式</string>
     <string name="title_view_mode_detailed">切换到详细视图</string>
     <string name="title_view_mode_compact">切换到紧凑视图</string>
+    <string name="designated_shopping_list">指定的购物清单</string>
+    <string name="designated_shopping_list_hint">您用于补充库存不足条目的指定购物清单</string>
+    <string name="menu_edit">编辑</string>
+    <string name="menu_delete">删除</string>
 </resources>

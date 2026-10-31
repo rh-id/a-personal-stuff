@@ -146,4 +146,11 @@
     <string name="filter_label_expiring">Expirent (%1$d)</string>
     <string name="filter_label_low_stock">Stock faible (%1$d)</string>
     <string name="filter_label_inventory_alerts">Alertes d\'inventaire (%1$d)</string>
+
+    <!-- Shopping list generation from the low-stock dashboard row -->
+    <string name="shopping_list_title">Liste de courses</string>
+    <string name="dashboard_generate_shopping_list">Générer la liste de courses à partir des éléments en stock faible</string>
+    <string name="shopping_list_added_">%1$d nouveau(x) élément(s) ajouté(s) à la liste de courses</string>
+    <string name="shopping_list_up_to_date_">Tous les éléments en stock faible sont déjà dans la liste de courses</string>
+    <string name="no_low_stock_items">Aucun élément en stock faible</string>
 </resources>

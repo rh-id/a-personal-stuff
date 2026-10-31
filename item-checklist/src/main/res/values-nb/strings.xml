@@ -25,4 +25,8 @@
     <string name="title_view_mode">Visningsmodus</string>
     <string name="title_view_mode_detailed">Bytt til detaljert visning</string>
     <string name="title_view_mode_compact">Bytt til kompakt visning</string>
+    <string name="designated_shopping_list">Utpekt handleliste</string>
+    <string name="designated_shopping_list_hint">Din utpekte handleliste for etterfylling av gjenstander med lavt lager</string>
+    <string name="menu_edit">Rediger</string>
+    <string name="menu_delete">Slett</string>
 </resources>

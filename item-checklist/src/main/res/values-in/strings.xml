@@ -25,4 +25,8 @@
     <string name="title_view_mode">Mode tampilan</string>
     <string name="title_view_mode_detailed">Beralih ke tampilan rinci</string>
     <string name="title_view_mode_compact">Beralih ke tampilan ringkas</string>
+    <string name="designated_shopping_list">Daftar belanja yang ditunjuk</string>
+    <string name="designated_shopping_list_hint">Daftar belanja Anda yang ditunjuk untuk mengisi kembali stok menipis</string>
+    <string name="menu_edit">Ubah</string>
+    <string name="menu_delete">Hapus</string>
 </resources>
