@@ -126,7 +126,7 @@
                                 android:visibility="gone">
 
                                 <LinearLayout
-                                    android:layout_width="wrap_content"
+                                    android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:orientation="horizontal"
                                     android:gravity="center_vertical">
@@ -148,13 +148,25 @@
 
                                     <com.google.android.material.textview.MaterialTextView
                                         android:id="@+id/text_dashboard_low_stock_summary"
-                                        android:layout_width="wrap_content"
+                                        android:layout_width="0dp"
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="6dp"
+                                        android:layout_weight="1"
                                         android:textColor="@color/dashboard_amber"
                                         android:textSize="16sp"
                                         android:textStyle="bold"
                                         tools:text="1" />
+
+                                    <androidx.appcompat.widget.AppCompatImageButton
+                                        android:id="@+id/button_dashboard_shopping_list"
+                                        android:layout_width="48dp"
+                                        android:layout_height="48dp"
+                                        android:background="?attr/selectableItemBackgroundBorderless"
+                                        android:clickable="true"
+                                        android:focusable="true"
+                                        android:contentDescription="@string/dashboard_generate_shopping_list"
+                                        android:src="@drawable/ic_dashboard_shopping_list"
+                                        android:tint="@color/dashboard_amber" />
                                 </LinearLayout>
 
                                 <com.google.android.material.textview.MaterialTextView

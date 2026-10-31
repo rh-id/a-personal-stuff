@@ -146,4 +146,11 @@
     <string name="filter_label_expiring">Aegub (%1$d)</string>
     <string name="filter_label_low_stock">Madal laoseis (%1$d)</string>
     <string name="filter_label_inventory_alerts">Laoseisu hoiatused (%1$d)</string>
+
+    <!-- Shopping list generation from the low-stock dashboard row -->
+    <string name="shopping_list_title">Ostunimekiri</string>
+    <string name="dashboard_generate_shopping_list">Loo ostunimekiri madala laoseisuga esemetest</string>
+    <string name="shopping_list_added_">Lisati %1$d uut eset ostunimekirja</string>
+    <string name="shopping_list_up_to_date_">Kõik madala laoseisuga esemed on juba ostunimekirjas</string>
+    <string name="no_low_stock_items">Madala laoseisuga esemeid pole</string>
 </resources>

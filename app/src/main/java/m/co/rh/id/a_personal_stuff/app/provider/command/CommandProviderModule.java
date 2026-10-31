@@ -18,6 +18,7 @@ public class CommandProviderModule implements ProviderModule {
         // DB reads and notifier subscriptions — once per provider. Lazy defers creation
         // until a page actually requests it (currently only HomePage).
         providerRegistry.registerLazy(DashboardCmd.class, () -> new DashboardCmd(provider));
+        providerRegistry.registerLazy(GenerateShoppingListCmd.class, () -> new GenerateShoppingListCmd(provider));
         providerRegistry.registerLazy(NewItemCmd.class, () -> new NewItemCmd(provider));
         providerRegistry.registerLazy(UpdateItemCmd.class, () -> new UpdateItemCmd(provider));
         providerRegistry.registerLazy(DeleteItemCmd.class, () -> new DeleteItemCmd(provider));

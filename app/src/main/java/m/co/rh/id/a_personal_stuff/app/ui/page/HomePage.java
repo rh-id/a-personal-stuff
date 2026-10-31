@@ -29,6 +29,7 @@ import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.command.DashboardCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.command.GenerateShoppingListCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.QueryItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.component.AppNotificationHandler;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
@@ -45,6 +46,7 @@ import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
+import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistDetailPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
@@ -78,6 +80,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient RxDisposer mRxDisposer;
     private transient QueryItemCmd mQueryItemCmd;
     private transient DashboardCmd mDashboardCmd;
+    private transient GenerateShoppingListCmd mGenerateShoppingListCmd;
     private transient ExportCmd mExportCmd;
     private transient ExportSpreadsheetCmd mExportSpreadsheetCmd;
     private transient ImportCmd mImportCmd;
@@ -96,6 +99,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient TextView mTextDashboardInventoryCount;
     private transient TextView mTextDashboardInventoryValue;
     private transient View mContainerDashboardLowStock;
+    private transient View mButtonDashboardShoppingList;
     private transient View mContainerDashboardExpiring;
     private transient View mContainerDashboardExpiredGroup;
     private transient View mContainerDashboardExpiringGroup;
@@ -123,6 +127,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mRxDisposer = mSvProvider.get(RxDisposer.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
         mDashboardCmd = mSvProvider.get(DashboardCmd.class);
+        mGenerateShoppingListCmd = mSvProvider.get(GenerateShoppingListCmd.class);
         mExportCmd = mSvProvider.get(ExportCmd.class);
         mExportSpreadsheetCmd = mSvProvider.get(ExportSpreadsheetCmd.class);
         mImportCmd = mSvProvider.get(ImportCmd.class);
@@ -200,6 +205,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mTextDashboardInventoryValue = rootLayout.findViewById(R.id.text_dashboard_inventory_value);
         mContainerDashboardLowStock = rootLayout.findViewById(R.id.container_dashboard_low_stock);
         mContainerDashboardLowStock.setOnClickListener(this);
+        mButtonDashboardShoppingList = rootLayout.findViewById(R.id.button_dashboard_shopping_list);
+        mButtonDashboardShoppingList.setOnClickListener(this);
         mContainerDashboardExpiring = rootLayout.findViewById(R.id.container_dashboard_expiring);
         mContainerDashboardExpiring.setOnClickListener(this);
         mContainerDashboardExpiredGroup = rootLayout.findViewById(R.id.container_dashboard_expired_group);
@@ -303,6 +310,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mTextDashboardInventoryCount = null;
         mTextDashboardInventoryValue = null;
         mContainerDashboardLowStock = null;
+        mButtonDashboardShoppingList = null;
         mContainerDashboardExpiring = null;
         mContainerDashboardExpiredGroup = null;
         mContainerDashboardExpiringGroup = null;
@@ -404,6 +412,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             navigateToAlertItems("home_alert_items_low_stock",
                     EnumSet.of(InventoryStatsCalculator.AlertType.LOW_STOCK),
                     R.string.filter_label_low_stock);
+        } else if (id == R.id.button_dashboard_shopping_list) {
+            generateShoppingList();
         } else if (id == R.id.container_dashboard_expired_group) {
             navigateToAlertItems("home_alert_items_expired",
                     EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED),
@@ -456,6 +466,44 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         ItemsPage.Args.filtered(itemIds, label));
                             }
                         }, throwable -> mLogger.e(TAG, throwable.getMessage(), throwable)));
+    }
+
+    /**
+     * Generates the designated shopping list from the current low-stock items
+     * and opens it (check-off is manual — the stock update is a follow-up
+     * issue). The button is disabled for the in-flight run: the command
+     * serializes its find-or-create, but a second tap would still queue a
+     * duplicate run and double-navigate. Toasts go through the logger so they
+     * surface like the import/export result messages.
+     */
+    private void generateShoppingList() {
+        Context context = mSvProvider.getContext();
+        mButtonDashboardShoppingList.setEnabled(false);
+        // keyed RxDisposer subscription: a re-tap replaces the previous
+        // computation instead of stacking duplicates
+        mRxDisposer.add("home_generate_shopping_list",
+                mGenerateShoppingListCmd.execute()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(shoppingListResult -> {
+                            mButtonDashboardShoppingList.setEnabled(true);
+                            if (shoppingListResult.lowStockCount == 0) {
+                                // the dashboard row was stale: nothing to shop for
+                                mLogger.i(TAG, context.getString(R.string.no_low_stock_items));
+                                return;
+                            }
+                            if (shoppingListResult.addedCount > 0) {
+                                mLogger.i(TAG, context.getString(
+                                        R.string.shopping_list_added_,
+                                        shoppingListResult.addedCount));
+                            } else {
+                                mLogger.i(TAG, context.getString(R.string.shopping_list_up_to_date_));
+                            }
+                            mNavigator.push(Routes.ITEM_CHECKLIST_DETAIL_PAGE,
+                                    ItemChecklistDetailPage.Args.with(shoppingListResult.checklistId));
+                        }, throwable -> {
+                            mButtonDashboardShoppingList.setEnabled(true);
+                            mLogger.e(TAG, throwable.getMessage(), throwable);
+                        }));
     }
 
     private void renderDashboard(DashboardData dashboardData) {

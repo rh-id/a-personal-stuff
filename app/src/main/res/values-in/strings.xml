@@ -146,4 +146,11 @@
     <string name="filter_label_expiring">Mendekati kedaluwarsa (%1$d)</string>
     <string name="filter_label_low_stock">Stok menipis (%1$d)</string>
     <string name="filter_label_inventory_alerts">Peringatan inventaris (%1$d)</string>
+
+    <!-- Shopping list generation from the low-stock dashboard row -->
+    <string name="shopping_list_title">Daftar belanja</string>
+    <string name="dashboard_generate_shopping_list">Buat daftar belanja dari item dengan stok menipis</string>
+    <string name="shopping_list_added_">Menambahkan %1$d item baru ke daftar belanja</string>
+    <string name="shopping_list_up_to_date_">Semua item dengan stok menipis sudah ada di daftar belanja</string>
+    <string name="no_low_stock_items">Tidak ada item dengan stok menipis</string>
 </resources>
