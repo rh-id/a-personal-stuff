@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">导出到电子表格失败</string>
     <string name="export_spreadsheet_progress_sheet">正在导出数据（%1$d/%2$d）…</string>
     <string name="export_spreadsheet_progress_writing">正在写入电子表格…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">导出 PDF 报告</string>
+    <string name="share_pdf_report_file">分享 PDF 报告文件</string>
+    <string name="export_pdf_report_failed">导出 PDF 报告失败</string>
+    <string name="export_pdf_report_progress_cover">正在生成封面…</string>
+    <string name="export_pdf_report_progress_table">正在生成汇总表…</string>
+    <string name="export_pdf_report_progress_details">正在生成物品明细（%1$d/%2$d）…</string>
+    <string name="export_pdf_report_progress_writing">正在写入 PDF…</string>
+    <string name="report_title">库存报告</string>
+    <string name="report_generated_date_time">生成时间：%1$s</string>
+    <string name="report_total_items">物品总数：%1$d</string>
+    <string name="report_total_value">库存总价值：%1$s</string>
+    <string name="report_photos_omitted">已省略 %1$d 张照片 — 已达图片上限</string>
+    <string name="report_page">第 %1$d 页</string>
+    <string name="report_col_no">#</string>
+    <string name="report_col_name">名称</string>
+    <string name="report_col_qty">数量</string>
+    <string name="report_col_unit_price">单价</string>
+    <string name="report_col_line_total">行合计</string>
+    <string name="report_col_first_purchase">首次购买</string>
+    <string name="report_totals">合计</string>
+    <string name="report_item_amount_price">数量：%1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">首次购买：%1$s · %2$s</string>
+    <string name="report_expires">到期时间：%1$s</string>
+    <string name="report_created">创建时间：%1$s</string>
+    <string name="report_photo_omitted">（照片已省略 — 已达图片上限）</string>
     <string name="header_id">ID</string>
     <string name="header_tags">标签</string>
     <string name="header_images">图片</string>

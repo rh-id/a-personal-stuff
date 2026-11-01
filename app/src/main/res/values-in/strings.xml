@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Ekspor ke spreadsheet gagal</string>
     <string name="export_spreadsheet_progress_sheet">Mengekspor data (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Menulis spreadsheet…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Ekspor Laporan PDF</string>
+    <string name="share_pdf_report_file">Bagikan file laporan PDF</string>
+    <string name="export_pdf_report_failed">Ekspor laporan PDF gagal</string>
+    <string name="export_pdf_report_progress_cover">Membuat halaman sampul…</string>
+    <string name="export_pdf_report_progress_table">Membuat tabel ringkasan…</string>
+    <string name="export_pdf_report_progress_details">Membuat detail item (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Menulis PDF…</string>
+    <string name="report_title">Laporan Inventaris</string>
+    <string name="report_generated_date_time">Dibuat: %1$s</string>
+    <string name="report_total_items">Total item: %1$d</string>
+    <string name="report_total_value">Total nilai inventaris: %1$s</string>
+    <string name="report_photos_omitted">%1$d foto dihilangkan — batas gambar tercapai</string>
+    <string name="report_page">Halaman %1$d</string>
+    <string name="report_col_no">No</string>
+    <string name="report_col_name">Nama</string>
+    <string name="report_col_qty">Jml</string>
+    <string name="report_col_unit_price">Harga satuan</string>
+    <string name="report_col_line_total">Total baris</string>
+    <string name="report_col_first_purchase">Pembelian pertama</string>
+    <string name="report_totals">Total</string>
+    <string name="report_item_amount_price">Jumlah: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Pembelian pertama: %1$s · %2$s</string>
+    <string name="report_expires">Kedaluwarsa: %1$s</string>
+    <string name="report_created">Dibuat: %1$s</string>
+    <string name="report_photo_omitted">(foto dihilangkan — batas gambar tercapai)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tag</string>
     <string name="header_images">Gambar</string>

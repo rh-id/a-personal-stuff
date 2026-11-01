@@ -176,4 +176,18 @@ public abstract class ItemPurchaseDao {
 
     @Query("SELECT item_id AS itemId, SUM(amount) AS total FROM item_purchase GROUP BY item_id")
     public abstract List<ItemPurchaseTotal> sumAmountGroupByItem();
+
+    // one earliest dated purchase per item: the correlated subquery ranks a
+    // row against its item's other purchases (newest-first like
+    // findItemPurchasesByItemIdWithLimit is the wrong direction for a "first
+    // purchase" report column) with id ASC as the deterministic tie-break so
+    // two purchases sharing a timestamp resolve stably. Items without any
+    // dated purchase simply have no row.
+    @Query("SELECT * FROM item_purchase WHERE id = (" +
+            "SELECT p2.id FROM item_purchase p2" +
+            " WHERE p2.item_id = item_purchase.item_id" +
+            " AND p2.purchase_date_time IS NOT NULL" +
+            " ORDER BY p2.purchase_date_time ASC, p2.id ASC" +
+            " LIMIT 1)")
+    public abstract List<ItemPurchase> findFirstPurchasesPerItem();
 }

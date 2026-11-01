@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Eksport til rekneark mislukkast</string>
     <string name="export_spreadsheet_progress_sheet">Eksporterer data (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Skriver rekneark…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Eksporter PDF-rapport</string>
+    <string name="share_pdf_report_file">Del PDF-rapportfil</string>
+    <string name="export_pdf_report_failed">Eksport av PDF-rapport mislukkast</string>
+    <string name="export_pdf_report_progress_cover">Genererer forsida…</string>
+    <string name="export_pdf_report_progress_table">Genererer samandragstabell…</string>
+    <string name="export_pdf_report_progress_details">Genererer varedetaljane (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Skriv PDF…</string>
+    <string name="report_title">Inventarrapport</string>
+    <string name="report_generated_date_time">Generert: %1$s</string>
+    <string name="report_total_items">Totalt tal varer: %1$d</string>
+    <string name="report_total_value">Total inventarverdi: %1$s</string>
+    <string name="report_photos_omitted">%1$d foto utelate — biletgrense nådd</string>
+    <string name="report_page">Side %1$d</string>
+    <string name="report_col_no">Nr</string>
+    <string name="report_col_name">Namn</string>
+    <string name="report_col_qty">Tal</string>
+    <string name="report_col_unit_price">Einingspris</string>
+    <string name="report_col_line_total">Linjesum</string>
+    <string name="report_col_first_purchase">Første kjøp</string>
+    <string name="report_totals">Totalt</string>
+    <string name="report_item_amount_price">Tal: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Første kjøp: %1$s · %2$s</string>
+    <string name="report_expires">Utløper: %1$s</string>
+    <string name="report_created">Oppretta: %1$s</string>
+    <string name="report_photo_omitted">(foto utelate — biletgrense nådd)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Merke</string>
     <string name="header_images">Bilete</string>

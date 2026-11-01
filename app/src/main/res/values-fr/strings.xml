@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Échec de l\'export vers le tableur</string>
     <string name="export_spreadsheet_progress_sheet">Export des données (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Écriture du tableur…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Exporter le rapport PDF</string>
+    <string name="share_pdf_report_file">Partager le fichier rapport PDF</string>
+    <string name="export_pdf_report_failed">Échec de l\'export du rapport PDF</string>
+    <string name="export_pdf_report_progress_cover">Génération de la page de couverture…</string>
+    <string name="export_pdf_report_progress_table">Génération du tableau récapitulatif…</string>
+    <string name="export_pdf_report_progress_details">Génération des détails des articles (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Écriture du PDF…</string>
+    <string name="report_title">Rapport d\'inventaire</string>
+    <string name="report_generated_date_time">Généré : %1$s</string>
+    <string name="report_total_items">Total d\'articles : %1$d</string>
+    <string name="report_total_value">Valeur totale de l\'inventaire : %1$s</string>
+    <string name="report_photos_omitted">%1$d photos omises — limite d\'images atteinte</string>
+    <string name="report_page">Page %1$d</string>
+    <string name="report_col_no">N°</string>
+    <string name="report_col_name">Nom</string>
+    <string name="report_col_qty">Qté</string>
+    <string name="report_col_unit_price">Prix unitaire</string>
+    <string name="report_col_line_total">Total ligne</string>
+    <string name="report_col_first_purchase">Premier achat</string>
+    <string name="report_totals">Totaux</string>
+    <string name="report_item_amount_price">Quantité : %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Premier achat : %1$s · %2$s</string>
+    <string name="report_expires">Expire : %1$s</string>
+    <string name="report_created">Créé : %1$s</string>
+    <string name="report_photo_omitted">(photo omise — limite d\'images atteinte)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Étiquettes</string>
     <string name="header_images">Images</string>

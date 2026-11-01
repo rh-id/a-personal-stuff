@@ -40,6 +40,7 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ExportCmd;
+import m.co.rh.id.a_personal_stuff.app.provider.command.ExportPdfReportCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ImportCmd;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
@@ -83,6 +84,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient GenerateShoppingListCmd mGenerateShoppingListCmd;
     private transient ExportCmd mExportCmd;
     private transient ExportSpreadsheetCmd mExportSpreadsheetCmd;
+    private transient ExportPdfReportCmd mExportPdfReportCmd;
     private transient ImportCmd mImportCmd;
     private transient FileHelper mFileHelper;
     private transient ILogger mLogger;
@@ -94,6 +96,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient Button mButtonExport;
     private transient Button mButtonImport;
     private transient Button mButtonExportSpreadsheet;
+    private transient Button mButtonExportPdfReport;
     private transient View mCardDashboardInventory;
     private transient View mCardDashboardReminders;
     private transient TextView mTextDashboardInventoryCount;
@@ -130,6 +133,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mGenerateShoppingListCmd = mSvProvider.get(GenerateShoppingListCmd.class);
         mExportCmd = mSvProvider.get(ExportCmd.class);
         mExportSpreadsheetCmd = mSvProvider.get(ExportSpreadsheetCmd.class);
+        mExportPdfReportCmd = mSvProvider.get(ExportPdfReportCmd.class);
         mImportCmd = mSvProvider.get(ImportCmd.class);
         mFileHelper = mSvProvider.get(FileHelper.class);
         mLogger = mSvProvider.get(ILogger.class);
@@ -186,6 +190,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             if (!ExportSpreadsheetCmd.isSupported()) {
                 mButtonExportSpreadsheet.setVisibility(View.GONE);
             }
+        }
+        // No API gate for the PDF button: PdfDocument is API 19+ and minSdk is
+        // 21, so the XLSX button's isSupported() hiding does not apply here.
+        mButtonExportPdfReport = rootLayout.findViewById(R.id.button_export_pdf_report);
+        if (mButtonExportPdfReport != null) {
+            mButtonExportPdfReport.setOnClickListener(this);
         }
         // A rebuild (rotation/theme change) must never start or re-subscribe an
         // export: the running export's original subscriptions keep delivering
@@ -305,6 +315,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mButtonExport = null;
         mButtonImport = null;
         mButtonExportSpreadsheet = null;
+        mButtonExportPdfReport = null;
         mCardDashboardInventory = null;
         mCardDashboardReminders = null;
         mTextDashboardInventoryCount = null;
@@ -404,6 +415,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             doExport((Activity) view.getContext());
         } else if (id == R.id.button_export_spreadsheet) {
             doExportSpreadsheet((Activity) view.getContext());
+        } else if (id == R.id.button_export_pdf_report) {
+            doExportPdfReport((Activity) view.getContext());
         } else if (id == R.id.button_import) {
             doImport((Activity) view.getContext());
         } else if (id == R.id.card_dashboard_inventory) {
@@ -709,6 +722,39 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         );
     }
 
+    private void doExportPdfReport(Activity activity) {
+        showExportingState();
+        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+                activity.getString(R.string.export_pdf_report),
+                activity.getString(R.string.export_pdf_report_progress_writing));
+        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        // keyed RxDisposer subscriptions: a re-attach replaces the previous
+        // subscription per key instead of stacking duplicates
+        mRxDisposer.add("home_export_pdf_report_progress",
+                mExportPdfReportCmd.getProgressFlow()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        })
+        );
+        mRxDisposer.add("home_export_pdf_report_execute",
+                mExportPdfReportCmd.execute()
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .doFinally(() -> mNavigator.pop())
+                        .subscribe(
+                                file -> {
+                                    setLoading(false);
+                                    UiUtils.shareFile(activity, file,
+                                            activity.getString(R.string.share_pdf_report_file),
+                                            "application/pdf");
+                                },
+                                throwable -> {
+                                    setLoading(false);
+                                    mLogger.e(TAG, activity.getString(R.string.export_pdf_report_failed), throwable);
+                                }
+                        )
+        );
+    }
+
     private void doImport(Activity activity) {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("*/*");
@@ -756,6 +802,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         }
         if (mButtonExportSpreadsheet != null) {
             mButtonExportSpreadsheet.setEnabled(!loading);
+        }
+        if (mButtonExportPdfReport != null) {
+            mButtonExportPdfReport.setEnabled(!loading);
         }
     }
 

@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Esportazione nel foglio di calcolo non riuscita</string>
     <string name="export_spreadsheet_progress_sheet">Esportazione dei dati (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Scrittura del foglio di calcolo…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Esporta report PDF</string>
+    <string name="share_pdf_report_file">Condividi il file report PDF</string>
+    <string name="export_pdf_report_failed">Esportazione del report PDF non riuscita</string>
+    <string name="export_pdf_report_progress_cover">Generazione della pagina di copertina…</string>
+    <string name="export_pdf_report_progress_table">Generazione della tabella riepilogativa…</string>
+    <string name="export_pdf_report_progress_details">Generazione dei dettagli degli articoli (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Scrittura del PDF…</string>
+    <string name="report_title">Report inventario</string>
+    <string name="report_generated_date_time">Generato: %1$s</string>
+    <string name="report_total_items">Articoli totali: %1$d</string>
+    <string name="report_total_value">Valore totale dell\'inventario: %1$s</string>
+    <string name="report_photos_omitted">%1$d foto omesse — limite di immagini raggiunto</string>
+    <string name="report_page">Pagina %1$d</string>
+    <string name="report_col_no">N°</string>
+    <string name="report_col_name">Nome</string>
+    <string name="report_col_qty">Qtà</string>
+    <string name="report_col_unit_price">Prezzo unitario</string>
+    <string name="report_col_line_total">Totale riga</string>
+    <string name="report_col_first_purchase">Primo acquisto</string>
+    <string name="report_totals">Totali</string>
+    <string name="report_item_amount_price">Quantità: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Primo acquisto: %1$s · %2$s</string>
+    <string name="report_expires">Scade: %1$s</string>
+    <string name="report_created">Creato: %1$s</string>
+    <string name="report_photo_omitted">(foto omessa — limite di immagini raggiunto)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tag</string>
     <string name="header_images">Immagini</string>

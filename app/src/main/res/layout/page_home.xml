@@ -457,6 +457,17 @@
                         android:gravity="center"
                         android:text="@string/export_spreadsheet"
                         app:icon="@drawable/ic_table_black" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_export_pdf_report"
+                        style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/export_pdf_report"
+                        app:icon="@drawable/ic_pdf_black" />
                 </GridLayout>
             </LinearLayout>
         </ScrollView>

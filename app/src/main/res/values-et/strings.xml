@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Arvutustabelisse eksportimine nurjus</string>
     <string name="export_spreadsheet_progress_sheet">Ekspordin andmeid (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Kirjutan arvutustabelit…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Ekspordi PDF-raport</string>
+    <string name="share_pdf_report_file">Jaga PDF-raporti faili</string>
+    <string name="export_pdf_report_failed">PDF-rapordi eksportimine nurjus</string>
+    <string name="export_pdf_report_progress_cover">Loon tiitelplaati…</string>
+    <string name="export_pdf_report_progress_table">Loon kokkuvõtvat tabelit…</string>
+    <string name="export_pdf_report_progress_details">Loon üksuste üksikasju (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Kirjutan PDF-i…</string>
+    <string name="report_title">Inventariraport</string>
+    <string name="report_generated_date_time">Loodud: %1$s</string>
+    <string name="report_total_items">Üksusi kokku: %1$d</string>
+    <string name="report_total_value">Inventari koguväärtus: %1$s</string>
+    <string name="report_photos_omitted">%1$d fotot jäeti välja — pildilimiit on saavutatud</string>
+    <string name="report_page">Leht %1$d</string>
+    <string name="report_col_no">Nr</string>
+    <string name="report_col_name">Nimi</string>
+    <string name="report_col_qty">Kogus</string>
+    <string name="report_col_unit_price">Ühiku hind</string>
+    <string name="report_col_line_total">Rea summa</string>
+    <string name="report_col_first_purchase">Esimene ost</string>
+    <string name="report_totals">Kokku</string>
+    <string name="report_item_amount_price">Kogus: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Esimene ost: %1$s · %2$s</string>
+    <string name="report_expires">Aegub: %1$s</string>
+    <string name="report_created">Loodud: %1$s</string>
+    <string name="report_photo_omitted">(foto jäeti välja — pildilimiit on saavutatud)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Sildid</string>
     <string name="header_images">Pildid</string>

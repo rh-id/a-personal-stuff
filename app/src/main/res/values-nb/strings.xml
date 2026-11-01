@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Eksport til regneark feilet</string>
     <string name="export_spreadsheet_progress_sheet">Eksporterer data (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Skriver regneark…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Eksporter PDF-rapport</string>
+    <string name="share_pdf_report_file">Del PDF-rapportfil</string>
+    <string name="export_pdf_report_failed">Eksport av PDF-rapport feilet</string>
+    <string name="export_pdf_report_progress_cover">Genererer forside…</string>
+    <string name="export_pdf_report_progress_table">Genererer sammendragstabell…</string>
+    <string name="export_pdf_report_progress_details">Genererer varedetaljer (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Skriver PDF…</string>
+    <string name="report_title">Inventarrapport</string>
+    <string name="report_generated_date_time">Generert: %1$s</string>
+    <string name="report_total_items">Totalt antall varer: %1$d</string>
+    <string name="report_total_value">Total inventarverdi: %1$s</string>
+    <string name="report_photos_omitted">%1$d foto utelatt — bildergrense nådd</string>
+    <string name="report_page">Side %1$d</string>
+    <string name="report_col_no">Nr</string>
+    <string name="report_col_name">Navn</string>
+    <string name="report_col_qty">Antall</string>
+    <string name="report_col_unit_price">Enhetspris</string>
+    <string name="report_col_line_total">Linjesum</string>
+    <string name="report_col_first_purchase">Første kjøp</string>
+    <string name="report_totals">Totalt</string>
+    <string name="report_item_amount_price">Antall: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Første kjøp: %1$s · %2$s</string>
+    <string name="report_expires">Utløper: %1$s</string>
+    <string name="report_created">Opprettet: %1$s</string>
+    <string name="report_photo_omitted">(foto utelatt — bildergrense nådd)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Merker</string>
     <string name="header_images">Bilder</string>

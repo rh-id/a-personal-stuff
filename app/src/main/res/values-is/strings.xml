@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Útflutningur í töfluskrá mistókst</string>
     <string name="export_spreadsheet_progress_sheet">Flyt út gögn (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Skrifa töfluskrá…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Flytja út PDF skýrslu</string>
+    <string name="share_pdf_report_file">Deila PDF skýrslu</string>
+    <string name="export_pdf_report_failed">Útflutningur PDF skýrslu mistókst</string>
+    <string name="export_pdf_report_progress_cover">Bý til forsíðu…</string>
+    <string name="export_pdf_report_progress_table">Bý til yfirlitstöflu…</string>
+    <string name="export_pdf_report_progress_details">Bý til upplýsingar um hluti (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Skrifa PDF…</string>
+    <string name="report_title">Birgðaskýrsla</string>
+    <string name="report_generated_date_time">Búið til: %1$s</string>
+    <string name="report_total_items">Hlutir samtals: %1$d</string>
+    <string name="report_total_value">Samtals virði birgða: %1$s</string>
+    <string name="report_photos_omitted">%1$d ljósmyndum sleppt — myndamörk náð</string>
+    <string name="report_page">Síða %1$d</string>
+    <string name="report_col_no">Nr</string>
+    <string name="report_col_name">Nafn</string>
+    <string name="report_col_qty">Fjöldi</string>
+    <string name="report_col_unit_price">Einingaverð</string>
+    <string name="report_col_line_total">Línusamtals</string>
+    <string name="report_col_first_purchase">Fyrsta kaup</string>
+    <string name="report_totals">Samtals</string>
+    <string name="report_item_amount_price">Fjöldi: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Fyrsta kaup: %1$s · %2$s</string>
+    <string name="report_expires">Rennur út: %1$s</string>
+    <string name="report_created">Búið til: %1$s</string>
+    <string name="report_photo_omitted">(ljósmynd sleppt — myndamörk náð)</string>
     <string name="header_id">Auðkenni</string>
     <string name="header_tags">Merki</string>
     <string name="header_images">Myndir</string>

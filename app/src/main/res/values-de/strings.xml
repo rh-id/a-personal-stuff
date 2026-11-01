@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Export in Tabelle fehlgeschlagen</string>
     <string name="export_spreadsheet_progress_sheet">Daten werden exportiert (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Tabelle wird geschrieben…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">PDF-Bericht exportieren</string>
+    <string name="share_pdf_report_file">PDF-Berichtsdatei teilen</string>
+    <string name="export_pdf_report_failed">PDF-Berichtexport fehlgeschlagen</string>
+    <string name="export_pdf_report_progress_cover">Titelseite wird erstellt…</string>
+    <string name="export_pdf_report_progress_table">Übersichtstabelle wird erstellt…</string>
+    <string name="export_pdf_report_progress_details">Artikeldetails werden erstellt (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">PDF wird geschrieben…</string>
+    <string name="report_title">Inventarbericht</string>
+    <string name="report_generated_date_time">Erstellt am: %1$s</string>
+    <string name="report_total_items">Anzahl Artikel: %1$d</string>
+    <string name="report_total_value">Gesamter Inventarwert: %1$s</string>
+    <string name="report_photos_omitted">%1$d Fotos weggelassen — Bildlimit erreicht</string>
+    <string name="report_page">Seite %1$d</string>
+    <string name="report_col_no">Nr.</string>
+    <string name="report_col_name">Name</string>
+    <string name="report_col_qty">Menge</string>
+    <string name="report_col_unit_price">Einzelpreis</string>
+    <string name="report_col_line_total">Zeilensumme</string>
+    <string name="report_col_first_purchase">Erster Kauf</string>
+    <string name="report_totals">Summen</string>
+    <string name="report_item_amount_price">Menge: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Erster Kauf: %1$s · %2$s</string>
+    <string name="report_expires">Läuft ab: %1$s</string>
+    <string name="report_created">Erstellt: %1$s</string>
+    <string name="report_photo_omitted">(Foto weggelassen — Bildlimit erreicht)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Bilder</string>

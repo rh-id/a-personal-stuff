@@ -91,6 +91,33 @@
     <string name="export_spreadsheet_failed">Export en tabella n\'è betg reussì</string>
     <string name="export_spreadsheet_progress_sheet">Exportond datas (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Scrivend datoteca da tabella…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Exportar rapport PDF</string>
+    <string name="share_pdf_report_file">Cundivider la datoteca dal rapport PDF</string>
+    <string name="export_pdf_report_failed">Export dal rapport PDF n\'è betg reussì</string>
+    <string name="export_pdf_report_progress_cover">Generescha la pagina da cuverta…</string>
+    <string name="export_pdf_report_progress_table">Generescha la tabella da resumen…</string>
+    <string name="export_pdf_report_progress_details">Generescha ils detagls da las cosas (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Scriv il PDF…</string>
+    <string name="report_title">Rapport da l\'inventari</string>
+    <string name="report_generated_date_time">Generà: %1$s</string>
+    <string name="report_total_items">Dumber total da cosas: %1$d</string>
+    <string name="report_total_value">Valur totala da l\'inventari: %1$s</string>
+    <string name="report_photos_omitted">%1$d fotos omessas — limit da maletgs cuntanschì</string>
+    <string name="report_page">Pagina %1$d</string>
+    <string name="report_col_no">Nr</string>
+    <string name="report_col_name">Num</string>
+    <string name="report_col_qty">Quantitad</string>
+    <string name="report_col_unit_price">Prezzi unitar</string>
+    <string name="report_col_line_total">Summa da la lingia</string>
+    <string name="report_col_first_purchase">Emprim cumpra</string>
+    <string name="report_totals">Summas</string>
+    <string name="report_item_amount_price">Quantitad: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">Emprim cumpra: %1$s · %2$s</string>
+    <string name="report_expires">Scada: %1$s</string>
+    <string name="report_created">Creà: %1$s</string>
+    <string name="report_photo_omitted">(foto omessa — limit da maletgs cuntanschì)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Maletgs</string>

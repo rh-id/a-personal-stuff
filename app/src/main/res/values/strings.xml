@@ -96,6 +96,33 @@
     <string name="export_spreadsheet_failed">Export to spreadsheet failed</string>
     <string name="export_spreadsheet_progress_sheet">Exporting data (%1$d/%2$d)…</string>
     <string name="export_spreadsheet_progress_writing">Writing spreadsheet…</string>
+
+    <!-- Export PDF Report -->
+    <string name="export_pdf_report">Export PDF Report</string>
+    <string name="share_pdf_report_file">Share PDF report file</string>
+    <string name="export_pdf_report_failed">PDF report export failed</string>
+    <string name="export_pdf_report_progress_cover">Generating cover page…</string>
+    <string name="export_pdf_report_progress_table">Generating summary table…</string>
+    <string name="export_pdf_report_progress_details">Generating item details (%1$d/%2$d)…</string>
+    <string name="export_pdf_report_progress_writing">Writing PDF…</string>
+    <string name="report_title">Inventory Report</string>
+    <string name="report_generated_date_time">Generated: %1$s</string>
+    <string name="report_total_items">Total items: %1$d</string>
+    <string name="report_total_value">Total inventory value: %1$s</string>
+    <string name="report_photos_omitted">%1$d photos omitted — image limit reached</string>
+    <string name="report_page">Page %1$d</string>
+    <string name="report_col_no">#</string>
+    <string name="report_col_name">Name</string>
+    <string name="report_col_qty">Qty</string>
+    <string name="report_col_unit_price">Unit price</string>
+    <string name="report_col_line_total">Line total</string>
+    <string name="report_col_first_purchase">First purchase</string>
+    <string name="report_totals">Totals</string>
+    <string name="report_item_amount_price">Amount: %1$d × %2$s = %3$s</string>
+    <string name="report_first_purchase">First purchase: %1$s · %2$s</string>
+    <string name="report_expires">Expires: %1$s</string>
+    <string name="report_created">Created: %1$s</string>
+    <string name="report_photo_omitted">(photo omitted — image limit reached)</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Images</string>

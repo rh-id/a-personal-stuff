@@ -31,6 +31,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NewItemTagCmd.class, () -> new NewItemTagCmd(provider));
         providerRegistry.registerLazy(ExportCmd.class, () -> new ExportCmd(provider));
         providerRegistry.registerLazy(ExportSpreadsheetCmd.class, () -> new ExportSpreadsheetCmd(provider));
+        providerRegistry.registerLazy(ExportPdfReportCmd.class, () -> new ExportPdfReportCmd(provider));
         providerRegistry.registerLazy(ImportCmd.class, () -> new ImportCmd(provider));
         providerRegistry.registerModule(new ItemUsageCmdProviderModule());
         providerRegistry.registerModule(new ItemPurchaseCmdProviderModule());
