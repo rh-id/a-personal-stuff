@@ -15,7 +15,7 @@ import m.co.rh.id.aprovider.Provider;
 
 /**
  * Contributes the "Reminders" sheet (keyset-paged rows, no image table),
- * replacing the hard-coded writer in :app's ExportSpreadsheetCmd.
+ * driven by :app's ExportService#createSpreadsheetXlsx.
  */
 public class ItemReminderSpreadsheetContributor implements ModuleSpreadsheetContributor {
 

@@ -9,6 +9,7 @@
 ## Test
 - Instrumented tests on emulator (CI: android-emulator-test.yml): `./gradlew connectedCheck`
 - Module-scoped: `./gradlew :item-usage:connectedCheck`
+- Target one specific attached emulator when several are connected: `ANDROID_SERIAL=emulator-5556 ./gradlew connectedCheck` (list AVDs: `emulator -list-avds`; SDK tools at `%LOCALAPPDATA%/Android/Sdk` — not on Git Bash PATH by default)
 
 ## Lint / checks
 - Lint runs as part of `./gradlew build` (CI does not invoke a separate lint task)

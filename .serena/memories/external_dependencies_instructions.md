@@ -10,7 +10,7 @@
 - **Room**: per-module databases, schema export on
 - **WorkManager**: daily alert digest (`AlertDigestWorker` in `:app`) and reminder alarms (`:item-reminder`)
 - **ZXing** (via `:barcode` module): 1D barcode decoding with Camera1 API — no CameraX/Camera2
-- **XLSX export**: requires API 26+; export button hidden below that (do not lower this silently)
+- **XLSX export** (a-poi-spreadsheet, SXSSF streaming): requires API 26+; export button hidden below that (do not lower this silently). Engine is `ExportService.createSpreadsheetXlsx`; it must run on POI's dedicated single-thread executor — `Schedulers.from(POISpreadsheetContext.getInstance(), false)` (non-interruptible, set in `ExportSpreadsheetCmd`) so a disposed subscription cannot leave a stale interrupt flag on the shared POI thread
 
 ## Environment constraints
 - Java 17 toolchain required

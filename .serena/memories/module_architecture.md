@@ -4,7 +4,7 @@ Modular Single-Activity Architecture. 9 Gradle modules (see `settings.gradle`):
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | `MainActivity`, `MainApplication`, DI setup, `NavigatorProvider` (route → StatefulViewFactory), dashboard overview card (`DashboardCmd`, `InventoryStatsCalculator`), daily alert digest (`InventoryAlertScheduler`, `AlertDigestWorker`) with alert-aware deep links (`PagedItemCmd` id-set filter, `InventoryStatsCalculator.findAlertItemIds()`), manual + scheduled backup/restore (`AutoBackupScheduler`/`AutoBackupWorker`/`ExportService`), XLSX export |
+| `:app` | `MainActivity`, `MainApplication`, DI setup, `NavigatorProvider` (route → StatefulViewFactory), dashboard overview card (`DashboardCmd`, `InventoryStatsCalculator`), daily alert digest (`InventoryAlertScheduler`, `AlertDigestWorker`) with alert-aware deep links (`PagedItemCmd` id-set filter, `InventoryStatsCalculator.findAlertItemIds()`), manual + scheduled backup (`AutoBackupScheduler`/`AutoBackupWorker`); all data exports live in the stateless `ExportService` (ZIP backup, PDF report, XLSX spreadsheet API 26+) behind thin Rx commands (`ExportCmd`, `ExportPdfReportCmd`, `ExportSpreadsheetCmd`) |
 | `:base` | Shared entities (`Item`, `ItemImage`, `ItemTag`), DAOs, Rx utilities, `DbMigration`, Room migrations, shared UI (`AppBar`, `ImageSV`, `SelectionPage`) |
 | `:barcode` | Camera1 + ZXing scanning (`ScanBarcodePage`, `ScanBarcodePreview`) |
 | `:item-usage` | `ItemUsage` entity/DAO/commands/pages |
@@ -24,7 +24,7 @@ Multiple Room databases, one per feature module (decoupled, independently extrac
 ## Core patterns (all modules follow these)
 1. **StatefulView navigation**: single `MainActivity` hosts all screens; pages implement `StatefulView<Activity>` (lifecycle: `createView()` → `dispose()`), NO Fragments/Activities per screen. Route strings in `Routes`; mapped in `NavigatorProvider`.
 2. **a-provider DI**: scopes = Application (`MainApplication`) → Activity (`MainActivity`) → per-StatefulView. Registration via `ProviderModule` implementations: `register()`, `registerLazy()`, `registerAsync()`, `registerPool()`.
-3. **Command pattern**: stateless `*Cmd` classes (e.g. `NewItemCmd`, `QueryItemCmd`, `PagedItemMaintenanceCmd`); run on `ExecutorService`; return RxJava `Single<T>`/`Observable<T>`.
+3. **Command pattern**: stateless `*Cmd` classes (e.g. `NewItemCmd`, `QueryItemCmd`, `PagedItemMaintenanceCmd`); run on `ExecutorService`; return RxJava `Single<T>`/`Observable<T>`. Heavy/blocking work belongs in a stateless `*Service` and the command stays a thin Rx adapter over it — precedent: `ExportCmd`/`ExportPdfReportCmd`/`ExportSpreadsheetCmd` all adapt `ExportService` methods, each exposing `execute()` + `getProgressFlow()` (`PublishSubject<String>` adapted via `ProgressListener`); `ExportService` keeps per-run mutable state in per-run inner writer classes (`ReportWriter`, `SpreadsheetWriter`).
 4. **ChangeNotifier event bus**: per module, RxJava `PublishSubject` → `Flowable` streams (`itemAdded()` → `getAddedItemFlow()` etc.). `*EventHandler` classes subscribe cross-module: 5 handlers listen to base `ItemChangeNotifier` for cascade deletes on item deletion (usage, purchase, maintenance, checklist items, reminders + WorkManager work cancel).
 5. **Repository pattern**: `*Repo` wraps DAOs (e.g. `AndroidNotificationRepo` → `AndroidNotificationDao`).
 

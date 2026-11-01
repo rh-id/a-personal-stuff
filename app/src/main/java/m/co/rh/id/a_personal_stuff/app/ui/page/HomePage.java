@@ -197,15 +197,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         if (mButtonExportPdfReport != null) {
             mButtonExportPdfReport.setOnClickListener(this);
         }
-        // A rebuild (rotation/theme change) must never start or re-subscribe an
-        // export: the running export's original subscriptions keep delivering
-        // progress into the shown dialog's Args subject and the result to this
-        // view, because rebuilds reuse the same command, disposers and
-        // activity, and the dialog re-binds the subject's latest value. Only
-        // reflect the in-flight state.
-        if (mExportSpreadsheetCmd.isExporting()) {
-            showExportingState();
-        }
+        // No in-flight restore on rebuild: a mid-export rebuild keeps the
+        // export flowing via the surviving disposers/dialog, and a re-tap
+        // queues a second export — same exposure as the PDF/ZIP exports.
         mLocale = ConfigurationCompat.getLocales(activity.getResources().getConfiguration()).get(0);
         mCardDashboardInventory = rootLayout.findViewById(R.id.card_dashboard_inventory);
         mCardDashboardInventory.setOnClickListener(this);

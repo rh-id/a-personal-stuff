@@ -334,10 +334,10 @@ a-personal-stuff/
 │   │   │   │   ├── DuplicateItemCmd.java       # Duplicate item command
 │   │   │   │   ├── DashboardCmd.java           # Dashboard overview card computation and refresh
 │   │   │   │   ├── ExportCmd.java              # Export data command
-│   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export command (Android 8.0+)
+│   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export Rx adapter (engine in ExportService, Android 8.0+)
 │   │   │   │   └── ImportCmd.java              # Import data command
 │   │   │   ├── service/
-│   │   │   │   └── ExportService.java          # ZIP backup builder (manual & automatic backup)
+│   │   │   │   └── ExportService.java          # ZIP backup / PDF report / XLSX spreadsheet export builder (manual & automatic backup)
 │   │   ├── workmanager/
 │   │   │   ├── AutoBackupFileUtil.java        # Backup file naming and rotation (keep newest 5)
 │   │   │   ├── WorkManagerConstants.java      # Unique work name constants
@@ -796,7 +796,7 @@ All tests are instrumented component tests (JUnit 4 — zero Mockito anywhere) t
 Suites, run on the emulator matrix in CI (see Automation & CI/CD above):
 
 - **`:app/src/androidTest/` — BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
-- **`:app/src/androidTest/` — ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+- **`:app/src/androidTest/` — ExportSpreadsheetCmdTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
 - **`:app/src/androidTest/` — PagedItemCmdTest.java, InventoryStatsCalculatorTest.java, GenerateShoppingListCmdTest.java, AutoBackupFileUtilTest.java** (former JVM unit tests under `:app/src/test/`, relocated as component tests): paged item search against a real DAO (state emission, empty-list fallback when the database is closed, dedup/membership of merged search ids, page-size doubling on `loadNextPage`, empty-filter short-circuit, multi-id filter); inventory statistics over real usage/purchase databases (zeroed summary for empty data, inventory value aggregation, expiry boundary splitting, low-stock detection from derived remaining stock); designated shopping-list generation through the real `ItemChecklistService` and `SettingsSharedPreferences` (find-or-create, id persistence, title adoption, regeneration, and a two-thread overlap test); and 7 auto-backup rotation tests (file name format, keep-newest-5 rotation, order independence, non-matching names, null/empty input).
 - **`:item-checklist/src/androidTest/` — ItemChecklistServiceTest.java, QueryItemChecklistCmdTest.java** (former JVM unit tests, relocated as component tests): every mutation of the shared `ItemChecklistService` (persistence, timestamp bumps, notifier flow emissions, missing-parent guards) and `QueryItemChecklistCmd` existence checks (`existsById`, plus the stale-id case where the state query's `Maybe` completes empty).
 - **`:base/src/androidTest/` — ItemDaoTest.java**: pins the exact ordering of every `ItemDao` sort-matrix entry across all query families, and unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.

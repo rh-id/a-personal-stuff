@@ -1,10 +1,7 @@
 package m.co.rh.id.a_personal_stuff.app.provider.command;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assume.assumeTrue;
 
@@ -30,10 +27,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
 
-import io.reactivex.rxjava3.observers.TestObserver;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
 import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -41,7 +38,9 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
+import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.base.test.DirectExecutorService;
 import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
@@ -81,7 +80,7 @@ import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
 
 @RunWith(AndroidJUnit4.class)
-public class ExportSpreadsheetIntegrationTest {
+public class ExportSpreadsheetCmdTest {
     private static final int EXPECTED_SHEET_COUNT = 7;
     private static final List<String> EXPECTED_SHEET_NAMES = Arrays.asList(
             "Items", "Usages", "Purchases", "Maintenances",
@@ -225,7 +224,7 @@ public class ExportSpreadsheetIntegrationTest {
         item2.name = "Full Item 2";
         item2.amount = 1;
         // 300-char description drives the description column's auto-computed
-        // width into its 100-char cap (see ExportSpreadsheetCmd width constants).
+        // width into its 100-char cap (see the width constants in ExportService).
         char[] longDescriptionChars = new char[300];
         Arrays.fill(longDescriptionChars, 'x');
         String longDescription = new String(longDescriptionChars);
@@ -630,7 +629,7 @@ public class ExportSpreadsheetIntegrationTest {
     }
 
     @Test
-    public void exportProgressFlowAndLastProgress() throws Exception {
+    public void exportProgressFlow() throws Exception {
         Date now = new Date();
 
         ItemState itemState = new ItemState();
@@ -663,87 +662,8 @@ public class ExportSpreadsheetIntegrationTest {
                         progress.get(i));
             }
             assertEquals(writing, progress.get(8));
-            // clearInFlight() runs on the POI thread after the terminal event is
-            // delivered, so wait for the in-flight state to clear before asserting
-            // (isExporting() shares its lock with the cleanup, giving the
-            // happens-before edge). Termination drops the stale progress message.
-            long deadline = System.currentTimeMillis() + 10_000;
-            while (cmd.isExporting() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(10);
-            }
-            assertFalse(cmd.isExporting());
-            assertNull(cmd.getLastProgress());
         } finally {
             xlsxFile.delete();
-        }
-    }
-
-    @Test
-    public void exportInFlightReusesSameResult() throws Exception {
-        Date now = new Date();
-
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Bulk Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
-
-        // same 1,200-usage seed as exportWithMultiPageUsages: the export takes
-        // ~1.4s, making the in-flight window deterministically observable (the
-        // re-subscribe window after execute() is only microseconds long).
-        seedUsages(itemId, 1200);
-
-        ExportSpreadsheetCmd cmd = new ExportSpreadsheetCmd(mProvider);
-        TestObserver<File> first = null;
-        TestObserver<File> second = null;
-        try {
-            first = cmd.execute().test();
-            assertTrue("first execute() should own the in-flight export", cmd.isExporting());
-            // re-attach while the first export is still running
-            second = cmd.execute().test();
-            assertTrue("re-attach must not cancel the running export", cmd.isExporting());
-            assertTrue(first.await(30, TimeUnit.SECONDS));
-            assertTrue(second.await(30, TimeUnit.SECONDS));
-            first.assertNoErrors();
-            second.assertNoErrors();
-            // same File instance — no second run of the export
-            assertSame(first.values().get(0), second.values().get(0));
-            // clearInFlight() runs on the POI thread after the terminal event
-            // is delivered (doFinally sits upstream of cache()), so the await
-            // above can win the race against the cleanup: wait for the
-            // in-flight state to clear before asserting (same pattern as
-            // exportProgressFlowAndLastProgress).
-            long deadline = System.currentTimeMillis() + 10_000;
-            while (cmd.isExporting() && System.currentTimeMillis() < deadline) {
-                Thread.sleep(10);
-            }
-            assertFalse(cmd.isExporting());
-        } finally {
-            // cleanup must not depend on the assertions above passing: delete
-            // whatever the observers captured, so a failed await cannot leak
-            // the exported temp file
-            deleteExportedFiles(first, second);
-        }
-    }
-
-    /**
-     * Deletes any exported file captured by the given observers (best effort)
-     * so cleanup is independent of the test assertions having succeeded — both
-     * observers normally share the same {@link File} instance and
-     * {@link File#delete()} is idempotent.
-     */
-    private static void deleteExportedFiles(TestObserver<File> first,
-                                            TestObserver<File> second) {
-        for (TestObserver<File> observer : Arrays.asList(first, second)) {
-            if (observer != null) {
-                for (File file : observer.values()) {
-                    file.delete();
-                }
-            }
         }
     }
 
@@ -791,9 +711,20 @@ public class ExportSpreadsheetIntegrationTest {
         return false;
     }
 
+    private static class NoOpCleanUpItemFileHelper extends ItemFileHelper {
+        public NoOpCleanUpItemFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
     private class TestExportSpreadsheetProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
+            providerRegistry.register(ExecutorService.class, this::getExecutorService);
             providerRegistry.register(ILogger.class, NoOpLogger::new);
             providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
@@ -803,6 +734,8 @@ public class ExportSpreadsheetIntegrationTest {
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
             providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
+            providerRegistry.registerLazy(ItemFileHelper.class, () -> new NoOpCleanUpItemFileHelper(provider));
+            providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
             // real per-module sheet contributors over this test's DAOs
             BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
             contributorRegistry.register(new ItemUsageSpreadsheetContributor(provider));
@@ -810,6 +743,14 @@ public class ExportSpreadsheetIntegrationTest {
             contributorRegistry.register(new ItemMaintenanceSpreadsheetContributor(provider));
             contributorRegistry.register(new ItemReminderSpreadsheetContributor(provider));
             contributorRegistry.register(new ItemChecklistSpreadsheetContributor(provider));
+        }
+
+        private ExecutorService getExecutorService() {
+            // runs every task inline on the calling thread (shared androidTest
+            // fixture): ItemFileHelper's one-shot cleanUp() submits its first
+            // task before the outer one, so the nested Future.get() calls
+            // never block under it
+            return new DirectExecutorService();
         }
 
         private ItemDao getItemDao() {

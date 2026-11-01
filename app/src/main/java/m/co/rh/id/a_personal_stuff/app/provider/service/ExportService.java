@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.RectF;
 import android.graphics.Typeface;
 import android.graphics.pdf.PdfDocument;
+import android.os.Build;
 import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
@@ -32,6 +33,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -43,6 +45,11 @@ import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.backup.ExportImageDir;
 import m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor;
 import m.co.rh.id.a_personal_stuff.base.backup.ModuleExport;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -53,14 +60,21 @@ import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Row;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Sheet;
+import m.co.rh.id.apoi_spreadsheet.org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import m.co.rh.id.aprovider.Provider;
 
 /**
  * Stateless export builder: gathers the base-DB items core plus every
  * module contributor's sections and referenced images into a single zip
- * archive, and renders the inventory's insurance-ready PDF report. Holds
- * only final injected collaborators and is safe to share; callers own the
- * threading (the work is blocking).
+ * archive, renders the inventory's insurance-ready PDF report, and builds
+ * the multi-sheet XLSX spreadsheet export. Holds only final injected
+ * collaborators and is safe to share; callers own the threading (the work
+ * is blocking).
  */
 public class ExportService {
 
@@ -121,6 +135,27 @@ public class ExportService {
      */
     private static final float TABLE_NAME_MIN_WIDTH = 60f;
     private static final float DESCRIPTION_BLOCK_PADDING = 3f;
+
+    private static final String SHEET_ITEMS = "Items";
+    private static final String XLSX_EXTENSION = ".xlsx";
+    /**
+     * Column widths are computed manually from content length instead of
+     * {@code Sheet.autoSizeColumn(int)}: autoSizeColumn measures text via
+     * java.awt font metrics (unavailable on this Android POI port) and on the
+     * SXSSF streaming writer it requires the column's rows to be tracked in
+     * memory. Instead each sheet writer records the longest display length
+     * per column (headers included) and the widths are applied once after
+     * all rows are written (see {@link #applyColumnWidths(Sheet, int[])}).
+     */
+    private static final int COLUMN_WIDTH_PADDING_CHARS = 2;
+    /** Width floor so narrow ID/date columns stay readable. */
+    private static final int COLUMN_WIDTH_MIN_CHARS = 10;
+    /** Width cap so runaway description/tag/image columns stay navigable. */
+    private static final int COLUMN_WIDTH_MAX_CHARS = 100;
+    /** POI column width unit: 1/256 of a character width. */
+    private static final int COLUMN_WIDTH_CHAR_UNITS = 256;
+    /** Display length of a cell styled with the "yyyy-mm-dd HH:mm:ss" format. */
+    private static final int DATE_CELL_DISPLAY_CHARS = "yyyy-mm-dd HH:mm:ss".length();
 
     private final Context mAppContext;
     private final FileHelper mFileHelper;
@@ -235,7 +270,7 @@ public class ExportService {
      * {@link PdfDocument#writeTo(java.io.OutputStream)}. Consequences:
      * <ul>
      * <li>The file is written LAST, after all pages are recorded (mirroring the
-     *     spreadsheet command's write-at-end), the partial file is deleted on a
+     *     XLSX export's write-at-end), the partial file is deleted on a
      *     failed write, and the document is closed in {@code finally} (the analog
      *     of {@code workbook.dispose()}).</li>
      * <li>Images are the only unbounded cost, so decoding is strictly ONE bitmap
@@ -271,7 +306,7 @@ public class ExportService {
     public File createReportPdf(ProgressListener progressListener) throws Exception {
         progress(progressListener, R.string.export_progress_gathering);
         // Items are deliberately full-loaded: a small anchor table whose rows
-        // feed every page of the report (same rationale as the XLSX command).
+        // feed every page of the report (same rationale as the XLSX export).
         List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
         // Cover totals come from the dashboard's own queries — never recomputed
         // from the list, so the report can never disagree with the dashboard.
@@ -325,6 +360,95 @@ public class ExportService {
             writer.mPdfDocument.close();
         }
         return pdfFile;
+    }
+
+    /**
+     * Builds the whole inventory as a multi-sheet XLSX spreadsheet (the
+     * :app-owned Items sheet plus every module contributor's sheets) into a
+     * temp file, using the streaming {@link SXSSFWorkbook}. Requires API 26
+     * or higher (the POI spreadsheet library does not support lower API
+     * levels). Blocking; call from a background thread. The returned temp
+     * file must be recycled by the caller via {@code FileHelper.deleteTempFile}
+     * (or handed to the user).
+     * <p>
+     * Memory strategy: Items are deliberately full-loaded because they are a
+     * small anchor table whose rows also feed the item-name join map shared
+     * with every module sheet. The high-volume tables (item_usage,
+     * item_purchase, item_maintenance, item_reminder, item_checklist_item and
+     * the three image tables) are keyset-paged by their contributors
+     * ({@link ModuleSpreadsheetContributor#PAGE_SIZE} rows per page): a page
+     * is loaded, written to the sheet, then dropped, which bounds peak memory
+     * regardless of table size.
+     *
+     * @param progressListener optional; receives localized progress messages
+     */
+    public File createSpreadsheetXlsx(ProgressListener progressListener) throws Exception {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            throw new IllegalStateException("XLSX export requires Android 8.0 or newer");
+        }
+        progress(progressListener, R.string.export_progress_gathering);
+        // The Items sheet is :app-owned (base-DB anchor). Items are
+        // deliberately full-loaded: their rows feed the Items sheet AND the
+        // item-name join map shared with every module sheet.
+        List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
+        Map<Long, Item> itemMap = new HashMap<>();
+        Map<Long, String> itemTagsMap = new HashMap<>();
+        Map<Long, String> itemImagesByItemId = new HashMap<>();
+        for (ItemState itemState : itemStates) {
+            Item item = itemState.getItem();
+            itemMap.put(item.id, item);
+            itemTagsMap.put(item.id, joinTags(itemState.getItemTags()));
+            for (ItemImage itemImage : itemState.getItemImages()) {
+                addImageFileName(itemImagesByItemId, item.id, itemImage.fileName);
+            }
+        }
+        SpreadsheetJoinData joinData = new SpreadsheetJoinData(itemMap);
+
+        // Items sheet (:app-owned) plus every contributed sheet — derived at
+        // run time so the progress denominator can never drift from the
+        // actual sheet count
+        int totalSheets = 1;
+        for (ModuleSpreadsheetContributor contributor : mContributorRegistry.getSpreadsheetContributors()) {
+            totalSheets += contributor.getSheets().size();
+        }
+
+        SXSSFWorkbook workbook = new SXSSFWorkbook(100);
+        File xlsxFile;
+        try {
+            SpreadsheetWriter writer = new SpreadsheetWriter(progressListener, totalSheets, workbook);
+
+            writer.writeItemsSheet(workbook, itemStates, itemTagsMap, itemImagesByItemId, 1);
+            // module sheets in contributor registration order (usage,
+            // purchase, maintenance, reminder, checklist) followed by each
+            // contributor's own sheet order (checklist: Checklists, Checklist
+            // Items) — keeping the sheet order of the pre-contract format.
+            int sheetIndex = 2;
+            for (ModuleSpreadsheetContributor contributor
+                    : mContributorRegistry.getSpreadsheetContributors()) {
+                for (ModuleSpreadsheetSheet sheet : contributor.getSheets()) {
+                    writer.writeContributedSheet(workbook, sheet, joinData, sheetIndex++);
+                }
+            }
+
+            progress(progressListener, R.string.export_spreadsheet_progress_writing);
+            String fileName = "personal_stuff_export_"
+                    + new SimpleDateFormat(DATE_FORMAT, Locale.US).format(new Date())
+                    + XLSX_EXTENSION;
+            xlsxFile = mFileHelper.createTempFile(fileName);
+            try {
+                try (FileOutputStream fos = new FileOutputStream(xlsxFile)) {
+                    workbook.write(fos);
+                }
+            } catch (Exception e) {
+                // delete the partially written file so no broken .xlsx is left behind
+                xlsxFile.delete();
+                throw e;
+            }
+        } finally {
+            workbook.dispose();
+            workbook.close();
+        }
+        return xlsxFile;
     }
 
     /**
@@ -393,6 +517,182 @@ public class ExportService {
                 bis.close();
                 zos.closeEntry();
             }
+        }
+    }
+
+    /**
+     * Joins an item's tags with the shared tag separator (blank when the item
+     * has none) for the Items sheet's Tags column.
+     */
+    private static String joinTags(TreeSet<ItemTag> itemTags) {
+        if (itemTags == null || itemTags.isEmpty()) {
+            return "";
+        }
+        StringBuilder stringBuilder = new StringBuilder();
+        for (ItemTag itemTag : itemTags) {
+            if (stringBuilder.length() > 0) {
+                stringBuilder.append(TAG_SEPARATOR);
+            }
+            stringBuilder.append(itemTag.tag);
+        }
+        return stringBuilder.toString();
+    }
+
+    /**
+     * Appends an image file name to the joined names of its parent record
+     * (item/usage/purchase/maintenance). Null or empty file names are skipped,
+     * and no entry is created for parents without any valid name so their
+     * export cell stays blank.
+     */
+    private static void addImageFileName(Map<Long, String> imagesByParentId, Long parentId, String fileName) {
+        if (parentId == null || fileName == null || fileName.isEmpty()) {
+            return;
+        }
+        String joined = imagesByParentId.get(parentId);
+        if (joined == null || joined.isEmpty()) {
+            imagesByParentId.put(parentId, fileName);
+        } else {
+            imagesByParentId.put(parentId, joined + TAG_SEPARATOR + fileName);
+        }
+    }
+
+    private static CellStyle createHeaderStyle(SXSSFWorkbook workbook) {
+        Font font = workbook.createFont();
+        font.setBold(true);
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setFont(font);
+        return cellStyle;
+    }
+
+    private static CellStyle createDateStyle(SXSSFWorkbook workbook) {
+        CellStyle cellStyle = workbook.createCellStyle();
+        cellStyle.setDataFormat(workbook.createDataFormat().getFormat("yyyy-mm-dd HH:mm:ss"));
+        return cellStyle;
+    }
+
+    /**
+     * Writes the header row and returns one display-length entry per column
+     * (seeded with each header's length) so the caller can track the widest
+     * content per column for the auto-computed column widths.
+     */
+    private static int[] writeHeaderRow(Sheet sheet, CellStyle headerStyle, String[] headers) {
+        Row headerRow = sheet.createRow(0);
+        int[] columnChars = new int[headers.length];
+        for (int i = 0; i < headers.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(headers[i]);
+            cell.setCellStyle(headerStyle);
+            columnChars[i] = headers[i] == null ? 0 : headers[i].length();
+        }
+        return columnChars;
+    }
+
+    /**
+     * Writes ID columns (id/itemId/itemChecklistId) as TEXT cells so the values
+     * export losslessly and never render in scientific notation.
+     *
+     * @return the display length of the written value, 0 when null.
+     */
+    private static int writeLongCell(Row row, int column, Long value) {
+        if (value == null) {
+            return 0;
+        }
+        String text = String.valueOf(value);
+        row.createCell(column).setCellValue(text);
+        return text.length();
+    }
+
+    /**
+     * @return the display length of the written value, 0 when null.
+     */
+    private static int writeStringCell(Row row, int column, String value) {
+        if (value == null) {
+            return 0;
+        }
+        row.createCell(column).setCellValue(value);
+        return maxLineLength(value);
+    }
+
+    /**
+     * Writes an integer amount cell, keeping the cell a true numeric cell, and
+     * tracks the column width: the display length of the plain string form is
+     * returned so amount columns are measured like every other helper instead
+     * of falling back to the {@link #COLUMN_WIDTH_MIN_CHARS} floor.
+     *
+     * @return the display length of the written value.
+     */
+    private static int writeAmountCell(Row row, int column, int value) {
+        row.createCell(column).setCellValue(value);
+        return String.valueOf(value).length();
+    }
+
+    /**
+     * Writes a nullable integer amount cell: null writes a blank cell,
+     * otherwise the cell stays a true numeric cell, tracking the column width
+     * like {@link #writeAmountCell(Row, int, int)}.
+     *
+     * @return the display length of the written value, 0 when null.
+     */
+    private static int writeNullableAmountCell(Row row, int column, Integer value) {
+        if (value == null) {
+            return 0;
+        }
+        row.createCell(column).setCellValue(value.doubleValue());
+        return String.valueOf(value).length();
+    }
+
+    /**
+     * @return the approximate display length of the written value, 0 when null.
+     */
+    private static int writeDecimalCell(Row row, int column, BigDecimal value) {
+        if (value == null) {
+            return 0;
+        }
+        row.createCell(column).setCellValue(value.doubleValue());
+        return String.valueOf(value.doubleValue()).length();
+    }
+
+    /**
+     * @return the display length of the rendered date
+     * ("yyyy-mm-dd HH:mm:ss"), 0 when null.
+     */
+    private static int writeDateCell(Row row, int column, Date value, CellStyle dateStyle) {
+        if (value == null) {
+            return 0;
+        }
+        Cell cell = row.createCell(column);
+        cell.setCellValue(value);
+        cell.setCellStyle(dateStyle);
+        return DATE_CELL_DISPLAY_CHARS;
+    }
+
+    /**
+     * @return the length of the longest line in {@code value}; multi-line
+     * content (e.g. descriptions containing newlines) only needs to fit its
+     * longest line.
+     */
+    private static int maxLineLength(String value) {
+        int maxLength = 0;
+        int lineStart = 0;
+        for (int i = 0; i < value.length(); i++) {
+            if (value.charAt(i) == '\n') {
+                maxLength = Math.max(maxLength, i - lineStart);
+                lineStart = i + 1;
+            }
+        }
+        return Math.max(maxLength, value.length() - lineStart);
+    }
+
+    /**
+     * Applies the auto-computed column widths: each column is sized to its
+     * longest display length plus padding, clamped between a readable floor
+     * and a navigable cap (safely inside POI's 255-character column limit).
+     */
+    private static void applyColumnWidths(Sheet sheet, int[] columnChars) {
+        for (int i = 0; i < columnChars.length; i++) {
+            int chars = Math.min(Math.max(columnChars[i] + COLUMN_WIDTH_PADDING_CHARS,
+                    COLUMN_WIDTH_MIN_CHARS), COLUMN_WIDTH_MAX_CHARS);
+            sheet.setColumnWidth(i, chars * COLUMN_WIDTH_CHAR_UNITS);
         }
     }
 
@@ -1033,6 +1333,185 @@ public class ExportService {
             paint.setTypeface(Typeface.create(Typeface.SANS_SERIF,
                     bold ? Typeface.BOLD : Typeface.NORMAL));
             return paint;
+        }
+    }
+
+    /**
+     * Per-run writing state for the XLSX export: the progress listener, the
+     * sheet-count denominator, the header-id cache and the workbook's shared
+     * cell styles live here instead of on the service so a failed run can
+     * never leak state into a retry (the service itself outlives runs).
+     * Analog of {@link ReportWriter}.
+     */
+    private class SpreadsheetWriter {
+
+        private final ProgressListener mProgressListener;
+        /** Items sheet + every contributed sheet; the progress denominator. */
+        private final int mTotalSheets;
+        /** Cache for the by-name resolution of the :app header string resources. */
+        private final Map<String, Integer> mHeaderIdCache = new HashMap<>();
+        private final CellStyle mHeaderStyle;
+        private final CellStyle mDateStyle;
+
+        private SpreadsheetWriter(ProgressListener progressListener, int totalSheets,
+                                  SXSSFWorkbook workbook) {
+            mProgressListener = progressListener;
+            mTotalSheets = totalSheets;
+            mHeaderStyle = createHeaderStyle(workbook);
+            mDateStyle = createDateStyle(workbook);
+        }
+
+        /**
+         * Resolves one contributor header key to its localized :app string. The
+         * sheet header strings live in :app resources (feature modules must not
+         * depend on :app), so contributors declare the stable resource NAMES and
+         * this writer resolves them by name, cached per export run; an
+         * unresolved key falls back to the raw name so a rename is visible in the
+         * export instead of silently blank.
+         */
+        private String resolveHeader(String headerKey) {
+            Integer id = mHeaderIdCache.get(headerKey);
+            if (id == null) {
+                id = mAppContext.getResources().getIdentifier(
+                        headerKey, "string", mAppContext.getPackageName());
+                mHeaderIdCache.put(headerKey, id);
+            }
+            return id != 0 ? mAppContext.getString(id) : headerKey;
+        }
+
+        private void emitSheetProgress(int sheetIndex) {
+            progress(mProgressListener,
+                    R.string.export_spreadsheet_progress_sheet, sheetIndex, mTotalSheets);
+        }
+
+        /**
+         * Writes one contributed sheet: localized headers from the declared
+         * header keys, then the contributor's (keyset-paged) row writer adapted
+         * to the streaming workbook.
+         */
+        private void writeContributedSheet(SXSSFWorkbook workbook,
+                                           ModuleSpreadsheetSheet sheet,
+                                           SpreadsheetJoinData joinData, int sheetIndex) {
+            emitSheetProgress(sheetIndex);
+            Sheet poiSheet = workbook.createSheet(sheet.getName());
+            List<String> headerKeys = sheet.getHeaderKeys();
+            String[] headers = new String[headerKeys.size()];
+            for (int i = 0; i < headerKeys.size(); i++) {
+                headers[i] = resolveHeader(headerKeys.get(i));
+            }
+            int[] columnChars = writeHeaderRow(poiSheet, mHeaderStyle, headers);
+            sheet.writeRows(new PoiSheetRowSink(poiSheet, columnChars, mDateStyle), joinData);
+            applyColumnWidths(poiSheet, columnChars);
+        }
+
+        /**
+         * Adapts a contributed row writer to the streaming workbook: creates each
+         * physical row and routes the typed cell writes through the shared cell
+         * helpers so column-width tracking stays identical to the :app-owned
+         * sheets.
+         */
+        private class PoiSheetRowSink implements ModuleSheetRowSink {
+
+            private final Sheet mSheet;
+            private final int[] mColumnChars;
+            private final CellStyle mDateStyle;
+            private int mRowIndex = 1;
+
+            private PoiSheetRowSink(Sheet sheet, int[] columnChars, CellStyle dateStyle) {
+                mSheet = sheet;
+                mColumnChars = columnChars;
+                mDateStyle = dateStyle;
+            }
+
+            @Override
+            public ModuleSheetRow nextRow() {
+                Row row = mSheet.createRow(mRowIndex++);
+                return new PoiSheetRow(row, mColumnChars, mDateStyle);
+            }
+        }
+
+        private void writeItemsSheet(SXSSFWorkbook workbook, List<ItemState> itemStates,
+                                     Map<Long, String> itemTagsMap,
+                                     Map<Long, String> itemImagesByItemId, int sheetIndex) {
+            emitSheetProgress(sheetIndex);
+            Sheet sheet = workbook.createSheet(SHEET_ITEMS);
+            int[] columnChars = writeHeaderRow(sheet, mHeaderStyle, new String[]{
+                    mAppContext.getString(R.string.header_id),
+                    mAppContext.getString(R.string.form_name),
+                    mAppContext.getString(R.string.form_amount),
+                    mAppContext.getString(R.string.form_min_amount),
+                    mAppContext.getString(R.string.form_price),
+                    mAppContext.getString(R.string.form_description),
+                    mAppContext.getString(R.string.form_barcode),
+                    mAppContext.getString(R.string.form_expired_date_time),
+                    mAppContext.getString(R.string.header_created_date_time),
+                    mAppContext.getString(R.string.header_updated_date_time),
+                    mAppContext.getString(R.string.header_tags),
+                    mAppContext.getString(R.string.header_images),
+            });
+            int rowIndex = 1;
+            for (ItemState itemState : itemStates) {
+                Item item = itemState.getItem();
+                Row row = sheet.createRow(rowIndex++);
+                columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, item.id));
+                columnChars[1] = Math.max(columnChars[1], writeStringCell(row, 1, item.name));
+                columnChars[2] = Math.max(columnChars[2], writeAmountCell(row, 2, item.amount));
+                columnChars[3] = Math.max(columnChars[3],
+                        writeNullableAmountCell(row, 3, item.minAmount));
+                columnChars[4] = Math.max(columnChars[4], writeDecimalCell(row, 4, item.price));
+                columnChars[5] = Math.max(columnChars[5], writeStringCell(row, 5, item.description));
+                columnChars[6] = Math.max(columnChars[6], writeStringCell(row, 6, item.barcode));
+                columnChars[7] = Math.max(columnChars[7],
+                        writeDateCell(row, 7, item.expiredDateTime, mDateStyle));
+                columnChars[8] = Math.max(columnChars[8],
+                        writeDateCell(row, 8, item.createdDateTime, mDateStyle));
+                columnChars[9] = Math.max(columnChars[9],
+                        writeDateCell(row, 9, item.updatedDateTime, mDateStyle));
+                columnChars[10] = Math.max(columnChars[10],
+                        writeStringCell(row, 10, itemTagsMap.get(item.id)));
+                columnChars[11] = Math.max(columnChars[11],
+                        writeStringCell(row, 11, itemImagesByItemId.get(item.id)));
+            }
+            applyColumnWidths(sheet, columnChars);
+        }
+    }
+
+    private static class PoiSheetRow implements ModuleSheetRow {
+
+        private final Row mRow;
+        private final int[] mColumnChars;
+        private final CellStyle mDateStyle;
+
+        private PoiSheetRow(Row row, int[] columnChars, CellStyle dateStyle) {
+            mRow = row;
+            mColumnChars = columnChars;
+            mDateStyle = dateStyle;
+        }
+
+        @Override
+        public void longCell(int column, Long value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeLongCell(mRow, column, value));
+        }
+
+        @Override
+        public void stringCell(int column, String value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeStringCell(mRow, column, value));
+        }
+
+        @Override
+        public void amountCell(int column, int value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeAmountCell(mRow, column, value));
+        }
+
+        @Override
+        public void decimalCell(int column, java.math.BigDecimal value) {
+            mColumnChars[column] = Math.max(mColumnChars[column], writeDecimalCell(mRow, column, value));
+        }
+
+        @Override
+        public void dateCell(int column, java.util.Date value) {
+            mColumnChars[column] = Math.max(mColumnChars[column],
+                    writeDateCell(mRow, column, value, mDateStyle));
         }
     }
 

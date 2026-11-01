@@ -20,7 +20,7 @@ import m.co.rh.id.aprovider.Provider;
  * Contributes the checklist module's TWO spreadsheet sheets: "Checklists"
  * (small anchor table, deliberately full-loaded) and "Checklist Items"
  * (keyset-paged, titles resolved from a full load of the anchor table),
- * replacing the hard-coded writers in :app's ExportSpreadsheetCmd.
+ * driven by :app's ExportService#createSpreadsheetXlsx.
  */
 public class ItemChecklistSpreadsheetContributor implements ModuleSpreadsheetContributor {
 

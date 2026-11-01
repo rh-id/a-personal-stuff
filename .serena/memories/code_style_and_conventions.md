@@ -10,6 +10,7 @@
   - Event handlers: `*EventHandler` (cross-module cascade logic)
   - Repos: `*Repo` wrapping `*Dao`
   - Provider modules: `*ProviderModule` (e.g. `ItemMaintenanceCmdProviderModule`)
+  - Services: `*Service` — stateless engines holding only injected collaborators (e.g. `ExportService` with `createBackupZip`/`createReportPdf`/`createSpreadsheetXlsx`); per-run mutable state goes in a per-run inner writer class (`ReportWriter`, `SpreadsheetWriter`), never instance fields of the shared service; the `*Cmd` stays a thin Rx adapter (`execute()` + `getProgressFlow()` PublishSubject) and owns the thread choice in `subscribeOn`
   - Pages: `*Page` (e.g. `ItemUsagesPage`, `ItemUsageDetailPage`); lists use plural, details use `Detail` suffix
 - **Room**: one database per feature module; schemas exported to module `schemas/` dir; version bumps require explicit `Migration` registered in that DB's provider module (`DbMigration` in `:base`).
 - **String resources: 11 locales must all be updated** when adding/changing UI text: `values` (en) + `values-de`, `-et`, `-fr`, `-in` (Indonesian), `-is`, `-it`, `-nb`, `-nn`, `-rm`, `-zh`. Special dirs `values-land`, `values-night` also exist. Missing translations = incomplete task.

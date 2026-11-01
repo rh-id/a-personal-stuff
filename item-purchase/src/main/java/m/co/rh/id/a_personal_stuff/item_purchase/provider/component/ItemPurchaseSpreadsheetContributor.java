@@ -19,8 +19,7 @@ import m.co.rh.id.aprovider.Provider;
 
 /**
  * Contributes the "Purchases" sheet (keyset-paged rows with the per-page
- * image join), replacing the hard-coded writer in :app's
- * ExportSpreadsheetCmd.
+ * image join), driven by :app's ExportService#createSpreadsheetXlsx.
  */
 public class ItemPurchaseSpreadsheetContributor implements ModuleSpreadsheetContributor {
 
