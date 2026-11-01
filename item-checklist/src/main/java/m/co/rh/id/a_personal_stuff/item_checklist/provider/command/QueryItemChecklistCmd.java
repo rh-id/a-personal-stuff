@@ -3,6 +3,7 @@ package m.co.rh.id.a_personal_stuff.item_checklist.provider.command;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
+import io.reactivex.rxjava3.core.Maybe;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
@@ -20,8 +21,14 @@ public class QueryItemChecklistCmd {
         mItemChecklistDao = provider.get(ItemChecklistDao.class);
     }
 
-    public Single<ItemChecklistState> findItemChecklistStateById(long id) {
-        return Single.fromCallable(() ->
+    /**
+     * Loads one checklist with its item rows. Completes EMPTY when the id is
+     * stale (the checklist row is gone — the DAO answers {@code null}), so
+     * stale-id consumers skip cleanly instead of erroring; wraps
+     * {@link ItemChecklistDao#findItemChecklistStateById(long)} directly.
+     */
+    public Maybe<ItemChecklistState> findItemChecklistStateById(long id) {
+        return Maybe.fromCallable(() ->
                 mItemChecklistDao.findItemChecklistStateById(id)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
@@ -29,8 +36,9 @@ public class QueryItemChecklistCmd {
      * Cheap DB-backed existence check for an id that may be stale (e.g. the
      * settings-stored designated shopping-list id after its checklist was
      * deleted). Wraps {@link ItemChecklistDao#countItemChecklistsById(long)}
-     * because {@link #findItemChecklistStateById(long)} cannot answer
-     * "missing" — its DAO state builder NPEs on a stale id.
+     * because {@link #findItemChecklistStateById(long)} materializes the
+     * full checklist + item-row state just to answer presence — this COUNT
+     * query answers it as a plain boolean.
      */
     public Single<Boolean> existsById(long id) {
         return Single.fromCallable(() ->

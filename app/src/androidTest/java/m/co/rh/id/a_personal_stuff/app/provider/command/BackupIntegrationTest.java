@@ -51,6 +51,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
@@ -2542,7 +2543,7 @@ public class BackupIntegrationTest {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
-            providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(ILogger.class, NoOpLogger::new);
             // eager contributor registry (mirrors BaseProviderModule) + the
             // REAL module backup contributors, so every import/export in this
             // suite exercises the production contributor contract
@@ -2579,10 +2580,6 @@ public class BackupIntegrationTest {
             WeightedThreadPool weightedThreadPool = new WeightedThreadPool();
             weightedThreadPool.setMaxWeight(5);
             return weightedThreadPool;
-        }
-
-        private ILogger getLogger() {
-            return new TestLogger();
         }
 
         private ItemDao getItemDao() {
@@ -2635,52 +2632,6 @@ public class BackupIntegrationTest {
 
         private ItemChecklistChangeNotifier getItemChecklistChangeNotifier() {
             return new ItemChecklistChangeNotifier();
-        }
-    }
-
-    private class TestLogger implements ILogger {
-        @Override
-        public void v(String tag, String message) {
-        }
-
-        @Override
-        public void v(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void d(String tag, String message) {
-        }
-
-        @Override
-        public void d(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void i(String tag, String message) {
-        }
-
-        @Override
-        public void i(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void w(String tag, String message) {
-        }
-
-        @Override
-        public void w(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void e(String tag, String message) {
-        }
-
-        @Override
-        public void e(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void setLogLevel(int logLevel) {
         }
     }
 }

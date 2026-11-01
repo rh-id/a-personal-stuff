@@ -790,26 +790,22 @@ This structure allows for version-controlled store presence management. There ar
 
 ## Testing
 
-Testing is split between JVM unit tests and instrumented tests.
-
-### JVM Unit Tests
-Three suites, run on the local JVM by `./gradlew test`:
-
-- **`:app/src/test/` — PagedItemCmdTest.java**: tests the paged item search command against a Mockito-mocked DAO — state emission from DAO results, empty-list fallback when the DAO throws, DAO argument passing, and page-size doubling on `loadNextPage`.
-- **`:app/src/test/` — InventoryStatsCalculatorTest.java**: tests inventory statistics computation — zeroed summary for empty data, inventory value aggregation, expiry boundary splitting (expired vs. expiring within lead days), and low-stock detection from derived remaining stock.
-- **`:app/src/test/` — AutoBackupFileUtilTest.java**: 7 tests covering auto-backup rotation — backup file name format, fixed keep-newest-5 rotation (7 backups → the oldest 2 deleted, fewer than 5 → nothing deleted), order independence, ignoring non-matching file names, and null/empty input handling.
+All tests are instrumented component tests (JUnit 4 — zero Mockito anywhere) that run on the emulator / CI matrix: every suite builds a real `Provider` from an inline test `ProviderModule` and wires real in-memory Room databases, so assertions run against actual SQL and committed components rather than mocks.
 
 ### Instrumented Tests
 Suites, run on the emulator matrix in CI (see Automation & CI/CD above):
 
 - **`:app/src/androidTest/` — BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
 - **`:app/src/androidTest/` — ExportSpreadsheetIntegrationTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+- **`:app/src/androidTest/` — PagedItemCmdTest.java, InventoryStatsCalculatorTest.java, GenerateShoppingListCmdTest.java, AutoBackupFileUtilTest.java** (former JVM unit tests under `:app/src/test/`, relocated as component tests): paged item search against a real DAO (state emission, empty-list fallback when the database is closed, dedup/membership of merged search ids, page-size doubling on `loadNextPage`, empty-filter short-circuit, multi-id filter); inventory statistics over real usage/purchase databases (zeroed summary for empty data, inventory value aggregation, expiry boundary splitting, low-stock detection from derived remaining stock); designated shopping-list generation through the real `ItemChecklistService` and `SettingsSharedPreferences` (find-or-create, id persistence, title adoption, regeneration, and a two-thread overlap test); and 7 auto-backup rotation tests (file name format, keep-newest-5 rotation, order independence, non-matching names, null/empty input).
+- **`:item-checklist/src/androidTest/` — ItemChecklistServiceTest.java, QueryItemChecklistCmdTest.java** (former JVM unit tests, relocated as component tests): every mutation of the shared `ItemChecklistService` (persistence, timestamp bumps, notifier flow emissions, missing-parent guards) and `QueryItemChecklistCmd` existence checks (`existsById`, plus the stale-id case where the state query's `Maybe` completes empty).
 - **`:base/src/androidTest/` — ItemDaoTest.java**: pins the exact ordering of every `ItemDao` sort-matrix entry across all query families, and unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
 - **`:item-checklist/src/androidTest/` — ItemChecklistDaoTest.java**: pins the exact ordering of `findItemChecklistWithLimit` for every order key plus the composite default.
 
+Shared test fixtures live in `:base`'s testFixtures source set (`m.co.rh.id.a_personal_stuff.base.test`): `NoOpLogger` (silent `ILogger` for test provider modules), `AndroidTestUtils.await` (polling helper with a custom `Condition` SAM, minSdk-safe), and `DirectExecutorService` (same-thread executor for deterministic Rx assertions).
+
 Available tooling:
 - JUnit 4.13.2
-- Mockito 5.24.0
 - AndroidX Test / Espresso
 - AndroidX Test JUnit
 - Room Testing 2.7.2 (uses exported schemas in `schemas/` directories)
@@ -817,10 +813,7 @@ Available tooling:
 
 To run tests:
 ```bash
-# Run JVM unit tests
-./gradlew test
-
-# Run instrumented tests (requires connected device/emulator)
+# Run all component tests (requires connected device/emulator)
 ./gradlew connectedAndroidTest
 ```
 

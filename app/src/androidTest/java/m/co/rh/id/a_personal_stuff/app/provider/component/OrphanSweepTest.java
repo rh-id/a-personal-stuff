@@ -21,6 +21,7 @@ import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
@@ -274,7 +275,7 @@ public class OrphanSweepTest {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
-            providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(ILogger.class, NoOpLogger::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemUsageDao.class, this::getItemUsageDao);
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
@@ -288,10 +289,6 @@ public class OrphanSweepTest {
             WeightedThreadPool weightedThreadPool = new WeightedThreadPool();
             weightedThreadPool.setMaxWeight(5);
             return weightedThreadPool;
-        }
-
-        private ILogger getLogger() {
-            return new TestLogger();
         }
 
         private ItemDao getItemDao() {
@@ -316,52 +313,6 @@ public class OrphanSweepTest {
 
         private ItemChecklistDao getItemChecklistDao() {
             return mChecklistDb.itemChecklistDao();
-        }
-    }
-
-    private class TestLogger implements ILogger {
-        @Override
-        public void v(String tag, String message) {
-        }
-
-        @Override
-        public void v(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void d(String tag, String message) {
-        }
-
-        @Override
-        public void d(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void i(String tag, String message) {
-        }
-
-        @Override
-        public void i(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void w(String tag, String message) {
-        }
-
-        @Override
-        public void w(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void e(String tag, String message) {
-        }
-
-        @Override
-        public void e(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void setLogLevel(int logLevel) {
         }
     }
 }

@@ -19,11 +19,12 @@ import org.junit.runner.RunWith;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BooleanSupplier;
 
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
+import m.co.rh.id.a_personal_stuff.base.test.AndroidTestUtils;
+import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_usage.dao.ItemUsageDao;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsageImage;
@@ -102,7 +103,7 @@ public class ItemUsageEventHandlerTest {
         mNotifier.itemDeleted(deletedItemState(deletedItemId));
 
         // the handler processes the event on its executor thread, so poll
-        assertTrue(await(() -> mDb.itemUsageDao().findItemUsageByItemId(deletedItemId).isEmpty()));
+        assertTrue(AndroidTestUtils.await(() -> mDb.itemUsageDao().findItemUsageByItemId(deletedItemId).isEmpty()));
         // the second-level image row must be gone with its parent
         assertNull(mDb.itemUsageDao().findItemUsageImageByFileName("deleted_usage.jpg"));
         // other items' rows survive untouched
@@ -119,72 +120,13 @@ public class ItemUsageEventHandlerTest {
         return itemState;
     }
 
-    /**
-     * Polls until the condition holds or the timeout elapses.
-     */
-    private boolean await(BooleanSupplier condition) throws Exception {
-        long deadline = System.currentTimeMillis() + 5000;
-        while (System.currentTimeMillis() < deadline && !condition.getAsBoolean()) {
-            Thread.sleep(50);
-        }
-        return condition.getAsBoolean();
-    }
-
     private class TestProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, () -> mExecutorService);
-            providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(ILogger.class, NoOpLogger::new);
             providerRegistry.register(ItemChangeNotifier.class, () -> mNotifier);
             providerRegistry.register(ItemUsageDao.class, () -> mDb.itemUsageDao());
-        }
-
-        private ILogger getLogger() {
-            return new ILogger() {
-                @Override
-                public void v(String tag, String message) {
-                }
-
-                @Override
-                public void v(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void d(String tag, String message) {
-                }
-
-                @Override
-                public void d(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void i(String tag, String message) {
-                }
-
-                @Override
-                public void i(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void w(String tag, String message) {
-                }
-
-                @Override
-                public void w(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void e(String tag, String message) {
-                }
-
-                @Override
-                public void e(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void setLogLevel(int logLevel) {
-                }
-            };
         }
     }
 }

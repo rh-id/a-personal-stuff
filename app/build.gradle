@@ -77,8 +77,8 @@ dependencies {
     implementation libs.photo.view
     implementation libs.a.poi.spreadsheet
 
-    testImplementation libs.junit
-    testImplementation libs.mockito.core
+    androidTestImplementation(testFixtures(project(":base")))
+    androidTestImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit
     androidTestImplementation libs.espresso.core
     androidTestImplementation libs.work.testing

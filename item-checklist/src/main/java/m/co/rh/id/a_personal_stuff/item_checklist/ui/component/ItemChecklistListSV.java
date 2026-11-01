@@ -12,7 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -175,10 +174,12 @@ public class ItemChecklistListSV extends StatefulView<Activity> implements Requi
                             }));
             mRxDisposer.add("createView_onItemChecklistItemChanged",
                     mItemChecklistChangeNotifier.getAnyItemChecklistItemChangeFlow()
+                            // a stale id (checklist deleted mid-flight) completes
+                            // empty here and is skipped, instead of erroring the
+                            // whole change stream
                             .flatMap(checklistId -> mQueryItemChecklistCmd
                                     .findItemChecklistStateById(checklistId)
                                     .toFlowable())
-                            .filter(Objects::nonNull)
                             .observeOn(AndroidSchedulers.mainThread())
                             .subscribe(itemChecklistState -> {
                                 mItemChecklistRecyclerViewAdapter.notifyItemUpdated(itemChecklistState);

@@ -290,17 +290,22 @@ public class ItemChecklistDetailPage extends StatefulView<Activity> implements R
         mRxDisposer.add("loadChecklist",
                 mQueryItemChecklistCmd.findItemChecklistStateById(mChecklistId)
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe((itemChecklistState, throwable) -> {
-                            if (throwable != null) {
-                                Throwable cause = throwable.getCause();
-                                if (cause == null) cause = throwable;
-                                mLogger.e(TAG, cause.getMessage(), cause);
-                            } else if (itemChecklistState != null) {
-                                mItemChecklistState = itemChecklistState;
-                                updateHeader();
-                                loadEntries();
-                                loadProgress();
-                            }
+                        .subscribe(itemChecklistState -> {
+                            mItemChecklistState = itemChecklistState;
+                            updateHeader();
+                            loadEntries();
+                            loadProgress();
+                        }, throwable -> {
+                            Throwable cause = throwable.getCause();
+                            if (cause == null) cause = throwable;
+                            mLogger.e(TAG, cause.getMessage(), cause);
+                        }, () -> {
+                            // Maybe completed empty: the checklist row is gone
+                            // (stale id, e.g. deleted while this page was
+                            // opening) — log it and leave the page's existing
+                            // empty state untouched
+                            mLogger.w(TAG, "Checklist " + mChecklistId
+                                    + " no longer exists; skipping detail load");
                         }));
     }
 

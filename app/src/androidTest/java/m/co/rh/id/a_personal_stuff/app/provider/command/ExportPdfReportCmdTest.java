@@ -49,6 +49,7 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
+import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
@@ -507,7 +508,7 @@ public class ExportPdfReportCmdTest {
 
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
-            providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(ILogger.class, NoOpLogger::new);
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
@@ -527,10 +528,6 @@ public class ExportPdfReportCmdTest {
                     : new ExportService(provider, mImageBudget));
         }
 
-        private ILogger getLogger() {
-            return new TestLogger();
-        }
-
         private ExecutorService getExecutorService() {
             return mExecutorService;
         }
@@ -541,52 +538,6 @@ public class ExportPdfReportCmdTest {
 
         private ItemPurchaseDao getItemPurchaseDao() {
             return mPurchaseDb.itemPurchaseDao();
-        }
-    }
-
-    private static class TestLogger implements ILogger {
-        @Override
-        public void v(String tag, String message) {
-        }
-
-        @Override
-        public void v(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void d(String tag, String message) {
-        }
-
-        @Override
-        public void d(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void i(String tag, String message) {
-        }
-
-        @Override
-        public void i(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void w(String tag, String message) {
-        }
-
-        @Override
-        public void w(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void e(String tag, String message) {
-        }
-
-        @Override
-        public void e(String tag, String message, Throwable throwable) {
-        }
-
-        @Override
-        public void setLogLevel(int logLevel) {
         }
     }
 }

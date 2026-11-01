@@ -170,9 +170,9 @@ public abstract class ItemChecklistDao {
 
     /**
      * Cheap existence check for the stored designated-shopping-list id:
-     * {@link #findItemChecklistStateById(long)} cannot answer "missing" — its
-     * state builder NPEs on a stale id — so a stored id is validated here
-     * before any state is materialized.
+     * a stored id is validated here before
+     * {@link #findItemChecklistStateById(long)} materializes the full
+     * checklist + item-row state (or answers {@code null} for a stale id).
      */
     @Query("SELECT COUNT(*) FROM item_checklist WHERE id = :id")
     public abstract int countItemChecklistsById(long id);
@@ -239,8 +239,18 @@ public abstract class ItemChecklistDao {
         return itemChecklistStates;
     }
 
+    /**
+     * Loads one checklist together with its item rows as a state. Returns
+     * {@code null} when the checklist row is missing — the state builder
+     * must never be fed a null row (RxJava onNext rejects null), so the
+     * missing case is answered before any state is materialized.
+     */
     public ItemChecklistState findItemChecklistStateById(long id) {
-        List<ItemChecklistState> result = prepareItemChecklistState(Collections.singletonList(findItemChecklistById(id)));
+        ItemChecklist itemChecklist = findItemChecklistById(id);
+        if (itemChecklist == null) {
+            return null;
+        }
+        List<ItemChecklistState> result = prepareItemChecklistState(Collections.singletonList(itemChecklist));
         if (result.isEmpty()) {
             return null;
         }

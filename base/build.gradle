@@ -39,6 +39,9 @@ android {
     buildFeatures {
         buildConfig true
     }
+    testFixtures {
+        enable = true
+    }
 }
 
 dependencies {
@@ -67,7 +70,7 @@ dependencies {
     implementation libs.concurrent.utils
     implementation libs.leakcanary.plumber
 
-    testImplementation libs.junit
+    androidTestImplementation(testFixtures(project(":base")))
     androidTestImplementation libs.junit
     androidTestImplementation libs.androidx.test.junit
     androidTestImplementation libs.espresso.core

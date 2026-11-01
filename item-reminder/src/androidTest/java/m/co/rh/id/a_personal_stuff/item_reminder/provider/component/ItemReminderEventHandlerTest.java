@@ -25,11 +25,12 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BooleanSupplier;
 
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
+import m.co.rh.id.a_personal_stuff.base.test.AndroidTestUtils;
+import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.room.ItemReminderDatabase;
@@ -120,11 +121,11 @@ public class ItemReminderEventHandlerTest {
         mNotifier.itemDeleted(deletedItemState(deletedItemId));
 
         // the handler processes the event on its executor thread, so poll
-        assertTrue(await(() -> mDb.itemReminderDao().findItemReminderByItemId(deletedItemId).isEmpty()));
+        assertTrue(AndroidTestUtils.await(() -> mDb.itemReminderDao().findItemReminderByItemId(deletedItemId).isEmpty()));
         // other items' rows survive untouched
         assertEquals(1, mDb.itemReminderDao().findItemReminderByItemId(survivingItemId).size());
         // the unique work of the deleted reminder is cancelled by the handler
-        assertTrue(await(this::isDeletedTaskCancelled));
+        assertTrue(AndroidTestUtils.await(this::isDeletedTaskCancelled));
     }
 
     private boolean isDeletedTaskCancelled() {
@@ -146,73 +147,14 @@ public class ItemReminderEventHandlerTest {
         return itemState;
     }
 
-    /**
-     * Polls until the condition holds or the timeout elapses.
-     */
-    private boolean await(BooleanSupplier condition) throws Exception {
-        long deadline = System.currentTimeMillis() + 5000;
-        while (System.currentTimeMillis() < deadline && !condition.getAsBoolean()) {
-            Thread.sleep(50);
-        }
-        return condition.getAsBoolean();
-    }
-
     private class TestProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, () -> mExecutorService);
-            providerRegistry.register(ILogger.class, this::getLogger);
+            providerRegistry.register(ILogger.class, NoOpLogger::new);
             providerRegistry.register(ItemChangeNotifier.class, () -> mNotifier);
             providerRegistry.register(ItemReminderDao.class, () -> mDb.itemReminderDao());
             providerRegistry.register(WorkManager.class, () -> mWorkManager);
-        }
-
-        private ILogger getLogger() {
-            return new ILogger() {
-                @Override
-                public void v(String tag, String message) {
-                }
-
-                @Override
-                public void v(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void d(String tag, String message) {
-                }
-
-                @Override
-                public void d(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void i(String tag, String message) {
-                }
-
-                @Override
-                public void i(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void w(String tag, String message) {
-                }
-
-                @Override
-                public void w(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void e(String tag, String message) {
-                }
-
-                @Override
-                public void e(String tag, String message, Throwable throwable) {
-                }
-
-                @Override
-                public void setLogLevel(int logLevel) {
-                }
-            };
         }
     }
 }

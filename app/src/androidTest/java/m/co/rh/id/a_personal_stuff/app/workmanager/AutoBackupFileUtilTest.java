@@ -3,7 +3,10 @@ package m.co.rh.id.a_personal_stuff.app.workmanager;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import androidx.test.ext.junit.runners.AndroidJUnit4;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,6 +14,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
+@RunWith(AndroidJUnit4.class)
 public class AutoBackupFileUtilTest {
 
     @Test

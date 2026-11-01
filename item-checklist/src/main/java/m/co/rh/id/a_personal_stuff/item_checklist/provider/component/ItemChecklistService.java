@@ -87,12 +87,22 @@ public class ItemChecklistService {
         mItemChecklistDao.insertItemChecklistItems(items);
 
         // Bump checklist updatedDateTime
-        ItemChecklist checklist = mItemChecklistDao.findItemChecklistStateById(checklistId).getItemChecklist();
+        ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(checklistId);
+        if (state == null) {
+            // the checklist row can disappear mid-flight (deleted between
+            // the item insert and this re-read); the rows are inserted, so
+            // skip the bump/notification instead of crashing, mirroring the
+            // uncheckItemIds guard
+            return newItemIds.size();
+        }
+        ItemChecklist checklist = state.getItemChecklist();
         if (checklist != null) {
             checklist.updatedDateTime = new Date();
             mItemChecklistDao.updateItemChecklist(checklist);
-            ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(checklistId);
-            mItemChecklistChangeNotifier.checklistUpdated(state.clone());
+            ItemChecklistState freshState = mItemChecklistDao.findItemChecklistStateById(checklistId);
+            if (freshState != null) {
+                mItemChecklistChangeNotifier.checklistUpdated(freshState.clone());
+            }
         }
 
         return newItemIds.size();
@@ -120,7 +130,9 @@ public class ItemChecklistService {
                 checklist.updatedDateTime = new Date();
                 mItemChecklistDao.updateItemChecklist(checklist);
                 ItemChecklistState freshState = mItemChecklistDao.findItemChecklistStateById(checklistId);
-                mItemChecklistChangeNotifier.checklistUpdated(freshState.clone());
+                if (freshState != null) {
+                    mItemChecklistChangeNotifier.checklistUpdated(freshState.clone());
+                }
             }
         }
         return uncheckedCount;
@@ -163,13 +175,16 @@ public class ItemChecklistService {
      */
     public ItemChecklistItem updateChecklistItem(ItemChecklistItem item) {
         // Load checklist to bump its updatedDateTime
-        ItemChecklist checklist = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId).getItemChecklist();
+        ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
+        ItemChecklist checklist = state == null ? null : state.getItemChecklist();
         if (checklist != null) {
             checklist.updatedDateTime = new Date();
             // Use the @Transaction method to update both
             mItemChecklistDao.updateItemChecklistItem(item, checklist);
-            ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
-            mItemChecklistChangeNotifier.checklistItemUpdated(item, state.clone());
+            ItemChecklistState freshState = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
+            if (freshState != null) {
+                mItemChecklistChangeNotifier.checklistItemUpdated(item, freshState.clone());
+            }
         } else {
             // Fallback if checklist not found
             mItemChecklistDao.updateItemChecklistItem(item);
@@ -182,21 +197,28 @@ public class ItemChecklistService {
      * {@code updatedDateTime} first, so the checklist list reflects the
      * touch even though the checklist row itself was not edited. The state
      * is re-read AFTER the deletion so {@code checklistItemDeleted} carries
-     * the removed row plus the fresh parent to any open detail page.
+     * the removed row plus the fresh parent to any open detail page. When
+     * the parent row can no longer be found the deletion still proceeds —
+     * no notification — mirroring the {@code updateChecklistItem} guard.
      */
     public ItemChecklistItem deleteChecklistItem(ItemChecklistItem item) {
         // Bump checklist updatedDateTime
-        ItemChecklist checklist = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId).getItemChecklist();
-        if (checklist != null) {
-            checklist.updatedDateTime = new Date();
-            mItemChecklistDao.updateItemChecklist(checklist);
+        ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
+        if (state != null) {
+            ItemChecklist checklist = state.getItemChecklist();
+            if (checklist != null) {
+                checklist.updatedDateTime = new Date();
+                mItemChecklistDao.updateItemChecklist(checklist);
+            }
         }
 
         // Delete the item
         mItemChecklistDao.deleteItemChecklistItem(item);
 
-        ItemChecklistState state = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
-        mItemChecklistChangeNotifier.checklistItemDeleted(item, state.clone());
+        state = mItemChecklistDao.findItemChecklistStateById(item.itemChecklistId);
+        if (state != null) {
+            mItemChecklistChangeNotifier.checklistItemDeleted(item, state.clone());
+        }
 
         return item;
     }
