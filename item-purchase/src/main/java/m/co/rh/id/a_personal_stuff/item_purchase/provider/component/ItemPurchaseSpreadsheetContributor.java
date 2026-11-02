@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
-import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.contributor.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
@@ -58,8 +58,9 @@ public class ItemPurchaseSpreadsheetContributor implements ModuleSpreadsheetCont
         }
 
         /**
-         * Purchases are keyset-paged like the Usages sheet (see the usage
-         * contributor's javadoc).
+         * Purchases are keyset-paged; paging follows the interface contract
+         * ({@link ModuleSpreadsheetSheet#writeRows}: keyset pagination with
+         * the {@link ModuleSpreadsheetContributor#PAGE_SIZE} row cap).
          */
         @Override
         public void writeRows(ModuleSheetRowSink rowSink, SpreadsheetJoinData joinData) {

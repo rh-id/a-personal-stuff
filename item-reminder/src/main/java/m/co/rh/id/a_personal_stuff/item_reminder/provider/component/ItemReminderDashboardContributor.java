@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Flowable;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.notifier.ItemReminderChangeNotifier;
 import m.co.rh.id.aprovider.Provider;

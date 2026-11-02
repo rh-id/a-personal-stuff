@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
-import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.contributor.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.aprovider.Provider;
@@ -51,8 +51,10 @@ public class ItemReminderSpreadsheetContributor implements ModuleSpreadsheetCont
         }
 
         /**
-         * Reminders are keyset-paged like the Usages sheet (see the usage
-         * contributor's javadoc); they have no image table.
+         * Reminders are keyset-paged; paging follows the interface contract
+         * ({@link ModuleSpreadsheetSheet#writeRows}: keyset pagination with
+         * the {@link ModuleSpreadsheetContributor#PAGE_SIZE} row cap); they
+         * have no image table.
          */
         @Override
         public void writeRows(ModuleSheetRowSink rowSink, SpreadsheetJoinData joinData) {

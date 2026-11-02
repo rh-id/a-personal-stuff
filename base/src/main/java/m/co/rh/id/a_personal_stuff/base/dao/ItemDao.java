@@ -31,7 +31,7 @@ public abstract class ItemDao {
      * bind-variable cap is 999 (900 on some API levels) and the page limit
      * doubles up to 1600 (see PagedItemCmd#loadNextPage), so id lists must
      * be chunked (see also
-     * {@link m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor#PAGE_SIZE}).
+     * {@link m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetContributor#PAGE_SIZE}).
      */
     public static final int SQLITE_IN_CHUNK_SIZE = 500;
 

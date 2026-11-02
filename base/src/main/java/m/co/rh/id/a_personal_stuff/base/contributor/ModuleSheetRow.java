@@ -1,4 +1,4 @@
-package m.co.rh.id.a_personal_stuff.base.backup;
+package m.co.rh.id.a_personal_stuff.base.contributor;
 
 import java.math.BigDecimal;
 import java.util.Date;

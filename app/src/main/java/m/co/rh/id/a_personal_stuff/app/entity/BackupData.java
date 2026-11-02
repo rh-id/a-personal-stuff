@@ -19,7 +19,7 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
  * the import anchor — it is imported first and supplies the old→new item id
  * remap every module contributor needs. Each feature module's sections are
  * written and parsed by its own
- * {@link m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor};
+ * {@link m.co.rh.id.a_personal_stuff.base.contributor.ModuleBackupContributor};
  * this class deliberately knows nothing about them.
  */
 public class BackupData {

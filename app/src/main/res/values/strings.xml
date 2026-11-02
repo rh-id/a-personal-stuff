@@ -119,7 +119,11 @@
     <string name="report_col_first_purchase">First purchase</string>
     <string name="report_totals">Totals</string>
     <string name="report_item_amount_price">Amount: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">First purchase: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">First purchase</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
+    <!-- test-only label (no user-visible surface): resolves ItemPdfRecord.labelKey
+         in ExportPdfReportCmdTest.secondContributorDataSurvives -->
+    <string name="report_record_test_label">Test record</string>
     <string name="report_expires">Expires: %1$s</string>
     <string name="report_created">Created: %1$s</string>
     <string name="report_photo_omitted">(photo omitted — image limit reached)</string>

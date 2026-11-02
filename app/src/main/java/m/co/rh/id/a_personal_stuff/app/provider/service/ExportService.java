@@ -41,15 +41,17 @@ import org.json.JSONObject;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
-import m.co.rh.id.a_personal_stuff.base.backup.ExportImageDir;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleExport;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
-import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ExportImageDir;
+import m.co.rh.id.a_personal_stuff.base.contributor.ItemPdfRecord;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleBackupContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleExport;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModulePdfContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.contributor.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -58,8 +60,6 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
-import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
-import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Cell;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.CellStyle;
 import m.co.rh.id.apoi_spreadsheet.org.apache.poi.ss.usermodel.Font;
@@ -135,6 +135,8 @@ public class ExportService {
      */
     private static final float TABLE_NAME_MIN_WIDTH = 60f;
     private static final float DESCRIPTION_BLOCK_PADDING = 3f;
+    /** Indent of a record's free-text note line under its record line. */
+    private static final float RECORD_NOTE_INDENT = 14f;
 
     private static final String SHEET_ITEMS = "Items";
     private static final String XLSX_EXTENSION = ".xlsx";
@@ -161,13 +163,20 @@ public class ExportService {
     private final FileHelper mFileHelper;
     private final ItemDao mItemDao;
     private final ItemFileHelper mItemFileHelper;
-    private final BackupContributorRegistry mContributorRegistry;
-    private final ItemPurchaseDao mItemPurchaseDao;
+    private final ModuleContributorRegistry mContributorRegistry;
     private final int mImageBudget;
     /** Same display formatting the dashboard's inventory value uses. */
     private final NumberFormat mPriceFormat;
     private final SimpleDateFormat mDateFormat;
     private final SimpleDateFormat mDateTimeFormat;
+    /**
+     * Cache for the by-name resolution of the :app string resources declared
+     * by contributors (key NAME → resource id, 0 = unresolved; ids are
+     * stable per process). Shared by the XLSX sheet headers and the PDF
+     * report's summary-column/record-label keys — one mechanism
+     * ({@link #resolveContributorString}) for both exports.
+     */
+    private final Map<String, Integer> mContributorStringIdCache = new HashMap<>();
 
     public ExportService(Provider provider) {
         this(provider, GLOBAL_IMAGE_BUDGET);
@@ -185,8 +194,7 @@ public class ExportService {
         mFileHelper = provider.get(FileHelper.class);
         mItemDao = provider.get(ItemDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
-        mContributorRegistry = provider.get(BackupContributorRegistry.class);
-        mItemPurchaseDao = provider.get(ItemPurchaseDao.class);
+        mContributorRegistry = provider.get(ModuleContributorRegistry.class);
         mImageBudget = imageBudget;
         Locale locale = ConfigurationCompat.getLocales(
                 mAppContext.getResources().getConfiguration()).get(0);
@@ -312,9 +320,21 @@ public class ExportService {
         // from the list, so the report can never disagree with the dashboard.
         Double totalInventoryValue = mItemDao.sumInventoryValue();
         int totalItems = mItemDao.countItems();
-        Map<Long, ItemPurchase> firstPurchases = new HashMap<>();
-        for (ItemPurchase itemPurchase : mItemPurchaseDao.findFirstPurchasesPerItem()) {
-            firstPurchases.put(itemPurchase.itemId, itemPurchase);
+        // The module contributors own the per-item PDF data now; the merge is
+        // STRUCTURAL — date columns are appended per contributor in
+        // registration order at the summary table's date-column anchor and
+        // record lists are concatenated per item in the same order, so two
+        // modules contributing to the same item is the expected case and
+        // there is no collision policy. Each contributor is consulted exactly
+        // ONCE per export (the getters run DAO queries, so consulting them
+        // per item would be N+1) into a PdfContributorData holder.
+        List<PdfContributorData> pdfContributorData = new ArrayList<>();
+        for (ModulePdfContributor contributor : mContributorRegistry.getPdfContributors()) {
+            String columnKey = contributor.getSummaryColumnKey();
+            pdfContributorData.add(new PdfContributorData(
+                    columnKey == null ? null : resolveContributorString(columnKey),
+                    contributor.getSummaryDates(),
+                    contributor.getRecords()));
         }
         int photosOmitted = countPhotosOmitted(itemStates);
 
@@ -325,7 +345,7 @@ public class ExportService {
             writer.drawCoverPage(totalItems, totalInventoryValue, photosOmitted);
 
             progress(progressListener, R.string.export_pdf_report_progress_table);
-            writer.drawSummaryTable(itemStates, firstPurchases);
+            writer.drawSummaryTable(itemStates, pdfContributorData);
 
             // one details message per 10-item batch (the first batch reports
             // from 0, so the cover/table stages above stay distinct events)
@@ -336,7 +356,7 @@ public class ExportService {
                             R.string.export_pdf_report_progress_details,
                             index, itemStates.size());
                 }
-                writer.drawItemDetail(itemState, firstPurchases.get(itemState.getItem().id));
+                writer.drawItemDetail(itemState, pdfContributorData);
                 index++;
             }
             writer.finishLastPage();
@@ -484,6 +504,27 @@ public class ExportService {
         if (listener != null) {
             listener.onProgress(mAppContext.getString(resId, args));
         }
+    }
+
+    /**
+     * Resolves one contributor-declared :app string key to its localized
+     * string. The string resources live in :app (feature modules must not
+     * depend on :app), so contributors declare the stable resource NAMES —
+     * the spreadsheet sheets via {@code ModuleSpreadsheetSheet#getHeaderKeys},
+     * the PDF report via {@code ModulePdfContributor#getSummaryColumnKey} and
+     * {@code ItemPdfRecord#labelKey} — and this service resolves them by
+     * name ({@code Resources#getIdentifier}), cached per service; an
+     * unresolved key falls back to the raw name so a rename is visible in
+     * the export instead of silently blank.
+     */
+    private String resolveContributorString(String key) {
+        Integer id = mContributorStringIdCache.get(key);
+        if (id == null) {
+            id = mAppContext.getResources().getIdentifier(
+                    key, "string", mAppContext.getPackageName());
+            mContributorStringIdCache.put(key, id);
+        }
+        return id != 0 ? mAppContext.getString(id) : key;
     }
 
     private BackupData gatherData() {
@@ -813,66 +854,70 @@ public class ExportService {
         }
 
         void drawSummaryTable(List<ItemState> itemStates,
-                              Map<Long, ItemPurchase> firstPurchases) {
-            // PASS 1: build every cell (headers, data rows, totals row) and
-            // measure the widest text per column BEFORE drawing anything. The
-            // first live run proved fixed column guesses collide — the
+                              List<PdfContributorData> pdfContributorData) {
+            // PASS 1: build every column (header, data cells, totals-row cell)
+            // and measure the widest text per column BEFORE drawing anything.
+            // The first live run proved fixed column guesses collide — the
             // right-aligned "Line total" value ended exactly where the "First
             // purchase" column began ("899.52026-11-01") — so the x offsets
             // are now DERIVED from the measured widths plus a minimum gutter.
+            // The :app-owned base columns keep their historical order; the
+            // contributors' date columns are appended at the date-column
+            // anchor in registration order.
             int dataRowCount = itemStates.size();
-            int rowCount = dataRowCount + 1; // + totals row
-            String[] noCells = new String[rowCount];
-            String[] nameCells = new String[rowCount];
-            String[] qtyCells = new String[rowCount];
-            String[] unitCells = new String[rowCount];
-            String[] lineCells = new String[rowCount];
-            String[] purchaseCells = new String[rowCount];
+            Column noColumn = new Column(mAppContext.getString(R.string.report_col_no), false);
+            Column nameColumn = new Column(mAppContext.getString(R.string.report_col_name), false);
+            Column qtyColumn = new Column(mAppContext.getString(R.string.report_col_qty), true);
+            Column unitColumn = new Column(mAppContext.getString(R.string.report_col_unit_price), true);
+            Column lineColumn = new Column(mAppContext.getString(R.string.report_col_line_total), true);
+            List<Column> dateColumns = new ArrayList<>();
+            for (PdfContributorData contributorData : pdfContributorData) {
+                if (contributorData.summaryColumnHeader == null) {
+                    continue;
+                }
+                Column dateColumn = new Column(contributorData.summaryColumnHeader, false);
+                for (ItemState itemState : itemStates) {
+                    Date date = contributorData.summaryDates.get(itemState.getItem().id);
+                    dateColumn.cells.add(date == null ? "" : mDateFormat.format(date));
+                }
+                dateColumns.add(dateColumn);
+            }
             BigDecimal grandTotal = BigDecimal.ZERO;
             for (int i = 0; i < dataRowCount; i++) {
                 Item item = itemStates.get(i).getItem();
-                noCells[i] = String.valueOf(i + 1);
-                nameCells[i] = item.name == null ? "" : item.name;
-                qtyCells[i] = String.valueOf(item.amount);
+                noColumn.cells.add(String.valueOf(i + 1));
+                nameColumn.cells.add(item.name == null ? "" : item.name);
+                qtyColumn.cells.add(String.valueOf(item.amount));
                 if (item.price != null) {
                     BigDecimal lineTotal = item.price.multiply(BigDecimal.valueOf(item.amount));
                     grandTotal = grandTotal.add(lineTotal);
-                    unitCells[i] = mPriceFormat.format(item.price);
-                    lineCells[i] = mPriceFormat.format(lineTotal);
+                    unitColumn.cells.add(mPriceFormat.format(item.price));
+                    lineColumn.cells.add(mPriceFormat.format(lineTotal));
                 } else {
-                    unitCells[i] = "";
-                    lineCells[i] = "";
+                    unitColumn.cells.add("");
+                    lineColumn.cells.add("");
                 }
-                purchaseCells[i] = formatTableFirstPurchase(firstPurchases.get(item.id));
             }
             // totals row: Σ line totals (null prices contributed nothing)
-            noCells[dataRowCount] = "";
-            nameCells[dataRowCount] = mAppContext.getString(R.string.report_totals);
-            qtyCells[dataRowCount] = "";
-            unitCells[dataRowCount] = "";
-            lineCells[dataRowCount] = mPriceFormat.format(grandTotal);
-            purchaseCells[dataRowCount] = "";
-            String[] headerCells = new String[]{
-                    mAppContext.getString(R.string.report_col_no),
-                    mAppContext.getString(R.string.report_col_name),
-                    mAppContext.getString(R.string.report_col_qty),
-                    mAppContext.getString(R.string.report_col_unit_price),
-                    mAppContext.getString(R.string.report_col_line_total),
-                    mAppContext.getString(R.string.report_col_first_purchase)};
+            noColumn.cells.add("");
+            nameColumn.cells.add(mAppContext.getString(R.string.report_totals));
+            qtyColumn.cells.add("");
+            unitColumn.cells.add("");
+            lineColumn.cells.add(mPriceFormat.format(grandTotal));
 
             // PASS 2: lay out and draw. The layout is computed once for ALL
             // rows, so every page the table spans uses identical columns.
-            TableLayout layout = computeTableLayout(headerCells,
-                    noCells, nameCells, qtyCells, unitCells, lineCells, purchaseCells);
+            TableLayout layout = computeTableLayout(noColumn, nameColumn, qtyColumn,
+                    unitColumn, lineColumn, dateColumns);
             newPage();
             drawTableHeader(layout);
             for (int i = 0; i < dataRowCount; i++) {
                 ensureTableSpace(layout);
-                drawTableRow(layout, noCells[i], nameCells[i], qtyCells[i],
-                        unitCells[i], lineCells[i], purchaseCells[i]);
+                drawTableRow(layout, i);
             }
             ensureTableSpace(layout);
-            drawTotalsRow(layout, nameCells[dataRowCount], lineCells[dataRowCount]);
+            drawTotalsRow(layout, nameColumn.cells.get(dataRowCount),
+                    lineColumn.cells.get(dataRowCount));
             finishCurrentPage();
         }
 
@@ -881,34 +926,54 @@ public class ExportService {
          * text width of every cell (header, data and totals cells, measured
          * in BOTH the regular and the bold paint). The Name column is
          * elastic: it takes whatever the measured columns leave and its
-         * content is ellipsized at draw time; the numeric/date columns are
-         * right-aligned to their derived right edges, so a wide value can
-         * never reach the neighboring column — every pair of columns is
-         * separated by {@link #COLUMN_GUTTER} by construction.
+         * content is ellipsized at draw time; the numeric columns are
+         * right-aligned to their derived right edges and the date columns
+         * left-aligned after them, so a wide value can never reach the
+         * neighboring column — every pair of columns is separated by
+         * {@link #COLUMN_GUTTER} by construction.
          */
-        private TableLayout computeTableLayout(String[] headerCells,
-                String[] noCells, String[] nameCells, String[] qtyCells,
-                String[] unitCells, String[] lineCells, String[] purchaseCells) {
-            float widthNo = maxCellWidth(headerCells[0], noCells);
-            float widthQty = maxCellWidth(headerCells[2], qtyCells);
-            float widthUnit = maxCellWidth(headerCells[3], unitCells);
-            float widthLine = maxCellWidth(headerCells[4], lineCells);
-            float widthPurchase = maxCellWidth(headerCells[5], purchaseCells);
-            float fixedTotal = widthNo + widthQty + widthUnit + widthLine
-                    + widthPurchase + 5 * COLUMN_GUTTER;
-            TableLayout layout = new TableLayout();
-            layout.xNo = MARGIN;
-            layout.xName = layout.xNo + widthNo + COLUMN_GUTTER;
-            layout.nameWidth = Math.max(TABLE_NAME_MIN_WIDTH,
+        private TableLayout computeTableLayout(Column noColumn, Column nameColumn,
+                Column qtyColumn, Column unitColumn, Column lineColumn,
+                List<Column> dateColumns) {
+            noColumn.measuredWidth = maxCellWidth(noColumn.header, noColumn.cells);
+            qtyColumn.measuredWidth = maxCellWidth(qtyColumn.header, qtyColumn.cells);
+            unitColumn.measuredWidth = maxCellWidth(unitColumn.header, unitColumn.cells);
+            lineColumn.measuredWidth = maxCellWidth(lineColumn.header, lineColumn.cells);
+            float fixedTotal = noColumn.measuredWidth + qtyColumn.measuredWidth
+                    + unitColumn.measuredWidth + lineColumn.measuredWidth;
+            for (Column dateColumn : dateColumns) {
+                dateColumn.measuredWidth = maxCellWidth(dateColumn.header, dateColumn.cells);
+                fixedTotal += dateColumn.measuredWidth;
+            }
+            // one gutter between every adjacent column pair
+            fixedTotal += (4 + dateColumns.size()) * COLUMN_GUTTER;
+            List<Column> columns = new ArrayList<>();
+            columns.add(noColumn);
+            columns.add(nameColumn);
+            columns.add(qtyColumn);
+            columns.add(unitColumn);
+            columns.add(lineColumn);
+            columns.addAll(dateColumns);
+            TableLayout layout = new TableLayout(columns, nameColumn, lineColumn);
+            noColumn.x = MARGIN;
+            nameColumn.x = noColumn.x + noColumn.measuredWidth + COLUMN_GUTTER;
+            nameColumn.measuredWidth = Math.max(TABLE_NAME_MIN_WIDTH,
                     CONTENT_WIDTH - fixedTotal);
-            layout.qtyRight = layout.xName + layout.nameWidth + COLUMN_GUTTER + widthQty;
-            layout.unitRight = layout.qtyRight + COLUMN_GUTTER + widthUnit;
-            layout.lineRight = layout.unitRight + COLUMN_GUTTER + widthLine;
-            layout.xPurchase = layout.lineRight + COLUMN_GUTTER;
+            float right = nameColumn.x + nameColumn.measuredWidth;
+            for (int i = 2; i < columns.size(); i++) {
+                Column column = columns.get(i);
+                if (column.rightAligned) {
+                    right += COLUMN_GUTTER + column.measuredWidth;
+                    column.x = right;
+                } else {
+                    column.x = right + COLUMN_GUTTER;
+                    right = column.x + column.measuredWidth;
+                }
+            }
             return layout;
         }
 
-        private float maxCellWidth(String header, String[] cells) {
+        private float maxCellWidth(String header, List<String> cells) {
             float width = Math.max(mTextPaint.measureText(header),
                     mTableHeaderPaint.measureText(header));
             for (String cell : cells) {
@@ -940,49 +1005,40 @@ public class ExportService {
 
         private void drawTableHeader(TableLayout layout) {
             float baseline = rowBaseline(mCursorY, mTableHeaderPaint);
-            mCanvas.drawText(mAppContext.getString(R.string.report_col_no),
-                    layout.xNo, baseline, mTableHeaderPaint);
-            mCanvas.drawText(mAppContext.getString(R.string.report_col_name),
-                    layout.xName, baseline, mTableHeaderPaint);
-            drawRightAligned(mAppContext.getString(R.string.report_col_qty),
-                    layout.qtyRight, baseline, mTableHeaderPaint);
-            drawRightAligned(mAppContext.getString(R.string.report_col_unit_price),
-                    layout.unitRight, baseline, mTableHeaderPaint);
-            drawRightAligned(mAppContext.getString(R.string.report_col_line_total),
-                    layout.lineRight, baseline, mTableHeaderPaint);
-            mCanvas.drawText(mAppContext.getString(R.string.report_col_first_purchase),
-                    layout.xPurchase, baseline, mTableHeaderPaint);
-            mCursorY += TABLE_ROW_HEIGHT;
-            drawHorizontalRule();
-        }
-
-        private void drawTableRow(TableLayout layout, String no, String name, String qty,
-                                  String unitPrice, String lineTotal, String firstPurchase) {
-            float baseline = rowBaseline(mCursorY, mTextPaint);
-            mCanvas.drawText(no, layout.xNo, baseline, mTextPaint);
-            // TextUtils.ellipsize rejects null, so a name-less row exports blank
-            CharSequence ellipsizedName = TextUtils.ellipsize(name, mTextPaint,
-                    layout.nameWidth, TextUtils.TruncateAt.END);
-            mCanvas.drawText(ellipsizedName.toString(), layout.xName, baseline, mTextPaint);
-            drawRightAligned(qty, layout.qtyRight, baseline, mTextPaint);
-            drawRightAligned(unitPrice, layout.unitRight, baseline, mTextPaint);
-            drawRightAligned(lineTotal, layout.lineRight, baseline, mTextPaint);
-            mCanvas.drawText(firstPurchase, layout.xPurchase, baseline, mTextPaint);
-            mCursorY += TABLE_ROW_HEIGHT;
-            drawHorizontalRule();
-        }
-
-        private String formatTableFirstPurchase(ItemPurchase firstPurchase) {
-            if (firstPurchase == null || firstPurchase.purchaseDateTime == null) {
-                return "";
+            for (Column column : layout.columns) {
+                if (column.rightAligned) {
+                    drawRightAligned(column.header, column.x, baseline, mTableHeaderPaint);
+                } else {
+                    mCanvas.drawText(column.header, column.x, baseline, mTableHeaderPaint);
+                }
             }
-            return mDateFormat.format(firstPurchase.purchaseDateTime);
+            mCursorY += TABLE_ROW_HEIGHT;
+            drawHorizontalRule();
+        }
+
+        private void drawTableRow(TableLayout layout, int rowIndex) {
+            float baseline = rowBaseline(mCursorY, mTextPaint);
+            for (Column column : layout.columns) {
+                String cell = column.cells.get(rowIndex);
+                if (column == layout.nameColumn) {
+                    // TextUtils.ellipsize rejects null, so a name-less row exports blank
+                    CharSequence ellipsizedName = TextUtils.ellipsize(cell, mTextPaint,
+                            column.measuredWidth, TextUtils.TruncateAt.END);
+                    mCanvas.drawText(ellipsizedName.toString(), column.x, baseline, mTextPaint);
+                } else if (column.rightAligned) {
+                    drawRightAligned(cell, column.x, baseline, mTextPaint);
+                } else {
+                    mCanvas.drawText(cell, column.x, baseline, mTextPaint);
+                }
+            }
+            mCursorY += TABLE_ROW_HEIGHT;
+            drawHorizontalRule();
         }
 
         private void drawTotalsRow(TableLayout layout, String label, String totalValue) {
             float baseline = rowBaseline(mCursorY, mTableHeaderPaint);
-            mCanvas.drawText(label, layout.xName, baseline, mTableHeaderPaint);
-            drawRightAligned(totalValue, layout.lineRight, baseline, mTableHeaderPaint);
+            mCanvas.drawText(label, layout.nameColumn.x, baseline, mTableHeaderPaint);
+            drawRightAligned(totalValue, layout.lineTotalColumn.x, baseline, mTableHeaderPaint);
             mCursorY += TABLE_ROW_HEIGHT;
             drawHorizontalRule();
         }
@@ -997,12 +1053,12 @@ public class ExportService {
          * photo position is budget-checked right before it is drawn (see the
          * createReportPdf memory strategy).
          */
-        void drawItemDetail(ItemState itemState, ItemPurchase firstPurchase) {
+        void drawItemDetail(ItemState itemState, List<PdfContributorData> pdfContributorData) {
             Item item = itemState.getItem();
             // Reserve the block's space first when it can fit on one page at
             // all, so an item never starts at the very bottom; taller blocks
             // flow across pages piece by piece instead.
-            float blockHeight = measureDetailBlockHeight(itemState, firstPurchase);
+            float blockHeight = measureDetailBlockHeight(itemState, pdfContributorData);
             ensureSpace(Math.min(blockHeight, USABLE_HEIGHT));
 
             // reserve the spacer + the full name band so the heading can
@@ -1042,11 +1098,7 @@ public class ExportService {
                 // blank cells the summary table uses for unpriced items
                 drawTextLine(mAppContext.getString(R.string.amount_, item.amount));
             }
-            if (firstPurchase != null && firstPurchase.purchaseDateTime != null) {
-                drawTextLine(mAppContext.getString(R.string.report_first_purchase,
-                        mDateFormat.format(firstPurchase.purchaseDateTime),
-                        firstPurchase.cost == null ? "-" : mPriceFormat.format(firstPurchase.cost)));
-            }
+            drawPdfRecords(pdfContributorData, item.id);
             if (item.expiredDateTime != null) {
                 drawTextLine(mAppContext.getString(R.string.report_expires,
                         mDateFormat.format(item.expiredDateTime)));
@@ -1061,7 +1113,8 @@ public class ExportService {
             mCursorY += 1f;
         }
 
-        private float measureDetailBlockHeight(ItemState itemState, ItemPurchase firstPurchase) {
+        private float measureDetailBlockHeight(ItemState itemState,
+                List<PdfContributorData> pdfContributorData) {
             Item item = itemState.getItem();
             int imageRows = 0;
             List<ItemImage> itemImages = itemState.getItemImages();
@@ -1086,8 +1139,22 @@ public class ExportService {
                 height += 14f;
             }
             height += 14f;
-            if (firstPurchase != null && firstPurchase.purchaseDateTime != null) {
-                height += 14f;
+            // one line per dated record plus one per its non-empty note —
+            // the same terms the draw path (drawPdfRecords) emits
+            for (PdfContributorData contributorData : pdfContributorData) {
+                List<ItemPdfRecord> records = contributorData.records.get(item.id);
+                if (records == null) {
+                    continue;
+                }
+                for (ItemPdfRecord record : records) {
+                    if (record.dateTime == null) {
+                        continue;
+                    }
+                    height += 14f;
+                    if (record.note != null && !record.note.isEmpty()) {
+                        height += 14f;
+                    }
+                }
             }
             if (item.expiredDateTime != null) {
                 height += 14f;
@@ -1096,6 +1163,35 @@ public class ExportService {
                 height += 14f;
             }
             return height + 33f;
+        }
+
+        /**
+         * Draws the contributors' record lines for one item: for each
+         * contributor in registration order, each DATED record renders as one
+         * "label: date · amount" line ("-" for a null amount, the report's
+         * null-cost convention) and a non-empty note as an indented second
+         * line under it. Undated records ({@code dateTime} null) are skipped
+         * — that is the no-line case.
+         */
+        private void drawPdfRecords(List<PdfContributorData> pdfContributorData, long itemId) {
+            for (PdfContributorData contributorData : pdfContributorData) {
+                List<ItemPdfRecord> records = contributorData.records.get(itemId);
+                if (records == null) {
+                    continue;
+                }
+                for (ItemPdfRecord record : records) {
+                    if (record.dateTime == null) {
+                        continue;
+                    }
+                    drawTextLine(mAppContext.getString(R.string.report_record_line,
+                            resolveContributorString(record.labelKey),
+                            mDateFormat.format(record.dateTime),
+                            record.amount == null ? "-" : mPriceFormat.format(record.amount)));
+                    if (record.note != null && !record.note.isEmpty()) {
+                        drawTextLine(record.note, RECORD_NOTE_INDENT);
+                    }
+                }
+            }
         }
 
         /**
@@ -1218,8 +1314,17 @@ public class ExportService {
         }
 
         private void drawTextLine(String text) {
+            drawTextLine(text, 0f);
+        }
+
+        /**
+         * Extra-indented text line variant (a record's free-text note under
+         * its record line).
+         */
+        private void drawTextLine(String text, float extraIndent) {
             ensureSpace(14f);
-            mCanvas.drawText(text, MARGIN, rowBaseline(mCursorY, mTextPaint), mTextPaint);
+            mCanvas.drawText(text, MARGIN + extraIndent,
+                    rowBaseline(mCursorY, mTextPaint), mTextPaint);
             mCursorY += 14f;
         }
 
@@ -1338,18 +1443,16 @@ public class ExportService {
 
     /**
      * Per-run writing state for the XLSX export: the progress listener, the
-     * sheet-count denominator, the header-id cache and the workbook's shared
-     * cell styles live here instead of on the service so a failed run can
-     * never leak state into a retry (the service itself outlives runs).
-     * Analog of {@link ReportWriter}.
+     * sheet-count denominator and the workbook's shared cell styles live
+     * here instead of on the service so a failed run can never leak state
+     * into a retry (the service itself outlives runs). Analog of
+     * {@link ReportWriter}.
      */
     private class SpreadsheetWriter {
 
         private final ProgressListener mProgressListener;
         /** Items sheet + every contributed sheet; the progress denominator. */
         private final int mTotalSheets;
-        /** Cache for the by-name resolution of the :app header string resources. */
-        private final Map<String, Integer> mHeaderIdCache = new HashMap<>();
         private final CellStyle mHeaderStyle;
         private final CellStyle mDateStyle;
 
@@ -1359,24 +1462,6 @@ public class ExportService {
             mTotalSheets = totalSheets;
             mHeaderStyle = createHeaderStyle(workbook);
             mDateStyle = createDateStyle(workbook);
-        }
-
-        /**
-         * Resolves one contributor header key to its localized :app string. The
-         * sheet header strings live in :app resources (feature modules must not
-         * depend on :app), so contributors declare the stable resource NAMES and
-         * this writer resolves them by name, cached per export run; an
-         * unresolved key falls back to the raw name so a rename is visible in the
-         * export instead of silently blank.
-         */
-        private String resolveHeader(String headerKey) {
-            Integer id = mHeaderIdCache.get(headerKey);
-            if (id == null) {
-                id = mAppContext.getResources().getIdentifier(
-                        headerKey, "string", mAppContext.getPackageName());
-                mHeaderIdCache.put(headerKey, id);
-            }
-            return id != 0 ? mAppContext.getString(id) : headerKey;
         }
 
         private void emitSheetProgress(int sheetIndex) {
@@ -1397,7 +1482,7 @@ public class ExportService {
             List<String> headerKeys = sheet.getHeaderKeys();
             String[] headers = new String[headerKeys.size()];
             for (int i = 0; i < headerKeys.size(); i++) {
-                headers[i] = resolveHeader(headerKeys.get(i));
+                headers[i] = resolveContributorString(headerKeys.get(i));
             }
             int[] columnChars = writeHeaderRow(poiSheet, mHeaderStyle, headers);
             sheet.writeRows(new PoiSheetRowSink(poiSheet, columnChars, mDateStyle), joinData);
@@ -1516,18 +1601,65 @@ public class ExportService {
     }
 
     /**
-     * Derived column x positions of the summary table, computed once per
-     * export from the measured cell widths (see
-     * {@link ReportWriter#computeTableLayout}). Numeric columns store their
-     * RIGHT edge (they are right-aligned), text columns their left origin.
+     * Derived layout of one summary-table column: header text, one cell per
+     * row (data rows plus the totals row), the alignment flag and the x
+     * position derived by {@link ReportWriter#computeTableLayout}. Right-
+     * aligned columns store their RIGHT edge in {@code x}, text columns
+     * their left origin; for the elastic Name column {@code measuredWidth}
+     * is the assigned (not measured) width.
+     */
+    private static class Column {
+        final String header;
+        final List<String> cells = new ArrayList<>();
+        final boolean rightAligned;
+        float measuredWidth;
+        float x;
+
+        Column(String header, boolean rightAligned) {
+            this.header = header;
+            this.rightAligned = rightAligned;
+        }
+    }
+
+    /**
+     * Derived column layout of the summary table, computed once per export
+     * from the measured cell widths (see
+     * {@link ReportWriter#computeTableLayout}). The name and line-total
+     * columns are kept as direct references for the totals row and the
+     * elastic name behavior.
      */
     private static class TableLayout {
-        float xNo;
-        float xName;
-        float nameWidth;
-        float qtyRight;
-        float unitRight;
-        float lineRight;
-        float xPurchase;
+        final List<Column> columns;
+        /** Elastic Name column: its content is ellipsized at draw time. */
+        final Column nameColumn;
+        /** Line-total column: anchors the totals row's right-aligned value. */
+        final Column lineTotalColumn;
+
+        TableLayout(List<Column> columns, Column nameColumn, Column lineTotalColumn) {
+            this.columns = columns;
+            this.nameColumn = nameColumn;
+            this.lineTotalColumn = lineTotalColumn;
+        }
+    }
+
+    /**
+     * One PDF contributor's per-item data, materialized ONCE per export: the
+     * contract getters run DAO queries, so consulting them per item would be
+     * N+1. Holds the contributor's localized summary-column header (null =
+     * the module contributes no column) plus its per-item summary dates and
+     * detail-block records.
+     */
+    private static class PdfContributorData {
+        final String summaryColumnHeader;
+        final Map<Long, Date> summaryDates;
+        final Map<Long, List<ItemPdfRecord>> records;
+
+        PdfContributorData(String summaryColumnHeader,
+                           Map<Long, Date> summaryDates,
+                           Map<Long, List<ItemPdfRecord>> records) {
+            this.summaryColumnHeader = summaryColumnHeader;
+            this.summaryDates = summaryDates;
+            this.records = records;
+        }
     }
 }

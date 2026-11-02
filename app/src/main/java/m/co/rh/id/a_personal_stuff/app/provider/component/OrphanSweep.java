@@ -34,7 +34,7 @@ import m.co.rh.id.aprovider.Provider;
  * <p>
  * Integration note: backup/export/import of these same module tables is
  * handled by each module's {@code ModuleBackupContributor} registered in the
- * {@code BackupContributorRegistry} — a new data-bearing module must add
+ * {@code ModuleContributorRegistry} — a new data-bearing module must add
  * BOTH a contributor registration AND a sweep branch here (see the
  * ModuleBackupContributor javadoc).
  */

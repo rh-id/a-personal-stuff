@@ -38,8 +38,9 @@ import java.util.zip.ZipOutputStream;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
 import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleExport;
+import m.co.rh.id.a_personal_stuff.app.testutil.TestSeeds;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleExport;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
@@ -267,53 +268,24 @@ public class BackupIntegrationTest {
     public void exportWithItemsOnly() throws Exception {
         Date now = new Date();
 
-        ItemState itemState1 = new ItemState();
-        Item item1 = new Item();
-        item1.name = "Item A";
+        Item item1 = TestSeeds.item("Item A", now);
         item1.amount = 5;
         item1.minAmount = 2;
         item1.price = new BigDecimal("19.99");
         item1.description = "Test item A";
         item1.barcode = "111222333";
         item1.expiredDateTime = new Date(now.getTime() + 2592000000L);
-        item1.createdDateTime = now;
-        item1.updatedDateTime = now;
-        itemState1.updateItem(item1);
-
-        ItemImage img1 = new ItemImage();
-        img1.fileName = "img1.jpg";
-        img1.createdDateTime = now;
-        ArrayList<ItemImage> images1 = new ArrayList<>();
-        images1.add(img1);
-        itemState1.updateItemImages(images1);
-
-        ItemTag tag1 = new ItemTag();
-        tag1.tag = "electronics";
-        tag1.createdDateTime = now;
         TreeSet<ItemTag> tags1 = new TreeSet<>();
-        tags1.add(tag1);
-        itemState1.updateItemTags(tags1);
+        tags1.add(TestSeeds.itemTag("electronics", now));
+        ItemImage img1 = TestSeeds.itemImage("img1.jpg", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item1, tags1,
+                new ArrayList<>(Arrays.asList(img1)));
 
-        mAppDb.itemDao().insertItem(itemState1);
-
-        ItemState itemState2 = new ItemState();
-        Item item2 = new Item();
-        item2.name = "Item B";
+        Item item2 = TestSeeds.item("Item B", now);
         item2.amount = 10;
-        item2.price = null;
-        item2.description = null;
-        item2.createdDateTime = now;
-        item2.updatedDateTime = now;
-        itemState2.updateItem(item2);
-
-        ItemImage img2 = new ItemImage();
-        img2.fileName = "img2.jpg";
-        img2.createdDateTime = now;
-        ArrayList<ItemImage> images2 = new ArrayList<>();
-        images2.add(img2);
-        itemState2.updateItemImages(images2);
-
-        mAppDb.itemDao().insertItem(itemState2);
+        ItemImage img2 = TestSeeds.itemImage("img2.jpg", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item2, null,
+                new ArrayList<>(Arrays.asList(img2)));
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
         JSONObject json = extractJsonFromZip(zipFile);
@@ -351,39 +323,18 @@ public class BackupIntegrationTest {
     public void exportWithFullData() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Full Item";
+        Item item = TestSeeds.item("Full Item", now);
         item.amount = 3;
         item.price = new BigDecimal("29.99");
         item.description = "Complete test item";
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-
-        ItemImage itemImg = new ItemImage();
-        itemImg.fileName = "item.jpg";
-        itemImg.createdDateTime = now;
-        ArrayList<ItemImage> itemImages = new ArrayList<>();
-        itemImages.add(itemImg);
-        itemState.updateItemImages(itemImages);
-
-        ItemTag itemTag = new ItemTag();
-        itemTag.tag = "fulltest";
-        itemTag.createdDateTime = now;
         TreeSet<ItemTag> itemTags = new TreeSet<>();
-        itemTags.add(itemTag);
-        itemState.updateItemTags(itemTags);
+        itemTags.add(TestSeeds.itemTag("fulltest", now));
+        ItemImage itemImg = TestSeeds.itemImage("item.jpg", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, itemTags,
+                new ArrayList<>(Arrays.asList(itemImg)));
 
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
-
-        ItemMaintenance maintenance = new ItemMaintenance();
-        maintenance.itemId = itemId;
-        maintenance.description = "Oil change";
-        maintenance.cost = new BigDecimal("50.00");
-        maintenance.maintenanceDateTime = now;
-        maintenance.createdDateTime = now;
+        ItemMaintenance maintenance = TestSeeds.itemMaintenance(itemId, "Oil change",
+                new BigDecimal("50.00"), now);
         long maintId = mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
 
         ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
@@ -392,12 +343,7 @@ public class BackupIntegrationTest {
         maintImg.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintImg);
 
-        ItemUsage usage = new ItemUsage();
-        usage.itemId = itemId;
-        usage.description = "Used for project";
-        usage.amount = 1;
-        usage.usageDateTime = now;
-        usage.createdDateTime = now;
+        ItemUsage usage = TestSeeds.itemUsage(itemId, "Used for project", now);
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
         ItemUsageImage usageImg = new ItemUsageImage();
@@ -406,13 +352,9 @@ public class BackupIntegrationTest {
         usageImg.createdDateTime = now;
         mUsageDb.itemUsageDao().insert(usageImg);
 
-        ItemPurchase purchase = new ItemPurchase();
-        purchase.itemId = itemId;
+        ItemPurchase purchase = TestSeeds.itemPurchase(itemId, new BigDecimal("12.50"), now, now);
         purchase.description = "Bought 3 units";
         purchase.amount = 3;
-        purchase.cost = new BigDecimal("12.50");
-        purchase.purchaseDateTime = now;
-        purchase.createdDateTime = now;
         long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
 
         ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
@@ -421,12 +363,8 @@ public class BackupIntegrationTest {
         purchaseImg.createdDateTime = now;
         mPurchaseDb.itemPurchaseDao().insert(purchaseImg);
 
-        ItemReminder reminder = new ItemReminder();
-        reminder.itemId = itemId;
-        reminder.taskId = "task-123";
-        reminder.reminderDateTime = new Date(now.getTime() + 86400000);
-        reminder.message = "Check item status";
-        reminder.createdDateTime = now;
+        ItemReminder reminder = TestSeeds.itemReminder(itemId, "task-123", "Check item status",
+                new Date(now.getTime() + 86400000), now);
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
@@ -519,22 +457,10 @@ public class BackupIntegrationTest {
         orphanFos.write("orphan".getBytes());
         orphanFos.close();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Item With Image";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-
-        ItemImage img = new ItemImage();
-        img.fileName = "referenced.jpg";
-        img.createdDateTime = now;
-        ArrayList<ItemImage> images = new ArrayList<>();
-        images.add(img);
-        itemState.updateItemImages(images);
-
-        mAppDb.itemDao().insertItem(itemState);
+        Item item = TestSeeds.item("Item With Image", now);
+        ItemImage img = TestSeeds.itemImage("referenced.jpg", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null,
+                new ArrayList<>(Arrays.asList(img)));
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
         Set<String> entries = getZipEntryNames(zipFile);
@@ -596,21 +522,11 @@ public class BackupIntegrationTest {
         File orphanUsageImage = new File(usageImageDir, "orphan_usage.jpg");
         writeBytes(orphanUsageImage, "orphan-usage".getBytes());
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Filter Test Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        Item item = TestSeeds.item("Filter Test Item", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
-        ItemMaintenance maint = new ItemMaintenance();
-        maint.itemId = itemId;
-        maint.description = "Filter test maint";
-        maint.maintenanceDateTime = now;
-        maint.createdDateTime = now;
+        ItemMaintenance maint = TestSeeds.itemMaintenance(itemId, "Filter test maint",
+                null, now);
         long maintId = mMaintenanceDb.itemMaintenanceDao().insert(maint);
 
         ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
@@ -619,11 +535,7 @@ public class BackupIntegrationTest {
         maintImg.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintImg);
 
-        ItemUsage usage = new ItemUsage();
-        usage.itemId = itemId;
-        usage.description = "Filter test usage";
-        usage.amount = 1;
-        usage.createdDateTime = now;
+        ItemUsage usage = TestSeeds.itemUsage(itemId, "Filter test usage", now);
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
         ItemUsageImage usageImg = new ItemUsageImage();
@@ -963,15 +875,9 @@ public class BackupIntegrationTest {
         // backup contributor fails this test with its rows missing.
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Round Trip Template Item";
+        Item item = TestSeeds.item("Round Trip Template Item", now);
         item.amount = 2;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
         File usageImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE);
         usageImageDir.mkdirs();
@@ -982,12 +888,7 @@ public class BackupIntegrationTest {
         File usageThumbFile = new File(usageThumbDir, "rt_usage.jpg");
         writeBytes(usageThumbFile, "rt-usage-thumb".getBytes());
 
-        ItemUsage usage = new ItemUsage();
-        usage.itemId = itemId;
-        usage.description = "RT usage";
-        usage.amount = 1;
-        usage.usageDateTime = now;
-        usage.createdDateTime = now;
+        ItemUsage usage = TestSeeds.itemUsage(itemId, "RT usage", now);
         long usageId = mUsageDb.itemUsageDao().insert(usage);
         ItemUsageImage usageImg = new ItemUsageImage();
         usageImg.itemUsageId = usageId;
@@ -1004,13 +905,9 @@ public class BackupIntegrationTest {
         File purchaseThumbFile = new File(purchaseThumbDir, "rt_purchase.jpg");
         writeBytes(purchaseThumbFile, "rt-purchase-thumb".getBytes());
 
-        ItemPurchase purchase = new ItemPurchase();
-        purchase.itemId = itemId;
+        ItemPurchase purchase = TestSeeds.itemPurchase(itemId, new BigDecimal("40.00"), now, now);
         purchase.description = "RT purchase";
         purchase.amount = 4;
-        purchase.cost = new BigDecimal("40.00");
-        purchase.purchaseDateTime = now;
-        purchase.createdDateTime = now;
         long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
         ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
         purchaseImg.itemPurchaseId = purchaseId;
@@ -1027,12 +924,8 @@ public class BackupIntegrationTest {
         File maintThumbFile = new File(maintThumbDir, "rt_maint.jpg");
         writeBytes(maintThumbFile, "rt-maint-thumb".getBytes());
 
-        ItemMaintenance maintenance = new ItemMaintenance();
-        maintenance.itemId = itemId;
-        maintenance.description = "RT maintenance";
-        maintenance.cost = new BigDecimal("75.00");
-        maintenance.maintenanceDateTime = now;
-        maintenance.createdDateTime = now;
+        ItemMaintenance maintenance = TestSeeds.itemMaintenance(itemId, "RT maintenance",
+                new BigDecimal("75.00"), now);
         long maintId = mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
         ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
         maintImg.itemMaintenanceId = maintId;
@@ -1040,27 +933,17 @@ public class BackupIntegrationTest {
         maintImg.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintImg);
 
-        ItemReminder reminder = new ItemReminder();
-        reminder.itemId = itemId;
-        reminder.taskId = "rt-task";
-        reminder.reminderDateTime = new Date(now.getTime() + 172800000);
-        reminder.message = "RT reminder";
-        reminder.createdDateTime = now;
+        ItemReminder reminder = TestSeeds.itemReminder(itemId, "rt-task", "RT reminder",
+                new Date(now.getTime() + 172800000), now);
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.title = "RT checklist";
-        checklist.createdDateTime = now;
+        ItemChecklist checklist = TestSeeds.itemChecklist("RT checklist", now);
         checklist.updatedDateTime = new Date(now.getTime() + 1000);
         ItemChecklistState checklistState = new ItemChecklistState();
         checklistState.updateItemChecklist(checklist);
         mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
         long checklistId = checklistState.getChecklistId();
-        ItemChecklistItem checklistItem = new ItemChecklistItem();
-        checklistItem.itemChecklistId = checklistId;
-        checklistItem.itemId = itemId;
-        checklistItem.createdDateTime = now;
-        checklistItem.checkedDateTime = now;
+        ItemChecklistItem checklistItem = TestSeeds.itemChecklistItem(checklistId, itemId, now, now);
         mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem));
 
         File zipFile = new ExportCmd(mProvider).execute().blockingGet();
@@ -1213,42 +1096,21 @@ public class BackupIntegrationTest {
         originalPayloads.put(purchaseThumbFile, purchaseThumbPayload);
         writeBytes(purchaseThumbFile, purchaseThumbPayload);
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Round Trip Item";
+        Item item = TestSeeds.item("Round Trip Item", now);
         item.amount = 8;
         item.minAmount = 5;
         item.price = new BigDecimal("123.45");
         item.description = "Round trip test";
         item.barcode = "1234567890";
         item.expiredDateTime = new Date(now.getTime() + 2592000000L);
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-
-        ItemImage itemImg = new ItemImage();
-        itemImg.fileName = "roundtrip.jpg";
-        itemImg.createdDateTime = now;
-        ArrayList<ItemImage> itemImages = new ArrayList<>();
-        itemImages.add(itemImg);
-        itemState.updateItemImages(itemImages);
-
-        ItemTag itemTag = new ItemTag();
-        itemTag.tag = "roundtrip";
-        itemTag.createdDateTime = now;
         TreeSet<ItemTag> itemTags = new TreeSet<>();
-        itemTags.add(itemTag);
-        itemState.updateItemTags(itemTags);
+        itemTags.add(TestSeeds.itemTag("roundtrip", now));
+        ItemImage itemImg = TestSeeds.itemImage("roundtrip.jpg", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, itemTags,
+                new ArrayList<>(Arrays.asList(itemImg)));
 
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
-
-        ItemMaintenance maintenance = new ItemMaintenance();
-        maintenance.itemId = itemId;
-        maintenance.description = "Round trip maintenance";
-        maintenance.cost = new BigDecimal("75.00");
-        maintenance.maintenanceDateTime = now;
-        maintenance.createdDateTime = now;
+        ItemMaintenance maintenance = TestSeeds.itemMaintenance(itemId, "Round trip maintenance",
+                new BigDecimal("75.00"), now);
         long maintId = mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
 
         ItemMaintenanceImage maintImg = new ItemMaintenanceImage();
@@ -1257,12 +1119,8 @@ public class BackupIntegrationTest {
         maintImg.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintImg);
 
-        ItemUsage usage = new ItemUsage();
-        usage.itemId = itemId;
-        usage.description = "Round trip usage";
+        ItemUsage usage = TestSeeds.itemUsage(itemId, "Round trip usage", now);
         usage.amount = 2;
-        usage.usageDateTime = now;
-        usage.createdDateTime = now;
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
         ItemUsageImage usageImg = new ItemUsageImage();
@@ -1271,13 +1129,9 @@ public class BackupIntegrationTest {
         usageImg.createdDateTime = now;
         mUsageDb.itemUsageDao().insert(usageImg);
 
-        ItemPurchase purchase = new ItemPurchase();
-        purchase.itemId = itemId;
+        ItemPurchase purchase = TestSeeds.itemPurchase(itemId, new BigDecimal("40.00"), now, now);
         purchase.description = "Round trip purchase";
         purchase.amount = 4;
-        purchase.cost = new BigDecimal("40.00");
-        purchase.purchaseDateTime = now;
-        purchase.createdDateTime = now;
         long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
 
         ItemPurchaseImage purchaseImg = new ItemPurchaseImage();
@@ -1286,49 +1140,31 @@ public class BackupIntegrationTest {
         purchaseImg.createdDateTime = now;
         mPurchaseDb.itemPurchaseDao().insert(purchaseImg);
 
-        ItemReminder reminder = new ItemReminder();
-        reminder.itemId = itemId;
-        reminder.taskId = "roundtrip-task";
-        reminder.reminderDateTime = new Date(now.getTime() + 172800000);
-        reminder.message = "Round trip reminder";
-        reminder.createdDateTime = now;
+        ItemReminder reminder = TestSeeds.itemReminder(itemId, "roundtrip-task", "Round trip reminder",
+                new Date(now.getTime() + 172800000), now);
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
         // Create item checklist
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.title = "Round trip checklist";
+        ItemChecklist checklist = TestSeeds.itemChecklist("Round trip checklist", now);
         checklist.description = "Round trip description";
-        checklist.createdDateTime = now;
-        checklist.updatedDateTime = now;
         ItemChecklistState checklistState = new ItemChecklistState();
         checklistState.updateItemChecklist(checklist);
         mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
         long checklistId = checklistState.getChecklistId();
 
         // Add items to checklist
-        ItemChecklistItem checklistItem1 = new ItemChecklistItem();
-        checklistItem1.itemChecklistId = checklistId;
-        checklistItem1.itemId = itemId;
-        checklistItem1.createdDateTime = now;
-        checklistItem1.checkedDateTime = null; // not checked
+        // null checkedDateTime = not checked
+        ItemChecklistItem checklistItem1 =
+                TestSeeds.itemChecklistItem(checklistId, itemId, null, now);
         mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem1));
 
         // Add a second item to the checklist
-        ItemState itemState2 = new ItemState();
-        Item item2 = new Item();
-        item2.name = "Round Trip Item 2";
+        Item item2 = TestSeeds.item("Round Trip Item 2", now);
         item2.amount = 3;
-        item2.createdDateTime = now;
-        item2.updatedDateTime = now;
-        itemState2.updateItem(item2);
-        mAppDb.itemDao().insertItem(itemState2);
-        long itemId2 = itemState2.getItemId();
+        long itemId2 = TestSeeds.insertItemWithRelations(mAppDb, item2, null, null);
 
-        ItemChecklistItem checklistItem2 = new ItemChecklistItem();
-        checklistItem2.itemChecklistId = checklistId;
-        checklistItem2.itemId = itemId2;
-        checklistItem2.createdDateTime = now;
-        checklistItem2.checkedDateTime = now; // this one is checked
+        ItemChecklistItem checklistItem2 =
+                TestSeeds.itemChecklistItem(checklistId, itemId2, now, now); // this one is checked
         mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem2));
 
         // Update checklist timestamp
@@ -1966,49 +1802,28 @@ public class BackupIntegrationTest {
         Date now = new Date();
 
         // Create items
-        ItemState itemState1 = new ItemState();
-        Item item1 = new Item();
-        item1.name = "Item A";
+        Item item1 = TestSeeds.item("Item A", now);
         item1.amount = 5;
-        item1.createdDateTime = now;
-        item1.updatedDateTime = now;
-        itemState1.updateItem(item1);
-        mAppDb.itemDao().insertItem(itemState1);
-        long itemId1 = itemState1.getItemId();
+        long itemId1 = TestSeeds.insertItemWithRelations(mAppDb, item1, null, null);
 
-        ItemState itemState2 = new ItemState();
-        Item item2 = new Item();
-        item2.name = "Item B";
+        Item item2 = TestSeeds.item("Item B", now);
         item2.amount = 3;
-        item2.createdDateTime = now;
-        item2.updatedDateTime = now;
-        itemState2.updateItem(item2);
-        mAppDb.itemDao().insertItem(itemState2);
-        long itemId2 = itemState2.getItemId();
+        long itemId2 = TestSeeds.insertItemWithRelations(mAppDb, item2, null, null);
 
         // Create item checklist
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.title = "Moving home";
-        checklist.createdDateTime = now;
-        checklist.updatedDateTime = now;
+        ItemChecklist checklist = TestSeeds.itemChecklist("Moving home", now);
         ItemChecklistState checklistState = new ItemChecklistState();
         checklistState.updateItemChecklist(checklist);
         mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
         long checklistId = checklistState.getChecklistId();
 
         // Add all items to checklist
-        ItemChecklistItem checklistItem1 = new ItemChecklistItem();
-        checklistItem1.itemChecklistId = checklistId;
-        checklistItem1.itemId = itemId1;
-        checklistItem1.createdDateTime = now;
-        checklistItem1.checkedDateTime = null;
+        ItemChecklistItem checklistItem1 =
+                TestSeeds.itemChecklistItem(checklistId, itemId1, null, now);
         mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem1));
 
-        ItemChecklistItem checklistItem2 = new ItemChecklistItem();
-        checklistItem2.itemChecklistId = checklistId;
-        checklistItem2.itemId = itemId2;
-        checklistItem2.createdDateTime = now;
-        checklistItem2.checkedDateTime = now; // checked
+        ItemChecklistItem checklistItem2 =
+                TestSeeds.itemChecklistItem(checklistId, itemId2, now, now); // checked
         mChecklistDb.itemChecklistDao().insertItemChecklistItems(Collections.singletonList(checklistItem2));
 
         // Update checklist timestamp
@@ -2210,18 +2025,11 @@ public class BackupIntegrationTest {
     public void exportChecklistWithZeroItems() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Zero Checklist Item";
+        Item item = TestSeeds.item("Zero Checklist Item", now);
         item.amount = 2;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.title = "Empty checklist";
-        checklist.createdDateTime = now;
+        ItemChecklist checklist = TestSeeds.itemChecklist("Empty checklist", now);
         checklist.updatedDateTime = new Date(now.getTime() + 1000);
         ItemChecklistState checklistState = new ItemChecklistState();
         checklistState.updateItemChecklist(checklist);
@@ -2547,7 +2355,7 @@ public class BackupIntegrationTest {
             // eager contributor registry (mirrors BaseProviderModule) + the
             // REAL module backup contributors, so every import/export in this
             // suite exercises the production contributor contract
-            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
+            providerRegistry.register(ModuleContributorRegistry.class, ModuleContributorRegistry::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemMaintenanceDao.class, this::getItemMaintenanceDao);
             providerRegistry.register(ItemUsageDao.class, this::getItemUsageDao);
@@ -2567,7 +2375,7 @@ public class BackupIntegrationTest {
             providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new NoOpCleanUpItemUsageFileHelper(provider));
             providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new NoOpCleanUpItemPurchaseFileHelper(provider));
             providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
-            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
             contributorRegistry.register(new ItemUsageBackupContributor(provider));
             contributorRegistry.register(new ItemPurchaseBackupContributor(provider));
             contributorRegistry.register(new ItemMaintenanceBackupContributor(provider));

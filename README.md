@@ -27,6 +27,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Backup & Restore**: Export and import full app data as ZIP files, including images and thumbnails (backup format version 2, which adds the low stock threshold; version 1 backups still import).
 *   **Automatic Backup**: Scheduled backup (configurable interval in days, default every 30 days) to a folder you choose via the system folder picker (works with local storage or any SAF provider such as an SD card or cloud drive); keeps the newest 5 backups, runs only when the battery isn't low, and is toggleable in Settings (off by default).
 *   **Spreadsheet Export**: Export all data as sheets of a single .xlsx workbook (Items, Usages, Purchases, Maintenances, Reminders, Checklists and Checklist Items) — the Items sheet now includes a low stock alert threshold column; requires Android 8.0 (API 26)+, the export button is hidden on older devices.
+*   **PDF Inventory Report**: Export an insurance-ready PDF report (cover page with item/value totals, a summary table with a date column per contributor, and per-item detail blocks with photos and first-purchase date/cost) — driven by each feature module's registered PDF contributor, so the content is identical to what the dashboard reports; totals come from `ItemDao` (`sumInventoryValue`/`countItems`), first-purchase data from the purchase contributor, and photos render within a 500-photo budget past which placeholders are drawn.
 *   **Item Duplication**: Duplicate an existing item including its images and tags.
 *   **Dynamic Colors (Material You)**: The UI follows your wallpaper's color palette on supported devices (Android 12+), with an on/off toggle in Settings (on by default when supported).
 *   **Item View Mode**: Switch item lists between detailed and compact rows (persisted preference, detailed by default).
@@ -61,8 +62,8 @@ The codebase is split into feature-centric modules to enforce boundaries:
 
 | Module | Purpose |
 |--------|---------|
-| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, and XLSX export operations, the dashboard overview card (DashboardCmd, InventoryStatsCalculator), and the daily inventory alert digest (InventoryAlertScheduler, AlertDigestWorker), automatic scheduled backup (AutoBackupScheduler, AutoBackupWorker, AutoBackupFileUtil) |
-| `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, Room migrations (DbMigration), and shared UI components (AppBar, ImageSV, SelectionPage) |
+| `:app` | Main entry point containing MainActivity, DI setup, navigation routing, and app-level commands for Item CRUD, duplicate, backup/restore, XLSX, and PDF report export operations, the dashboard overview card (DashboardCmd, InventoryStatsCalculator), and the daily inventory alert digest (InventoryAlertScheduler, AlertDigestWorker), automatic scheduled backup (AutoBackupScheduler, AutoBackupWorker, AutoBackupFileUtil) |
+| `:base` | Shared utilities, entities (Item, ItemImage, ItemTag), common DAOs, base provider modules, Rx utilities, logging infrastructure, Room migrations (DbMigration), shared UI components (AppBar, ImageSV, SelectionPage), and the per-module contributor contract (ModuleContributorRegistry in base.contributor) |
 | `:barcode` | Barcode scanning functionality using the camera (Camera1 API) with ZXing barcode decoding, with ScanBarcodePage and ScanBarcodePreview components |
 | `:item-usage` | Item usage tracking feature with entities (ItemUsage, ItemUsageImage), commands, DAO, and UI pages (ItemUsagesPage, ItemUsageDetailPage) |
 | `:item-purchase` | Item purchase tracking feature with entities (ItemPurchase, ItemPurchaseImage), commands, DAO, event handler for cascade delete, and UI pages (ItemPurchasesPage, ItemPurchaseDetailPage) |
@@ -126,6 +127,16 @@ Business logic is encapsulated using the **Command Pattern**:
 - Repositories encapsulate data access logic
 - Example: `AndroidNotificationRepo` wraps `AndroidNotificationDao`
 - Repositories handle complex queries and data transformations
+
+#### 6. Per-Module Contributor Contract (ModuleContributorRegistry)
+- `:base` hosts the `ModuleContributorRegistry` (package `base.contributor`), which collects 4 contributor kinds registered synchronously by each feature module inside `provides()` (never `registerAsync` — the registry must exist before modules register)
+- `ModuleBackupContributor`: backup.json sections + image dirs; import with id remap
+- `ModuleSpreadsheetContributor`: XLSX sheets, keyset-paged
+- `ModuleDashboardContributor`: refresh triggers + stock deltas
+- `ModulePdfContributor`: PDF report — per-module summary date column + per-item dated records
+- Merge semantics are structural (registration order); two modules contributing to the same item is the expected case
+- Labels/column headers are `:app`-owned string resource key NAMES (modules must not hard-code user-visible text)
+- A new data-bearing module must also add an OrphanSweep branch (see the base `ModuleBackupContributor` javadoc)
 
 ### Architecture Diagram
 
@@ -335,6 +346,7 @@ a-personal-stuff/
 │   │   │   │   ├── DashboardCmd.java           # Dashboard overview card computation and refresh
 │   │   │   │   ├── ExportCmd.java              # Export data command
 │   │   │   │   ├── ExportSpreadsheetCmd.java   # XLSX export Rx adapter (engine in ExportService, Android 8.0+)
+│   │   │   │   ├── ExportPdfReportCmd.java     # PDF inventory report Rx adapter (engine in ExportService)
 │   │   │   │   └── ImportCmd.java              # Import data command
 │   │   │   ├── service/
 │   │   │   │   └── ExportService.java          # ZIP backup / PDF report / XLSX spreadsheet export builder (manual & automatic backup)
@@ -797,12 +809,13 @@ Suites, run on the emulator matrix in CI (see Automation & CI/CD above):
 
 - **`:app/src/androidTest/` — BackupIntegrationTest.java**: ZIP backup/restore round-trip against in-memory Room databases.
 - **`:app/src/androidTest/` — ExportSpreadsheetCmdTest.java**: verifies XLSX export output; API-gated via `assumeTrue` (skipped below API 26).
+- **`:app/src/androidTest/` — ExportPdfReportCmdTest.java**: verifies the PDF report export (page counts via PdfRenderer, an empirical chromatic-color guard that photos actually rendered, image-budget placeholder behavior, progress messages, and a second-contributor regression test proving merged contributor data renders).
 - **`:app/src/androidTest/` — PagedItemCmdTest.java, InventoryStatsCalculatorTest.java, GenerateShoppingListCmdTest.java, AutoBackupFileUtilTest.java** (former JVM unit tests under `:app/src/test/`, relocated as component tests): paged item search against a real DAO (state emission, empty-list fallback when the database is closed, dedup/membership of merged search ids, page-size doubling on `loadNextPage`, empty-filter short-circuit, multi-id filter); inventory statistics over real usage/purchase databases (zeroed summary for empty data, inventory value aggregation, expiry boundary splitting, low-stock detection from derived remaining stock); designated shopping-list generation through the real `ItemChecklistService` and `SettingsSharedPreferences` (find-or-create, id persistence, title adoption, regeneration, and a two-thread overlap test); and 7 auto-backup rotation tests (file name format, keep-newest-5 rotation, order independence, non-matching names, null/empty input).
 - **`:item-checklist/src/androidTest/` — ItemChecklistServiceTest.java, QueryItemChecklistCmdTest.java** (former JVM unit tests, relocated as component tests): every mutation of the shared `ItemChecklistService` (persistence, timestamp bumps, notifier flow emissions, missing-parent guards) and `QueryItemChecklistCmd` existence checks (`existsById`, plus the stale-id case where the state query's `Maybe` completes empty).
 - **`:base/src/androidTest/` — ItemDaoTest.java**: pins the exact ordering of every `ItemDao` sort-matrix entry across all query families, and unit tests for `ItemDao`'s static helpers — `assembleItemStates` grouping of images/tags onto their items (order-preserving, with empty-list edge cases) and `chunkIds` ID chunking boundaries.
 - **`:item-checklist/src/androidTest/` — ItemChecklistDaoTest.java**: pins the exact ordering of `findItemChecklistWithLimit` for every order key plus the composite default.
 
-Shared test fixtures live in `:base`'s testFixtures source set (`m.co.rh.id.a_personal_stuff.base.test`): `NoOpLogger` (silent `ILogger` for test provider modules), `AndroidTestUtils.await` (polling helper with a custom `Condition` SAM, minSdk-safe), and `DirectExecutorService` (same-thread executor for deterministic Rx assertions).
+Shared test fixtures live in `:base`'s testFixtures source set (`m.co.rh.id.a_personal_stuff.base.test`): `NoOpLogger` (silent `ILogger` for test provider modules), `AndroidTestUtils.await` (polling helper with a custom `Condition` SAM, minSdk-safe), and `DirectExecutorService` (same-thread executor for deterministic Rx assertions). `:app`'s androidTest additionally shares `app/src/androidTest/java/m/co/rh/id/a_personal_stuff/app/testutil/TestSeeds.java` — static entity factories with sensible defaults plus `insertItemWithRelations` — used by the backup/spreadsheet/PDF export tests.
 
 Available tooling:
 - JUnit 4.13.2

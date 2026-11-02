@@ -1,4 +1,4 @@
-package m.co.rh.id.a_personal_stuff.base.backup;
+package m.co.rh.id.a_personal_stuff.base.contributor;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,7 +13,16 @@ import java.util.Map;
  * resolve their own DAOs/notifier/FileHelper from the {@code Provider} passed
  * to their constructor and are registered synchronously inside the module's
  * {@code ProviderModule.provides()}:
- * {@code provider.get(BackupContributorRegistry.class).register(new XBackupContributor(provider))}.
+ * {@code provider.get(ModuleContributorRegistry.class).register(new XBackupContributor(provider))}.
+ * <p>
+ * Dependency resolution: contributors should eagerly resolve every dependency
+ * in the constructor via {@code provider.get(X.class)}. The one sanctioned
+ * exception is lazily resolving infrastructure that is not ready while
+ * {@code provides()} runs — {@code ItemReminderBackupContributor} stores the
+ * {@code Provider} and resolves {@code WorkManager} on first use because
+ * WorkManager initialization requires the provider to be fully built (a
+ * :app startup-order hazard). New contributor authors must eagerly resolve
+ * everything except such startup-order-sensitive dependencies.
  * <p>
  * Integration completeness: registering a contributor covers backup/export/
  * import, but a new data-bearing module must ALSO add an OrphanSweep branch

@@ -1,6 +1,6 @@
 package m.co.rh.id.a_personal_stuff.item_checklist.provider;
 
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistEventHandler;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.component.ItemChecklistService;
@@ -26,7 +26,7 @@ public class ItemChecklistProviderModule implements ProviderModule {
         // iterates the contributors after all modules have provided().
         // Checklist changes affect neither the dashboard refresh nor the
         // derived remaining stock, so no dashboard contributor is registered.
-        BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+        ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
         contributorRegistry.register(new ItemChecklistBackupContributor(provider));
         contributorRegistry.register(new ItemChecklistSpreadsheetContributor(provider));
     }

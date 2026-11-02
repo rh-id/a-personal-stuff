@@ -30,8 +30,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
@@ -39,19 +41,22 @@ import java.util.concurrent.Executors;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.app.testutil.TestSeeds;
+import m.co.rh.id.a_personal_stuff.base.contributor.ItemPdfRecord;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModulePdfContributor;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
-import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
 import m.co.rh.id.a_personal_stuff.base.test.NoOpLogger;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
+import m.co.rh.id.a_personal_stuff.item_purchase.provider.component.ItemPurchasePdfContributor;
 import m.co.rh.id.a_personal_stuff.item_purchase.room.ItemPurchaseDatabase;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
@@ -76,6 +81,14 @@ public class ExportPdfReportCmdTest {
     private static final int MIN_CHROMATIC_COLORS_FOR_PHOTO = 10;
     /** Chroma threshold separating a real color from white/black/gray text AA. */
     private static final int CHROMA_THRESHOLD = 16;
+    /**
+     * Records the stub contributor feeds for ONE item, each with a note so
+     * every record renders 2 lines (line + indented note): at 14pt per line
+     * this adds ~2800pt of detail-block content (~4 extra pages), so the
+     * page-count growth the multi-contributor merge must produce is far
+     * above the +2-page assertion margin.
+     */
+    private static final int STUB_RECORD_COUNT = 100;
 
     private Context mContext;
     private AppDatabase mAppDb;
@@ -150,66 +163,46 @@ public class ExportPdfReportCmdTest {
 
         // item 1: priced, tagged, TWO real thumbnail photos, expiry, barcode
         // and a long description (drives the StaticLayout wrap path)
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Camera";
+        Item item = TestSeeds.item("Camera", now);
         item.amount = 3;
         item.price = new BigDecimal("29.99");
         item.description = longDescription();
         item.barcode = "4006381333931";
         item.expiredDateTime = new Date(now.getTime() + 2592000000L);
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
         // TreeSet sorts the tags, so "electronics" is joined before "gear"
         TreeSet<ItemTag> itemTags = new TreeSet<>();
-        itemTags.add(itemTag("gear", now));
-        itemTags.add(itemTag("electronics", now));
-        itemState.updateItemTags(itemTags);
-        ItemImage img1 = new ItemImage();
-        img1.fileName = "cam1.jpg";
-        img1.createdDateTime = now;
-        ItemImage img2 = new ItemImage();
-        img2.fileName = "cam2.jpg";
+        itemTags.add(TestSeeds.itemTag("gear", now));
+        itemTags.add(TestSeeds.itemTag("electronics", now));
+        ItemImage img1 = TestSeeds.itemImage("cam1.jpg", now);
+        ItemImage img2 = TestSeeds.itemImage("cam2.jpg", now);
         img2.createdDateTime = new Date(now.getTime() + 1000);
-        itemState.updateItemImages(new ArrayList<>(Arrays.asList(img1, img2)));
         // rows BEFORE files: see the setUp note about ItemFileHelper cleanUp
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, itemTags,
+                new ArrayList<>(Arrays.asList(img1, img2)));
         seedThumbnailFile("cam1.jpg");
         seedThumbnailFile("cam2.jpg");
 
         // three purchases, inserted so the LATER date gets the SMALLER id:
         // earliest-selection must pick the earlier-dated row regardless of
         // insertion order, and the undated row must never win
-        ItemPurchase laterPurchase = new ItemPurchase();
-        laterPurchase.itemId = itemId;
+        ItemPurchase laterPurchase = TestSeeds.itemPurchase(itemId,
+                new BigDecimal("99.00"), new Date(now.getTime() + 86400000L), now);
         laterPurchase.description = "Replaced broken one";
-        laterPurchase.amount = 1;
-        laterPurchase.cost = new BigDecimal("99.00");
-        laterPurchase.purchaseDateTime = new Date(now.getTime() + 86400000L);
-        laterPurchase.createdDateTime = now;
         // Room does NOT write the auto-generated id back into the inserted
         // entity — ItemPurchaseDao.insert returns the rowId (see how the
         // DAO's own insertItemPurchaseImage assigns it) — so capture the
         // returned ids for the assertions below
         long laterPurchaseId = mPurchaseDb.itemPurchaseDao().insert(laterPurchase);
 
-        ItemPurchase earlierPurchase = new ItemPurchase();
-        earlierPurchase.itemId = itemId;
+        ItemPurchase earlierPurchase = TestSeeds.itemPurchase(itemId,
+                new BigDecimal("12.50"), now, now);
         earlierPurchase.description = "Bought 3 units";
         earlierPurchase.amount = 3;
-        earlierPurchase.cost = new BigDecimal("12.50");
-        earlierPurchase.purchaseDateTime = now;
-        earlierPurchase.createdDateTime = now;
         long earlierPurchaseId = mPurchaseDb.itemPurchaseDao().insert(earlierPurchase);
 
-        ItemPurchase undatedPurchase = new ItemPurchase();
-        undatedPurchase.itemId = itemId;
-        undatedPurchase.amount = 1;
-        undatedPurchase.cost = new BigDecimal("1.00");
-        undatedPurchase.purchaseDateTime = null;
-        undatedPurchase.createdDateTime = now;
+        // the null purchaseDateTime IS the undated-row case under test
+        ItemPurchase undatedPurchase = TestSeeds.itemPurchase(itemId,
+                new BigDecimal("1.00"), null, now);
         long undatedPurchaseId = mPurchaseDb.itemPurchaseDao().insert(undatedPurchase);
 
         // earliest-selection (Task 1's query): exactly one row per item and
@@ -226,34 +219,19 @@ public class ExportPdfReportCmdTest {
 
         // item 2: null price, null expiry, thumbnail MISSING but full image
         // present (exercises the inSampleSize full-image fallback decode)
-        ItemState itemState2 = new ItemState();
-        Item item2 = new Item();
-        item2.name = "Mystery Box";
-        item2.amount = 1;
-        item2.price = null;
-        item2.expiredDateTime = null;
+        Item item2 = TestSeeds.item("Mystery Box", now);
         item2.description = "Kept in storage room B";
-        item2.createdDateTime = now;
-        item2.updatedDateTime = now;
-        ItemImage fullOnlyImage = new ItemImage();
-        fullOnlyImage.fileName = "mystery_full.jpg";
-        fullOnlyImage.createdDateTime = now;
-        itemState2.updateItem(item2);
-        itemState2.updateItemImages(new ArrayList<>(Arrays.asList(fullOnlyImage)));
-        mAppDb.itemDao().insertItem(itemState2);
+        ItemImage fullOnlyImage = TestSeeds.itemImage("mystery_full.jpg", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item2, null,
+                new ArrayList<>(Arrays.asList(fullOnlyImage)));
         seedFullImageFile("mystery_full.jpg");
 
         // item 3: zero amount with a zero price is legal (line total 0.00,
         // contributes zero to the totals row)
-        ItemState itemState3 = new ItemState();
-        Item item3 = new Item();
-        item3.name = "Free Sample";
+        Item item3 = TestSeeds.item("Free Sample", now);
         item3.amount = 0;
         item3.price = new BigDecimal("0.00");
-        item3.createdDateTime = now;
-        item3.updatedDateTime = now;
-        itemState3.updateItem(item3);
-        mAppDb.itemDao().insertItem(itemState3);
+        TestSeeds.insertItemWithRelations(mAppDb, item3, null, null);
 
         File pdfFile = new ExportPdfReportCmd(mProvider).execute().blockingGet();
         try {
@@ -283,22 +261,13 @@ public class ExportPdfReportCmdTest {
     public void exportImageBudgetExceededOmitsPhotos() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Bulk Photo Item";
-        item.amount = 1;
+        Item item = TestSeeds.item("Bulk Photo Item", now);
         item.price = new BigDecimal("5.00");
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        ItemImage img1 = new ItemImage();
-        img1.fileName = "budget1.jpg";
-        img1.createdDateTime = now;
-        ItemImage img2 = new ItemImage();
-        img2.fileName = "budget2.jpg";
+        ItemImage img1 = TestSeeds.itemImage("budget1.jpg", now);
+        ItemImage img2 = TestSeeds.itemImage("budget2.jpg", now);
         img2.createdDateTime = new Date(now.getTime() + 1000);
-        itemState.updateItem(item);
-        itemState.updateItemImages(new ArrayList<>(Arrays.asList(img1, img2)));
-        mAppDb.itemDao().insertItem(itemState);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null,
+                new ArrayList<>(Arrays.asList(img1, img2)));
         seedThumbnailFile("budget1.jpg");
         seedThumbnailFile("budget2.jpg");
 
@@ -328,14 +297,8 @@ public class ExportPdfReportCmdTest {
     public void exportProgressFlow() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Progress Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
+        Item item = TestSeeds.item("Progress Item", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
         List<String> progress = new ArrayList<>();
         ExportPdfReportCmd cmd = new ExportPdfReportCmd(mProvider);
@@ -361,6 +324,108 @@ public class ExportPdfReportCmdTest {
                     progress.get(4));
         } finally {
             pdfFile.delete();
+        }
+    }
+
+    /**
+     * Multi-contributor survival test: a SECOND PDF contributor (a stub)
+     * contributes a summary date and a large record list for the SAME item
+     * the real purchase contributor serves. Under the old whole-object
+     * {@code putIfAbsent} merge a second contributor's per-item data could
+     * never reach the report at all; under the structural merge its records
+     * must grow the report measurably past the single-contributor baseline
+     * and its extra summary column must not break the table (page count is
+     * the deterministic observable — text isn't extractable from PdfRenderer
+     * bitmaps). The stub registers directly into the provider's contributor
+     * registry (which {@code createReportPdf} re-reads per run, so a
+     * post-setUp registration is seen by the next export) — the registry is
+     * rebuilt per test, so the stub cannot leak into other tests.
+     */
+    @Test
+    public void secondContributorDataSurvives() throws Exception {
+        Date now = new Date();
+
+        Item item = TestSeeds.item("Stub Target", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
+
+        // baseline: the purchase contributor alone
+        int baselinePages;
+        File baselinePdf = new ExportPdfReportCmd(mProvider).execute().blockingGet();
+        try {
+            baselinePages = renderPageCount(baselinePdf);
+        } finally {
+            baselinePdf.delete();
+        }
+
+        // stub: one summary date (distinct from anything the purchase
+        // contributor could produce) + MANY noted records for the same item
+        Map<Long, Date> stubDates = new HashMap<>();
+        stubDates.put(itemId, new Date(now.getTime() - 86400000L));
+        List<ItemPdfRecord> stubRecords = new ArrayList<>();
+        for (int i = 0; i < STUB_RECORD_COUNT; i++) {
+            stubRecords.add(new ItemPdfRecord(new Date(now.getTime() + i * 1000L),
+                    new BigDecimal(i + ".50"), "report_record_test_label", "note " + i));
+        }
+        Map<Long, List<ItemPdfRecord>> stubRecordsByItem = new HashMap<>();
+        stubRecordsByItem.put(itemId, stubRecords);
+
+        ModuleContributorRegistry contributorRegistry =
+                mProvider.get(ModuleContributorRegistry.class);
+        contributorRegistry.register(new StubPdfContributor(stubDates, stubRecordsByItem));
+
+        File pdfFile = new ExportPdfReportCmd(mProvider).execute().blockingGet();
+        try {
+            assertPdfMagic(pdfFile);
+            withRenderer(pdfFile, renderer -> {
+                int pageCount = renderer.getPageCount();
+                assertTrue("the stub contributor's records must grow the report "
+                                + "past the single-contributor baseline (" + baselinePages
+                                + " pages); got " + pageCount + " pages",
+                        pageCount >= baselinePages + 2);
+            });
+        } finally {
+            pdfFile.delete();
+        }
+    }
+
+    private int renderPageCount(File pdfFile) throws Exception {
+        try (ParcelFileDescriptor pfd = ParcelFileDescriptor.open(pdfFile,
+                ParcelFileDescriptor.MODE_READ_ONLY);
+             PdfRenderer renderer = new PdfRenderer(pfd)) {
+            return renderer.getPageCount();
+        }
+    }
+
+    /**
+     * Test stub implementing the 3-method PDF contract: one extra summary
+     * column (its header resolves from the same test string the records use
+     * as their label key) plus per-item dates and records supplied by the
+     * test.
+     */
+    private static class StubPdfContributor implements ModulePdfContributor {
+
+        private final Map<Long, Date> mSummaryDates;
+        private final Map<Long, List<ItemPdfRecord>> mRecords;
+
+        StubPdfContributor(Map<Long, Date> summaryDates,
+                           Map<Long, List<ItemPdfRecord>> records) {
+            mSummaryDates = summaryDates;
+            mRecords = records;
+        }
+
+        @Override
+        public String getSummaryColumnKey() {
+            return "report_record_test_label";
+        }
+
+        @Override
+        public Map<Long, Date> getSummaryDates() {
+            return mSummaryDates;
+        }
+
+        @Override
+        public Map<Long, List<ItemPdfRecord>> getRecords() {
+            return mRecords;
         }
     }
 
@@ -487,13 +552,6 @@ public class ExportPdfReportCmdTest {
         return "Serial 12345, storage room A. " + new String(chars);
     }
 
-    private static ItemTag itemTag(String tag, Date now) {
-        ItemTag itemTag = new ItemTag();
-        itemTag.tag = tag;
-        itemTag.createdDateTime = now;
-        return itemTag;
-    }
-
     private class TestPdfReportProviderModule implements ProviderModule {
         /**
          * Null = the service's default budget; the budget-0 test sets 0
@@ -512,8 +570,12 @@ public class ExportPdfReportCmdTest {
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemPurchaseDao.class, this::getItemPurchaseDao);
-            providerRegistry.register(BackupContributorRegistry.class,
-                    BackupContributorRegistry::new);
+            providerRegistry.register(ModuleContributorRegistry.class,
+                    ModuleContributorRegistry::new);
+            // the PDF report's per-item data comes from the contributors now
+            ModuleContributorRegistry contributorRegistry =
+                    provider.get(ModuleContributorRegistry.class);
+            contributorRegistry.register(new ItemPurchasePdfContributor(provider));
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
             // the XLSX test module does not register this (metadata-only image
             // rows suffice there); the PDF export resolves REAL image files

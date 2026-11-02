@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">Første kjøp</string>
     <string name="report_totals">Totalt</string>
     <string name="report_item_amount_price">Antall: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">Første kjøp: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">Første kjøp</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <string name="report_expires">Utløper: %1$s</string>
     <string name="report_created">Opprettet: %1$s</string>
     <string name="report_photo_omitted">(foto utelatt — bildergrense nådd)</string>

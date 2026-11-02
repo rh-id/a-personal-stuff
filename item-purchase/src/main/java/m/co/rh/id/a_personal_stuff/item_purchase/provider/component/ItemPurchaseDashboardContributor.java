@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.reactivex.rxjava3.core.Flowable;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseTotal;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.notifier.ItemPurchaseChangeNotifier;

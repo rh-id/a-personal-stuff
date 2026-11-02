@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">Erster Kauf</string>
     <string name="report_totals">Summen</string>
     <string name="report_item_amount_price">Menge: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">Erster Kauf: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">Erster Kauf</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <string name="report_expires">Läuft ab: %1$s</string>
     <string name="report_created">Erstellt: %1$s</string>
     <string name="report_photo_omitted">(Foto weggelassen — Bildlimit erreicht)</string>

@@ -1,6 +1,6 @@
 package m.co.rh.id.a_personal_stuff.item_maintenance.provider;
 
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceEventHandler;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.component.ItemMaintenanceFileHelper;
@@ -23,7 +23,7 @@ public class ItemMaintenanceProviderModule implements ProviderModule {
         // iterates the contributors after all modules have provided().
         // Maintenance affects neither the dashboard refresh nor the derived
         // remaining stock, so no dashboard contributor is registered.
-        BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+        ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
         contributorRegistry.register(new ItemMaintenanceBackupContributor(provider));
         contributorRegistry.register(new ItemMaintenanceSpreadsheetContributor(provider));
     }

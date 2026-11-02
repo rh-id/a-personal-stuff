@@ -15,7 +15,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.BuildConfig;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
@@ -75,7 +75,7 @@ public class BaseProviderModule implements ProviderModule {
         // register their backup/spreadsheet/dashboard contributors inside
         // their own provides(), which runs right after this module's, so the
         // registry must already exist here.
-        providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
+        providerRegistry.register(ModuleContributorRegistry.class, ModuleContributorRegistry::new);
 
         providerRegistry.register(NavExtDialogConfig.class, () -> new NavExtDialogConfig(appContext));
         providerRegistry.register(FileHelper.class, () -> new FileHelper(provider));

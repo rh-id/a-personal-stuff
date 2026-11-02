@@ -1,6 +1,6 @@
 package m.co.rh.id.a_personal_stuff.item_reminder.provider;
 
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.ItemReminderBackupContributor;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.ItemReminderDashboardContributor;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.ItemReminderEventHandler;
@@ -20,7 +20,7 @@ public class ItemReminderProviderModule implements ProviderModule {
         // Synchronous contributor registration (never registerAsync): the
         // registry is eager-registered by BaseProviderModule, and :app
         // iterates the contributors after all modules have provided().
-        BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+        ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
         contributorRegistry.register(new ItemReminderBackupContributor(provider));
         contributorRegistry.register(new ItemReminderSpreadsheetContributor(provider));
         contributorRegistry.register(new ItemReminderDashboardContributor(provider));

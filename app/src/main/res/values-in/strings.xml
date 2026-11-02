@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">Pembelian pertama</string>
     <string name="report_totals">Total</string>
     <string name="report_item_amount_price">Jumlah: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">Pembelian pertama: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">Pembelian pertama</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <string name="report_expires">Kedaluwarsa: %1$s</string>
     <string name="report_created">Dibuat: %1$s</string>
     <string name="report_photo_omitted">(foto dihilangkan — batas gambar tercapai)</string>

@@ -15,8 +15,8 @@ import io.reactivex.rxjava3.subjects.BehaviorSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
 import m.co.rh.id.a_personal_stuff.app.ui.model.DashboardData;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
@@ -41,7 +41,7 @@ public class DashboardCmd implements ProviderDisposable {
     private ItemReminderDao mItemReminderDao;
     private SettingsSharedPreferences mSettingsSharedPreferences;
     private ItemChangeNotifier mItemChangeNotifier;
-    private BackupContributorRegistry mContributorRegistry;
+    private ModuleContributorRegistry mContributorRegistry;
     private ILogger mLogger;
     private CompositeDisposable mCompositeDisposable;
     private final BehaviorSubject<DashboardData> mDashboardSubject;
@@ -53,7 +53,7 @@ public class DashboardCmd implements ProviderDisposable {
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mSettingsSharedPreferences = provider.get(SettingsSharedPreferences.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
-        mContributorRegistry = provider.get(BackupContributorRegistry.class);
+        mContributorRegistry = provider.get(ModuleContributorRegistry.class);
         mLogger = provider.get(ILogger.class);
         mDashboardSubject = BehaviorSubject.createDefault(new DashboardData());
         mDashboardEmitter = mDashboardSubject.toSerialized();
@@ -71,7 +71,7 @@ public class DashboardCmd implements ProviderDisposable {
 
     private Flowable<Object> refreshTrigger() {
         // base-DB item changes plus the per-module refresh flows contributed
-        // through the BackupContributorRegistry (usage/purchase any-change,
+        // through the ModuleContributorRegistry (usage/purchase any-change,
         // reminder add/update/delete)
         List<Flowable<Object>> triggers = new ArrayList<>();
         triggers.add(mItemChangeNotifier.getAnyItemChangeFlow().map(itemState -> (Object) itemState));

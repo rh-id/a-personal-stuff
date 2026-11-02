@@ -1,11 +1,11 @@
-package m.co.rh.id.a_personal_stuff.base.backup;
+package m.co.rh.id.a_personal_stuff.base.contributor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Ordered collector of the per-module contributors (backup/export/import,
- * spreadsheet sheets, dashboard inputs). Registered eagerly in
+ * spreadsheet sheets, dashboard inputs, PDF report data). Registered eagerly in
  * {@code BaseProviderModule} (a plain {@code register}) so the registry
  * exists before any feature module's {@code provides()} runs — feature
  * modules then register their contributors synchronously inside their own
@@ -17,11 +17,12 @@ import java.util.List;
  * backup.json section order, spreadsheet sheet order and import order
  * stable (usage, purchase, maintenance, reminder, checklist).
  */
-public class BackupContributorRegistry {
+public class ModuleContributorRegistry {
 
     private final List<ModuleBackupContributor> mBackupContributors = new ArrayList<>();
     private final List<ModuleSpreadsheetContributor> mSpreadsheetContributors = new ArrayList<>();
     private final List<ModuleDashboardContributor> mDashboardContributors = new ArrayList<>();
+    private final List<ModulePdfContributor> mPdfContributors = new ArrayList<>();
 
     public void register(ModuleBackupContributor contributor) {
         mBackupContributors.add(contributor);
@@ -35,6 +36,10 @@ public class BackupContributorRegistry {
         mDashboardContributors.add(contributor);
     }
 
+    public void register(ModulePdfContributor contributor) {
+        mPdfContributors.add(contributor);
+    }
+
     public List<ModuleBackupContributor> getBackupContributors() {
         return new ArrayList<>(mBackupContributors);
     }
@@ -45,5 +50,9 @@ public class BackupContributorRegistry {
 
     public List<ModuleDashboardContributor> getDashboardContributors() {
         return new ArrayList<>(mDashboardContributors);
+    }
+
+    public List<ModulePdfContributor> getPdfContributors() {
+        return new ArrayList<>(mPdfContributors);
     }
 }

@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.component.InventoryStatsCalculator;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
@@ -418,8 +418,8 @@ public class GenerateShoppingListCmdTest {
             providerRegistry.register(ItemPurchaseChangeNotifier.class, ItemPurchaseChangeNotifier::new);
             // real contributor registry + the REAL dashboard contributors, so
             // InventoryStatsCalculator's derived stock deltas are genuine
-            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
-            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            providerRegistry.register(ModuleContributorRegistry.class, ModuleContributorRegistry::new);
+            ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
             contributorRegistry.register(new ItemUsageDashboardContributor(provider));
             contributorRegistry.register(new ItemPurchaseDashboardContributor(provider));
             providerRegistry.register(ItemChecklistDao.class, () -> mChecklistDb.itemChecklistDao());

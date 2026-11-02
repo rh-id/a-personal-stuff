@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
@@ -283,8 +283,8 @@ public class InventoryStatsCalculatorTest {
             providerRegistry.register(ItemPurchaseChangeNotifier.class, ItemPurchaseChangeNotifier::new);
             // eager registry (mirrors the app module) + the REAL dashboard
             // contributors over this test's DAOs
-            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
-            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            providerRegistry.register(ModuleContributorRegistry.class, ModuleContributorRegistry::new);
+            ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
             contributorRegistry.register(new ItemUsageDashboardContributor(provider));
             contributorRegistry.register(new ItemPurchaseDashboardContributor(provider));
         }

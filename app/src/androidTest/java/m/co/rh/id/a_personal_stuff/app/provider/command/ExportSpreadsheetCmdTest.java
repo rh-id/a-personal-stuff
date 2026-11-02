@@ -31,12 +31,12 @@ import java.util.concurrent.ExecutorService;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
+import m.co.rh.id.a_personal_stuff.app.testutil.TestSeeds;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.entity.ItemTag;
-import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.FileHelper;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
@@ -177,70 +177,40 @@ public class ExportSpreadsheetCmdTest {
     public void exportWithFullData() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Full Item";
+        Item item = TestSeeds.item("Full Item", now);
         item.amount = 3;
         item.minAmount = 5;
         item.price = new BigDecimal("29.99");
         item.description = "Complete test item";
         item.expiredDateTime = new Date(now.getTime() + 2592000000L);
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
 
-        ItemTag itemTag = new ItemTag();
-        itemTag.tag = "fulltest";
-        itemTag.createdDateTime = now;
-        ItemTag itemTag2 = new ItemTag();
-        itemTag2.tag = "another";
-        itemTag2.createdDateTime = now;
         // TreeSet sorts the tags, so "another" is joined before "fulltest"
         TreeSet<ItemTag> itemTags = new TreeSet<>();
-        itemTags.add(itemTag);
-        itemTags.add(itemTag2);
-        itemState.updateItemTags(itemTags);
+        itemTags.add(TestSeeds.itemTag("fulltest", now));
+        itemTags.add(TestSeeds.itemTag("another", now));
 
         // Image metadata rows only (no actual files needed); img2 gets a later
         // timestamp because the export orders item images by created_date_time.
-        ItemImage img1 = new ItemImage();
-        img1.fileName = "img1.jpg";
-        img1.createdDateTime = now;
-        ItemImage img2 = new ItemImage();
-        img2.fileName = "img2.jpg";
+        ItemImage img1 = TestSeeds.itemImage("img1.jpg", now);
+        ItemImage img2 = TestSeeds.itemImage("img2.jpg", now);
         img2.createdDateTime = new Date(now.getTime() + 1000);
-        ArrayList<ItemImage> itemImages = new ArrayList<>();
-        itemImages.add(img1);
-        itemImages.add(img2);
-        itemState.updateItemImages(itemImages);
 
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, itemTags,
+                new ArrayList<>(Arrays.asList(img1, img2)));
 
         // ItemChecklistItem has a unique index on (item_checklist_id, item_id),
         // so the checked checklist entry must reference a second item.
-        ItemState itemState2 = new ItemState();
-        Item item2 = new Item();
-        item2.name = "Full Item 2";
-        item2.amount = 1;
+        Item item2 = TestSeeds.item("Full Item 2", now);
         // 300-char description drives the description column's auto-computed
         // width into its 100-char cap (see the width constants in ExportService).
         char[] longDescriptionChars = new char[300];
         Arrays.fill(longDescriptionChars, 'x');
         String longDescription = new String(longDescriptionChars);
         item2.description = longDescription;
-        item2.createdDateTime = now;
-        item2.updatedDateTime = now;
-        itemState2.updateItem(item2);
-        mAppDb.itemDao().insertItem(itemState2);
-        long itemId2 = itemState2.getItemId();
+        long itemId2 = TestSeeds.insertItemWithRelations(mAppDb, item2, null, null);
 
-        ItemMaintenance maintenance = new ItemMaintenance();
-        maintenance.itemId = itemId;
-        maintenance.description = "Oil change";
-        maintenance.cost = new BigDecimal("50.00");
-        maintenance.maintenanceDateTime = now;
-        maintenance.createdDateTime = now;
+        ItemMaintenance maintenance = TestSeeds.itemMaintenance(itemId, "Oil change",
+                new BigDecimal("50.00"), now);
         long maintenanceId = mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
 
         ItemMaintenanceImage maintenanceImage = new ItemMaintenanceImage();
@@ -249,12 +219,7 @@ public class ExportSpreadsheetCmdTest {
         maintenanceImage.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintenanceImage);
 
-        ItemUsage usage = new ItemUsage();
-        usage.itemId = itemId;
-        usage.description = "Used for project";
-        usage.amount = 1;
-        usage.usageDateTime = now;
-        usage.createdDateTime = now;
+        ItemUsage usage = TestSeeds.itemUsage(itemId, "Used for project", now);
         long usageId = mUsageDb.itemUsageDao().insert(usage);
 
         ItemUsageImage usageImage = new ItemUsageImage();
@@ -263,13 +228,9 @@ public class ExportSpreadsheetCmdTest {
         usageImage.createdDateTime = now;
         mUsageDb.itemUsageDao().insert(usageImage);
 
-        ItemPurchase purchase = new ItemPurchase();
-        purchase.itemId = itemId;
+        ItemPurchase purchase = TestSeeds.itemPurchase(itemId, new BigDecimal("12.50"), now, now);
         purchase.description = "Bought 3 units";
         purchase.amount = 3;
-        purchase.cost = new BigDecimal("12.50");
-        purchase.purchaseDateTime = now;
-        purchase.createdDateTime = now;
         long purchaseId = mPurchaseDb.itemPurchaseDao().insert(purchase);
 
         ItemPurchaseImage purchaseImage = new ItemPurchaseImage();
@@ -278,29 +239,19 @@ public class ExportSpreadsheetCmdTest {
         purchaseImage.createdDateTime = now;
         mPurchaseDb.itemPurchaseDao().insert(purchaseImage);
 
-        ItemReminder reminder = new ItemReminder();
-        reminder.itemId = itemId;
-        reminder.taskId = "task-123";
-        reminder.reminderDateTime = new Date(now.getTime() + 86400000);
-        reminder.message = "Check item status";
-        reminder.createdDateTime = now;
+        ItemReminder reminder = TestSeeds.itemReminder(itemId, "task-123",
+                "Check item status", new Date(now.getTime() + 86400000), now);
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
-        ItemChecklist checklist = new ItemChecklist();
-        checklist.title = "Test Checklist";
+        ItemChecklist checklist = TestSeeds.itemChecklist("Test Checklist", now);
         checklist.description = "Test description";
-        checklist.createdDateTime = now;
-        checklist.updatedDateTime = now;
         ItemChecklistState checklistState = new ItemChecklistState();
         checklistState.updateItemChecklist(checklist);
         mChecklistDb.itemChecklistDao().insertItemChecklist(checklistState);
         long checklistId = checklistState.getChecklistId();
 
-        ItemChecklistItem uncheckedChecklistItem = new ItemChecklistItem();
-        uncheckedChecklistItem.itemChecklistId = checklistId;
-        uncheckedChecklistItem.itemId = itemId;
-        uncheckedChecklistItem.createdDateTime = now;
-        uncheckedChecklistItem.checkedDateTime = null;
+        ItemChecklistItem uncheckedChecklistItem =
+                TestSeeds.itemChecklistItem(checklistId, itemId, null, now);
         // insertItemChecklistItems uses OnConflictStrategy.IGNORE and reports -1
         // per dropped row: fail fast at the seed site instead of surfacing the
         // collision later as a missing export row.
@@ -309,11 +260,8 @@ public class ExportSpreadsheetCmdTest {
         assertTrue("checklist item seed was silently dropped",
                 insertedUncheckedIds.get(0) != -1L);
 
-        ItemChecklistItem checkedChecklistItem = new ItemChecklistItem();
-        checkedChecklistItem.itemChecklistId = checklistId;
-        checkedChecklistItem.itemId = itemId2;
-        checkedChecklistItem.createdDateTime = now;
-        checkedChecklistItem.checkedDateTime = now;
+        ItemChecklistItem checkedChecklistItem =
+                TestSeeds.itemChecklistItem(checklistId, itemId2, now, now);
         List<Long> insertedCheckedIds = mChecklistDb.itemChecklistDao()
                 .insertItemChecklistItems(Collections.singletonList(checkedChecklistItem));
         assertTrue("checklist item seed was silently dropped",
@@ -462,23 +410,11 @@ public class ExportSpreadsheetCmdTest {
     public void exportWithNullValues() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Null Values Item";
-        item.amount = 1;
-        item.price = null;
-        item.description = null;
-        item.barcode = null;
-        item.expiredDateTime = null;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
+        Item item = TestSeeds.item("Null Values Item", now);
 
         // An image row with a null file name must be skipped so the Images
         // cell exports as blank instead of a stray separator.
-        ItemImage nullImage = new ItemImage();
-        nullImage.fileName = null;
-        nullImage.createdDateTime = now;
+        ItemImage nullImage = TestSeeds.itemImage(null, now);
         // 2^31 exceeds Integer.MAX_VALUE: the empty in-memory DB has no
         // conflict and Room honors the explicit PK, pinning the TEXT-ID
         // scientific-notation guard above the int range. The image row must
@@ -487,11 +423,8 @@ public class ExportSpreadsheetCmdTest {
         long largeId = 2147483648L;
         item.id = largeId;
         nullImage.itemId = largeId;
-        ArrayList<ItemImage> itemImages = new ArrayList<>();
-        itemImages.add(nullImage);
-        itemState.updateItemImages(itemImages);
-
-        mAppDb.itemDao().insertItem(itemState);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null,
+                new ArrayList<>(Arrays.asList(nullImage)));
 
         File xlsxFile = new ExportSpreadsheetCmd(mProvider).execute().blockingGet();
         try {
@@ -524,24 +457,11 @@ public class ExportSpreadsheetCmdTest {
     public void exportWithLargeUsageCount() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Bulk Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        Item item = TestSeeds.item("Bulk Item", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
         for (int i = 1; i <= 150; i++) {
-            ItemUsage usage = new ItemUsage();
-            usage.itemId = itemId;
-            usage.description = "Usage " + i;
-            usage.amount = 1;
-            usage.usageDateTime = now;
-            usage.createdDateTime = now;
-            mUsageDb.itemUsageDao().insert(usage);
+            mUsageDb.itemUsageDao().insert(TestSeeds.itemUsage(itemId, "Usage " + i, now));
         }
 
         File xlsxFile = new ExportSpreadsheetCmd(mProvider).execute().blockingGet();
@@ -586,15 +506,8 @@ public class ExportSpreadsheetCmdTest {
     public void exportWithMultiPageUsages() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Bulk Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
-        long itemId = itemState.getItemId();
+        Item item = TestSeeds.item("Bulk Item", now);
+        long itemId = TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
         // 1200 rows = 500 + 500 + 200 keyset pages: proves pages are stitched
         // together with no row lost or duplicated at the page boundaries.
@@ -632,14 +545,8 @@ public class ExportSpreadsheetCmdTest {
     public void exportProgressFlow() throws Exception {
         Date now = new Date();
 
-        ItemState itemState = new ItemState();
-        Item item = new Item();
-        item.name = "Progress Item";
-        item.amount = 1;
-        item.createdDateTime = now;
-        item.updatedDateTime = now;
-        itemState.updateItem(item);
-        mAppDb.itemDao().insertItem(itemState);
+        Item item = TestSeeds.item("Progress Item", now);
+        TestSeeds.insertItemWithRelations(mAppDb, item, null, null);
 
         List<String> progress = Collections.synchronizedList(new ArrayList<>());
         ExportSpreadsheetCmd cmd = new ExportSpreadsheetCmd(mProvider);
@@ -676,12 +583,7 @@ public class ExportSpreadsheetCmdTest {
         Date now = new Date();
         List<ItemUsage> usages = new ArrayList<>();
         for (int i = 1; i <= count; i++) {
-            ItemUsage usage = new ItemUsage();
-            usage.itemId = itemId;
-            usage.description = "Usage " + i;
-            usage.amount = 1;
-            usage.usageDateTime = now;
-            usage.createdDateTime = now;
+            ItemUsage usage = TestSeeds.itemUsage(itemId, "Usage " + i, now);
             mUsageDb.itemUsageDao().insert(usage);
             usages.add(usage);
         }
@@ -726,7 +628,7 @@ public class ExportSpreadsheetCmdTest {
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
             providerRegistry.register(ExecutorService.class, this::getExecutorService);
             providerRegistry.register(ILogger.class, NoOpLogger::new);
-            providerRegistry.register(BackupContributorRegistry.class, BackupContributorRegistry::new);
+            providerRegistry.register(ModuleContributorRegistry.class, ModuleContributorRegistry::new);
             providerRegistry.register(ItemDao.class, this::getItemDao);
             providerRegistry.register(ItemMaintenanceDao.class, this::getItemMaintenanceDao);
             providerRegistry.register(ItemUsageDao.class, this::getItemUsageDao);
@@ -737,7 +639,7 @@ public class ExportSpreadsheetCmdTest {
             providerRegistry.registerLazy(ItemFileHelper.class, () -> new NoOpCleanUpItemFileHelper(provider));
             providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
             // real per-module sheet contributors over this test's DAOs
-            BackupContributorRegistry contributorRegistry = provider.get(BackupContributorRegistry.class);
+            ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
             contributorRegistry.register(new ItemUsageSpreadsheetContributor(provider));
             contributorRegistry.register(new ItemPurchaseSpreadsheetContributor(provider));
             contributorRegistry.register(new ItemMaintenanceSpreadsheetContributor(provider));

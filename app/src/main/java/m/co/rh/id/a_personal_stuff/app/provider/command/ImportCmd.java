@@ -27,8 +27,8 @@ import io.reactivex.rxjava3.subjects.PublishSubject;
 import io.reactivex.rxjava3.subjects.Subject;
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.entity.BackupData;
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleBackupContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleBackupContributor;
 import m.co.rh.id.a_personal_stuff.base.constants.Constants;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -53,7 +53,7 @@ public class ImportCmd {
     private final ItemDao mItemDao;
     private final ItemFileHelper mItemFileHelper;
     private final ItemChangeNotifier mItemChangeNotifier;
-    private final BackupContributorRegistry mContributorRegistry;
+    private final ModuleContributorRegistry mContributorRegistry;
     private final Subject<String> mProgressSubject = PublishSubject.create();
 
     public ImportCmd(Provider provider) {
@@ -64,7 +64,7 @@ public class ImportCmd {
         mItemDao = provider.get(ItemDao.class);
         mItemFileHelper = provider.get(ItemFileHelper.class);
         mItemChangeNotifier = provider.get(ItemChangeNotifier.class);
-        mContributorRegistry = provider.get(BackupContributorRegistry.class);
+        mContributorRegistry = provider.get(ModuleContributorRegistry.class);
     }
 
     public Flowable<String> getProgressFlow() {

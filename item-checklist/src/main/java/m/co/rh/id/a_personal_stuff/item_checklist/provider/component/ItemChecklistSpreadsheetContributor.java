@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRow;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSheetRowSink;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetContributor;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleSpreadsheetSheet;
-import m.co.rh.id.a_personal_stuff.base.backup.SpreadsheetJoinData;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRow;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSheetRowSink;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleSpreadsheetSheet;
+import m.co.rh.id.a_personal_stuff.base.contributor.SpreadsheetJoinData;
 import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
@@ -69,9 +69,10 @@ public class ItemChecklistSpreadsheetContributor implements ModuleSpreadsheetCon
     }
 
     /**
-     * Checklist items are keyset-paged like the Usages sheet (see the usage
-     * contributor's javadoc); checklist titles resolve from a full load of
-     * the small anchor table.
+     * Checklist items are keyset-paged; paging follows the interface contract
+     * ({@link ModuleSpreadsheetSheet#writeRows}: keyset pagination with
+     * the {@link ModuleSpreadsheetContributor#PAGE_SIZE} row cap); checklist
+     * titles resolve from a full load of the small anchor table.
      */
     private class ChecklistItemsSheet implements ModuleSpreadsheetSheet {
 

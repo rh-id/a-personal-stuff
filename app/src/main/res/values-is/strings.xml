@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">Fyrsta kaup</string>
     <string name="report_totals">Samtals</string>
     <string name="report_item_amount_price">Fjöldi: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">Fyrsta kaup: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">Fyrsta kaup</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <string name="report_expires">Rennur út: %1$s</string>
     <string name="report_created">Búið til: %1$s</string>
     <string name="report_photo_omitted">(ljósmynd sleppt — myndamörk náð)</string>

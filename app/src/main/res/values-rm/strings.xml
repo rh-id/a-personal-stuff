@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">Emprim cumpra</string>
     <string name="report_totals">Summas</string>
     <string name="report_item_amount_price">Quantitad: %1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">Emprim cumpra: %1$s · %2$s</string>
+    <string name="report_record_first_purchase">Emprim cumpra</string>
+    <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <string name="report_expires">Scada: %1$s</string>
     <string name="report_created">Creà: %1$s</string>
     <string name="report_photo_omitted">(foto omessa — limit da maletgs cuntanschì)</string>

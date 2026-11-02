@@ -114,7 +114,8 @@
     <string name="report_col_first_purchase">首次购买</string>
     <string name="report_totals">合计</string>
     <string name="report_item_amount_price">数量：%1$d × %2$s = %3$s</string>
-    <string name="report_first_purchase">首次购买：%1$s · %2$s</string>
+    <string name="report_record_first_purchase">首次购买</string>
+    <string name="report_record_line">%1$s：%2$s · %3$s</string>
     <string name="report_expires">到期时间：%1$s</string>
     <string name="report_created">创建时间：%1$s</string>
     <string name="report_photo_omitted">（照片已省略 — 已达图片上限）</string>

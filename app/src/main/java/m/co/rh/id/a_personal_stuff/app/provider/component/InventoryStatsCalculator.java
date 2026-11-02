@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import m.co.rh.id.a_personal_stuff.base.backup.BackupContributorRegistry;
-import m.co.rh.id.a_personal_stuff.base.backup.ModuleDashboardContributor;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleContributorRegistry;
+import m.co.rh.id.a_personal_stuff.base.contributor.ModuleDashboardContributor;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.aprovider.Provider;
@@ -35,11 +35,11 @@ public class InventoryStatsCalculator {
     public enum AlertType { EXPIRED, EXPIRING_SOON, LOW_STOCK }
 
     private ItemDao mItemDao;
-    private BackupContributorRegistry mContributorRegistry;
+    private ModuleContributorRegistry mContributorRegistry;
 
     public InventoryStatsCalculator(Provider provider) {
         mItemDao = provider.get(ItemDao.class);
-        mContributorRegistry = provider.get(BackupContributorRegistry.class);
+        mContributorRegistry = provider.get(ModuleContributorRegistry.class);
     }
 
     public AlertSummary compute(Date now, int leadDays) {
