@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Fitur Baru:
+* Log pinjam-meminjam baru untuk melacak barang yang dipinjam, dengan status (dipinjam, terlambat, dikembalikan) dan pengingat pengembalian
+* Ekspor laporan inventaris PDF siap asuransi, dengan foto dan detail pembelian
+* Daftar belanja kini dapat dibuat otomatis dari item berstok rendah dalam sekali ketuk
+
+Peningkatan:
+* Baris daftar ringkas kini hanya menampilkan hapus, sesuai dengan modul lain

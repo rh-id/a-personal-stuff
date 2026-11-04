@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Nye funksjonar:
+* Ny utlånslogg for å halde orden på utlånte gjenstandar, med status (utlånt, forfalt, returnert) og påminningar om innlevering
+* Eksport av forsikringsvennleg PDF-inventarrapport, med bilete og kjøpsdetaljar
+* Handlelista kan no lagast med eitt trykk frå gjenstandar med lågt lager
+
+Forbetringar:
+* Kompakte listerader viser no berre slett, i likskap med dei andre modulane

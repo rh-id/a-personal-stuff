@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Nouvelles fonctionnalités :
+* Nouveau journal de prêts pour suivre les objets prêtés, avec statut (prêté, en retard, retourné) et rappels de retour
+* Export d'un rapport d'inventaire PDF adapté à l'assurance, avec photos et détails d'achat
+* La liste de courses peut désormais être générée d'un simple geste à partir des éléments en stock faible
+
+Améliorations :
+* Les lignes compactes des listes affichent désormais uniquement la suppression, comme les autres modules

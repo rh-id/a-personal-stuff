@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Neue Funktionen:
+* Neues Ausleihprotokoll zum Verfolgen ausgeliehener Artikel, mit Status (ausgeliehen, überfällig, zurückgegeben) und Rückgabe-Erinnerungen
+* Versicherungstauglicher PDF-Inventarbericht zum Export, mit Fotos und Kaufdetails
+* Die Einkaufsliste kann nun mit einem Tipp aus Artikeln mit geringem Bestand erstellt werden
+
+Verbesserungen:
+* Kompakte Checklisten-Zeilen zeigen nun nur noch Löschen, wie in den anderen Modulen

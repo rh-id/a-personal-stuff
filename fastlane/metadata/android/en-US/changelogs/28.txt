@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Features:
+* New lending/borrowing log to track lent items, with status (lent, overdue, returned) and return reminders
+* Insurance-ready PDF inventory report export, with photos and purchase details
+* Shopping list checklist can now be generated from low-stock items in one tap
+
+Improvements:
+* Compact checklist rows now show delete-only, matching the other modules

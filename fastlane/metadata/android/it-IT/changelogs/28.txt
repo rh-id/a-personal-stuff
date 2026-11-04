@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Nuove funzionalità:
+* Nuovo registro prestiti per tenere traccia degli oggetti prestati, con stato (prestato, in ritardo, restituito) e promemoria di restituzione
+* Esportazione del report inventariale in PDF pronto per l'assicurazione, con foto e dettagli degli acquisti
+* La lista della spesa può ora essere generata con un tocco dagli elementi con scorta bassa
+
+Migliorie:
+* Le righe compatte degli elenchi ora mostrano solo l'eliminazione, come negli altri moduli

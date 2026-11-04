@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Nýir eiginleikar:
+* Ný lánaskrá til að halda utan um lánaða hluti, með stöðu (lánað, á eftir skil, skilað) og minningar um skil
+* Útflutningur á vöruskýrslu í PDF sniði, hentug fyrir tryggingar, með ljósmyndum og kaupupplýsingum
+* Innkaupalisti getur nú myndast sjálfvirkt úr hlutum með lágar birgðir með einni snertingu
+
+Endurbætur:
+* Smærri línur í listum sýna nú aðeins eyðingu, í samræmi við aðrar einingar

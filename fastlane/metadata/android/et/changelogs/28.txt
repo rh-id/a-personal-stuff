@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Uued funktsioonid:
+* Uus laenutuslogi laenatud esemete jälgimiseks, olekuga (laenatud, üle tähtaja, tagastatud) ja tagastusmeeldetuletustega
+* Eksporditav kindlustuseks sobiv PDF-i varude aruanne koos fotode ja ostuandmetega
+* Ostunimekirja saab nüüd ühe puudutusega luua madala laoseisuga esemetest
+
+Parandused:
+* Kompaktsed loendi read näitavad nüüd ainult kustutamist, nagu teisteski moodulites

@@ -1,0 +1,9 @@
+Release 2.4.0+28
+
+Novas funcziuns:
+* Nov register d'emprests per administrar objects emprestads, cun status (emprestà, sur il termin, restituì) e records per la restituziun
+* Export dad in rapport d'inventari en PDF adattà per assicuraziuns, cun fotos e detagls d'acquist
+* La glista da cumpras po vegnir generada cun in clic da objects cun provisiun bassa
+
+Meglieraments:
+* Las lingias compactas da glistas mussan ussa mo stizzar, sco en ils auters modules
