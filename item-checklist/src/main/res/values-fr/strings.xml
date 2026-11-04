@@ -27,6 +27,4 @@
     <string name="title_view_mode_compact">Passer à la vue compacte</string>
     <string name="designated_shopping_list">Liste de courses désignée</string>
     <string name="designated_shopping_list_hint">Votre liste de courses désignée pour le réapprovisionnement des éléments en stock faible</string>
-    <string name="menu_edit">Modifier</string>
-    <string name="menu_delete">Supprimer</string>
 </resources>

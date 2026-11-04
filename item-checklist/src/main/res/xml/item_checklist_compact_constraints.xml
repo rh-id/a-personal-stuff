@@ -2,18 +2,15 @@
 <!-- Compact constraint variant applied to item_checklist.xml's view tree.
      Title, progress, and the action container stay visible: the container is
      repositioned to its own bottom band below the content rows (top below the
-     progress row, bottom and end pinned to the parent), where it holds only
-     the overflow button (edit/delete inside it are collapsed in code — see
-     ItemChecklistItemSV, mirroring ItemItemSV). This is the item card's
-     action-band convention: item_item_compact_constraints.xml anchors its
-     container parent top+bottom+end as a trailing band, and item_item.xml's
-     base layout chains it below the last content row. Description and
-     updated-date are collapsed (visibility=gone). Card tap still opens the
-     checklist.
+     progress row, bottom and end pinned to the parent). The buttons inside it
+     keep their base layout visibility; edit is collapsed in code (see
+     ItemChecklistItemSV) because ConstraintSet targets direct children only.
+     Description and updated-date are collapsed (visibility=gone). Card tap
+     still opens the checklist.
 
      Note: ConstraintSet can only reposition direct children of the
      ConstraintLayout, so we move container_action_button (a direct child)
-     rather than button_more_action (which is nested inside it). -->
+     rather than the buttons nested inside it. -->
 <ConstraintSet xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -46,9 +43,9 @@
 
     <!-- Cart badge stays pinned to the parent end in this mode too, centered
          on the title row; the title ends at the badge's start so long titles
-         truncate before it. The ⋮ container no longer shares this row — it
-         sits in a bottom band below the content rows. The badge's real
-         visibility is data-driven (re-applied after applyTo by
+         truncate before it. The action container sits in a bottom band below
+         the content rows, so container and badge never share a row. The
+         badge's real visibility is data-driven (re-applied after applyTo by
          ItemChecklistItemSV); when gone it collapses to a point at the parent
          end, letting the title span the full content width. -->
     <Constraint
@@ -61,16 +58,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/text_title" />
 
-    <!-- Action container carries only the ⋮ in this mode, in its own bottom
-         band below the content rows: top below the progress row, bottom and
-         end pinned to the parent (4dp trailing inset) — mirroring the item
-         card, whose compact set (item_item_compact_constraints.xml)
-         parent-anchors its container top+bottom+end as a trailing band and
-         whose base layout chains the actions below the content. The badge
-         stays in the title row, so container and badge never share a row: the
-         old end_toStartOf chaining and goneMarginEnd are gone, and badge
-         presence no longer affects the ⋮ at all. The wrap_content parent
-         grows to fit the 48dp band, so it never overlaps the rows above. -->
+    <!-- Action container in its own bottom band below the content rows: top
+         below the progress row, bottom and end pinned to the parent (4dp
+         trailing inset). The badge stays in the title row, so container and
+         badge never share a row: no end_toStartOf chaining or goneMarginEnd
+         is needed, and badge presence does not affect the actions. The
+         wrap_content parent grows to fit the 48dp band, so it never overlaps
+         the rows above. -->
     <Constraint
         android:id="@+id/container_action_button"
         android:layout_width="wrap_content"

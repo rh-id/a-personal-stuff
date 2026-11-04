@@ -27,6 +27,4 @@
     <string name="title_view_mode_compact">Byt til kompakt visning</string>
     <string name="designated_shopping_list">Utpeikt handleliste</string>
     <string name="designated_shopping_list_hint">Di utpeikta handleliste for etterfylling av gjenstandar med lågt lager</string>
-    <string name="menu_edit">Rediger</string>
-    <string name="menu_delete">Slett</string>
 </resources>

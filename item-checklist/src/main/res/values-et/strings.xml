@@ -27,6 +27,4 @@
     <string name="title_view_mode_compact">Lülitu kompaktsele vaatele</string>
     <string name="designated_shopping_list">Määratud ostunimekiri</string>
     <string name="designated_shopping_list_hint">Sinu määratud ostunimekiri madala laoseisuga esemete täiendamiseks</string>
-    <string name="menu_edit">Muuda</string>
-    <string name="menu_delete">Kustuta</string>
 </resources>

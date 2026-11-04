@@ -80,10 +80,9 @@
              item_checklist_compact_constraints.xml re-anchors this container
              into its own bottom band below the rows (top to text_progress's
              bottom, bottom and end to the parent), mirroring the item card's
-             bottom-band action row; only the overflow button shows there —
-             edit/delete are collapsed in code (see ItemChecklistItemSV, which
-             mirrors ItemItemSV) because ConstraintSet targets direct children
-             only. Detailed mode never shows the overflow. -->
+             bottom-band action row; only delete shows there — edit is
+             collapsed in code (see ItemChecklistItemSV) because ConstraintSet
+             targets direct children only. -->
         <LinearLayout
             android:id="@+id/container_action_button"
             android:layout_width="wrap_content"
@@ -108,15 +107,6 @@
                 android:layout_height="48dp"
                 app:icon="@drawable/ic_delete_forever_black"
                 app:iconTint="@color/red" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_more_action"
-                style="@style/Widget.AppCompat.Button.Borderless"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:visibility="gone"
-                app:icon="@drawable/ic_more_vert_black"
-                app:iconTint="@color/daynight_black_white" />
         </LinearLayout>
 
         <!-- Trailing cart badge for the designated shopping list; hidden by
