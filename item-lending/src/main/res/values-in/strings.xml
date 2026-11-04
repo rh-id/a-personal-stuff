@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Nama peminjam wajib diisi</string>
+    <string name="lend_date_time_is_required">Tanggal dan waktu peminjaman wajib diisi</string>
+    <string name="borrower_">Peminjam: %s</string>
+    <string name="due_">Jatuh tempo: %s</string>
+    <string name="note_">Catatan: %s</string>
+    <string name="title_confirm_delete">Konfirmasi Hapus</string>
+    <string name="confirm_delete_">Apakah Anda yakin ingin menghapus %s?</string>
+    <string name="success_delete_item_lending">Peminjaman item dihapus</string>
+    <string name="title_lendings">Peminjaman</string>
+    <string name="title_update_item_lending">Perbarui Peminjaman Item</string>
+    <string name="title_add_item_lending">Tambah Peminjaman Item</string>
+    <string name="success_add_item_lending_image">Gambar peminjaman item ditambahkan</string>
+    <string name="success_delete_item_lending_image">Gambar peminjaman item dihapus</string>
+    <string name="success_add_item_lending">Peminjaman item ditambahkan</string>
+    <string name="success_update_item_lending">Peminjaman item diperbarui</string>
+    <string name="title_add">Tambah</string>
+    <string name="save">Simpan</string>
+    <string name="hint_type_to_search">Ketik untuk mencari</string>
+    <string name="form_borrower_name">Nama peminjam</string>
+    <string name="form_lend_date_time">Tanggal dan waktu peminjaman</string>
+    <string name="form_due_date_time">Tanggal dan waktu jatuh tempo</string>
+    <string name="form_returned_date_time">Tanggal dan waktu pengembalian</string>
+    <string name="form_note">Catatan</string>
+    <string name="status_lent">Dipinjam</string>
+    <string name="status_returned">Dikembalikan</string>
+    <string name="status_overdue">Terlambat</string>
+    <string name="notification_name_item_lending_return">Pengembalian peminjaman item</string>
+    <string name="notification_description_item_lending_return">Kanal notifikasi pengembalian peminjaman item</string>
+</resources>

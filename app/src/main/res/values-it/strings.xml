@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Tag eliminato</string>
     <string name="success_add_item_tag">Tag aggiunto</string>
     <string name="notification_title_item_reminder_">Promemoria per %s</string>
+    <string name="notification_title_item_lending_return_">Restituzione in scadenza per %s</string>
     <string name="expired_in_">Scade tra: %s</string>
     <string name="_days">%d giorno(i)</string>
     <string name="_hours">%d ora(e)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Data di promemoria</string>
     <string name="header_checked_date_time">Data di spunta</string>
     <string name="header_checklist_id">ID lista di controllo</string>
+    <string name="header_item_lending_borrower">Mutuatario</string>
+    <string name="header_lend_date_time">Data del prestito</string>
+    <string name="header_due_date_time">Data di scadenza</string>
+    <string name="header_returned_date_time">Data di restituzione</string>
+    <string name="header_note">Nota</string>
 
     <string name="min_amount_must_be_zero_or_more">La soglia deve essere 0 o più</string>
     <string name="form_min_amount">Soglia di avviso scorta bassa</string>

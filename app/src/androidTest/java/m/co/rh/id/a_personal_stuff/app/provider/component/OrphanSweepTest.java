@@ -27,6 +27,9 @@ import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
 import m.co.rh.id.a_personal_stuff.item_checklist.model.ItemChecklistState;
 import m.co.rh.id.a_personal_stuff.item_checklist.room.ItemChecklistDatabase;
+import m.co.rh.id.a_personal_stuff.item_lending.dao.ItemLendingDao;
+import m.co.rh.id.a_personal_stuff.item_lending.entity.ItemLending;
+import m.co.rh.id.a_personal_stuff.item_lending.room.ItemLendingDatabase;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
 import m.co.rh.id.a_personal_stuff.item_maintenance.room.ItemMaintenanceDatabase;
@@ -56,6 +59,7 @@ public class OrphanSweepTest {
     private ItemMaintenanceDatabase mMaintenanceDb;
     private ItemReminderDatabase mReminderDb;
     private ItemChecklistDatabase mChecklistDb;
+    private ItemLendingDatabase mLendingDb;
     private Provider mProvider;
     private ExecutorService mExecutorService;
 
@@ -79,6 +83,9 @@ public class OrphanSweepTest {
                 .allowMainThreadQueries().build();
 
         mChecklistDb = Room.inMemoryDatabaseBuilder(mContext, ItemChecklistDatabase.class)
+                .allowMainThreadQueries().build();
+
+        mLendingDb = Room.inMemoryDatabaseBuilder(mContext, ItemLendingDatabase.class)
                 .allowMainThreadQueries().build();
 
         mProvider = Provider.createProvider(mContext, new TestOrphanSweepProviderModule());
@@ -115,6 +122,9 @@ public class OrphanSweepTest {
         }
         if (mChecklistDb != null) {
             mChecklistDb.close();
+        }
+        if (mLendingDb != null) {
+            mLendingDb.close();
         }
     }
 
@@ -157,6 +167,13 @@ public class OrphanSweepTest {
         reminder.message = "orphan reminder";
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
+        ItemLending lending = new ItemLending();
+        lending.itemId = itemId;
+        lending.borrowerName = "orphan borrower";
+        lending.lendDateTime = now;
+        lending.dueDateTime = new Date(now.getTime() + 86400000);
+        mLendingDb.itemLendingDao().insert(lending);
+
         // simulate the crash window: delete the item directly via the DAO,
         // bypassing the ItemChangeNotifier so no event handler runs
         mAppDb.itemDao().deleteItem(itemState);
@@ -167,6 +184,7 @@ public class OrphanSweepTest {
         assertTrue(mPurchaseDb.itemPurchaseDao().findAllItemPurchases().isEmpty());
         assertTrue(mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances().isEmpty());
         assertTrue(mReminderDb.itemReminderDao().findAllItemReminders().isEmpty());
+        assertTrue(mLendingDb.itemLendingDao().findAllItemLendings().isEmpty());
         // only the swept item is gone, the anchor survives untouched
         List<Item> remainingItems = mAppDb.itemDao().findAllItems();
         assertEquals(1, remainingItems.size());
@@ -210,11 +228,18 @@ public class OrphanSweepTest {
         maintenance.createdDateTime = now;
         mMaintenanceDb.itemMaintenanceDao().insert(maintenance);
 
+        ItemLending lending = new ItemLending();
+        lending.itemId = itemId;
+        lending.borrowerName = "alive borrower";
+        lending.lendDateTime = now;
+        mLendingDb.itemLendingDao().insert(lending);
+
         new OrphanSweep(mProvider).sweep();
 
         assertEquals(1, mAppDb.itemDao().findAllItems().size());
         assertEquals(1, mUsageDb.itemUsageDao().findAllItemUsages().size());
         assertEquals(1, mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances().size());
+        assertEquals(1, mLendingDb.itemLendingDao().findAllItemLendings().size());
     }
 
     @Test
@@ -282,6 +307,7 @@ public class OrphanSweepTest {
             providerRegistry.register(ItemMaintenanceDao.class, this::getItemMaintenanceDao);
             providerRegistry.register(ItemReminderDao.class, this::getItemReminderDao);
             providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
+            providerRegistry.register(ItemLendingDao.class, this::getItemLendingDao);
         }
 
         private ExecutorService getExecutorService() {
@@ -313,6 +339,10 @@ public class OrphanSweepTest {
 
         private ItemChecklistDao getItemChecklistDao() {
             return mChecklistDb.itemChecklistDao();
+        }
+
+        private ItemLendingDao getItemLendingDao() {
+            return mLendingDb.itemLendingDao();
         }
     }
 }

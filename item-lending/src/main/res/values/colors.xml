@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Lending status chip colors, defined locally because feature modules
+     must not reference :app resources. Not translatable. -->
+<resources>
+    <color name="lending_status_lent">#616161</color>
+    <color name="lending_status_overdue">#D32F2F</color>
+    <color name="lending_status_returned">#2E7D32</color>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Name des Ausleihers erforderlich</string>
+    <string name="lend_date_time_is_required">Ausleihdatum und -uhrzeit erforderlich</string>
+    <string name="borrower_">Ausleiher: %s</string>
+    <string name="due_">Fällig: %s</string>
+    <string name="note_">Notiz: %s</string>
+    <string name="title_confirm_delete">Löschen bestätigen</string>
+    <string name="confirm_delete_">Möchten Sie %s wirklich löschen?</string>
+    <string name="success_delete_item_lending">Ausleihe gelöscht</string>
+    <string name="title_lendings">Ausleihen</string>
+    <string name="title_update_item_lending">Ausleihe aktualisieren</string>
+    <string name="title_add_item_lending">Ausleihe hinzufügen</string>
+    <string name="success_add_item_lending_image">Ausleihbild hinzugefügt</string>
+    <string name="success_delete_item_lending_image">Ausleihbild gelöscht</string>
+    <string name="success_add_item_lending">Ausleihe hinzugefügt</string>
+    <string name="success_update_item_lending">Ausleihe aktualisiert</string>
+    <string name="title_add">Hinzufügen</string>
+    <string name="save">Speichern</string>
+    <string name="hint_type_to_search">Zum Suchen tippen</string>
+    <string name="form_borrower_name">Name des Ausleihers</string>
+    <string name="form_lend_date_time">Ausleihdatum und -uhrzeit</string>
+    <string name="form_due_date_time">Fälligkeitsdatum und -uhrzeit</string>
+    <string name="form_returned_date_time">Rückgabedatum und -uhrzeit</string>
+    <string name="form_note">Notiz</string>
+    <string name="status_lent">Ausgeliehen</string>
+    <string name="status_returned">Zurückgegeben</string>
+    <string name="status_overdue">Überfällig</string>
+    <string name="notification_name_item_lending_return">Rückgabeerinnerung</string>
+    <string name="notification_description_item_lending_return">Benachrichtigungskanal für Rückgabeerinnerungen</string>
+</resources>

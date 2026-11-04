@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Le nom de l\'emprunteur est requis</string>
+    <string name="lend_date_time_is_required">La date et l\'heure de prêt sont requises</string>
+    <string name="borrower_">Emprunteur : %s</string>
+    <string name="due_">Échéance : %s</string>
+    <string name="note_">Note : %s</string>
+    <string name="title_confirm_delete">Confirmer la suppression</string>
+    <string name="confirm_delete_">Voulez-vous vraiment supprimer %s ?</string>
+    <string name="success_delete_item_lending">Prêt supprimé</string>
+    <string name="title_lendings">Prêts</string>
+    <string name="title_update_item_lending">Mettre à jour le prêt</string>
+    <string name="title_add_item_lending">Ajouter un prêt</string>
+    <string name="success_add_item_lending_image">Image de prêt ajoutée</string>
+    <string name="success_delete_item_lending_image">Image de prêt supprimée</string>
+    <string name="success_add_item_lending">Prêt ajouté</string>
+    <string name="success_update_item_lending">Prêt mis à jour</string>
+    <string name="title_add">Ajouter</string>
+    <string name="save">Enregistrer</string>
+    <string name="hint_type_to_search">Tapez pour rechercher</string>
+    <string name="form_borrower_name">Nom de l\'emprunteur</string>
+    <string name="form_lend_date_time">Date et heure de prêt</string>
+    <string name="form_due_date_time">Date et heure d\'échéance</string>
+    <string name="form_returned_date_time">Date et heure de retour</string>
+    <string name="form_note">Note</string>
+    <string name="status_lent">Prêté</string>
+    <string name="status_returned">Rendu</string>
+    <string name="status_overdue">En retard</string>
+    <string name="notification_name_item_lending_return">Retour de prêt d\'objet</string>
+    <string name="notification_description_item_lending_return">Canal de notification de retour de prêt d\'objet</string>
+</resources>

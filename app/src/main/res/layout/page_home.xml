@@ -415,6 +415,17 @@
                         app:icon="@drawable/ic_add_alert_black" />
 
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/button_add_item_lending"
+                        style="@style/Theme.Apersonalstuff.HomeMenuButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_columnWeight="1"
+                        android:layout_gravity="fill"
+                        android:gravity="center"
+                        android:text="@string/title_add_item_lending"
+                        app:icon="@drawable/ic_lending_black" />
+
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/button_add_item_checklist"
                         style="@style/Theme.Apersonalstuff.HomeMenuButton"
                         android:layout_width="0dp"

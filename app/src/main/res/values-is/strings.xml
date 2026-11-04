@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Merki eytt</string>
     <string name="success_add_item_tag">Merki bætt við</string>
     <string name="notification_title_item_reminder_">Áminning fyrir %s</string>
+    <string name="notification_title_item_lending_return_">Skila þarf: %s</string>
     <string name="expired_in_">Gildistími eftir: %s</string>
     <string name="_days">%d dag(ur)</string>
     <string name="_hours">%d klukkustund(ir)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Áminningartími</string>
     <string name="header_checked_date_time">Hökunartími</string>
     <string name="header_checklist_id">Auðkenni gátlista</string>
+    <string name="header_item_lending_borrower">Lántaki</string>
+    <string name="header_lend_date_time">Lánsdagur</string>
+    <string name="header_due_date_time">Skiladagur</string>
+    <string name="header_returned_date_time">Skiladagsetning</string>
+    <string name="header_note">Athugasemd</string>
 
     <string name="min_amount_must_be_zero_or_more">Viðmið verður að vera 0 eða meira</string>
     <string name="form_min_amount">Viðvörunarmörk fyrir lágar birgðir</string>

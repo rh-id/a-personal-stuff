@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Borrower name is required</string>
+    <string name="lend_date_time_is_required">Lend date time is required</string>
+    <string name="borrower_">Borrower: %s</string>
+    <string name="due_">Due: %s</string>
+    <string name="note_">Note: %s</string>
+    <string name="title_confirm_delete">Confirm Delete</string>
+    <string name="confirm_delete_">Are you sure you want to delete %s?</string>
+    <string name="success_delete_item_lending">Item lending deleted</string>
+    <string name="title_lendings">Lendings</string>
+    <string name="title_update_item_lending">Update Item Lending</string>
+    <string name="title_add_item_lending">Add Item Lending</string>
+    <string name="success_add_item_lending_image">Item lending image added</string>
+    <string name="success_delete_item_lending_image">Item lending image deleted</string>
+    <string name="success_add_item_lending">Item lending added</string>
+    <string name="success_update_item_lending">Item lending updated</string>
+    <string name="title_add">Add</string>
+    <string name="save">Save</string>
+    <string name="hint_type_to_search">Type to search</string>
+    <string name="form_borrower_name">Borrower name</string>
+    <string name="form_lend_date_time">Lend Date Time</string>
+    <string name="form_due_date_time">Due Date Time</string>
+    <string name="form_returned_date_time">Returned Date Time</string>
+    <string name="form_note">Note</string>
+    <string name="status_lent">Lent</string>
+    <string name="status_returned">Returned</string>
+    <string name="status_overdue">Overdue</string>
+    <string name="notification_name_item_lending_return">Item lending return</string>
+    <string name="notification_description_item_lending_return">Item lending return notification channel</string>
+</resources>

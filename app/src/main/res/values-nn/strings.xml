@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Merke sletta</string>
     <string name="success_add_item_tag">Merke lagt til</string>
     <string name="notification_title_item_reminder_">Påminning for %s</string>
+    <string name="notification_title_item_lending_return_">Retur forfall: %s</string>
     <string name="expired_in_">Går ut om: %s</string>
     <string name="_days">%d dag(ar)</string>
     <string name="_hours">%d time(r)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Påminningstidspunkt</string>
     <string name="header_checked_date_time">Avmerkingstidspunkt</string>
     <string name="header_checklist_id">Sjekkliste-ID</string>
+    <string name="header_item_lending_borrower">Låntakar</string>
+    <string name="header_lend_date_time">Utlånsdato</string>
+    <string name="header_due_date_time">Forfallsdato</string>
+    <string name="header_returned_date_time">Innleveringsdato</string>
+    <string name="header_note">Merknad</string>
 
     <string name="min_amount_must_be_zero_or_more">Terskel må vere 0 eller meir</string>
     <string name="form_min_amount">Terskel for varsel ved lågt lager</string>

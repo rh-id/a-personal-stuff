@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Silt kustutatud</string>
     <string name="success_add_item_tag">Silt lisatud</string>
     <string name="notification_title_item_reminder_">Meeldetuletus %s jaoks</string>
+    <string name="notification_title_item_lending_return_">Tagastamise tähtaeg: %s</string>
     <string name="expired_in_">Aegub: %s</string>
     <string name="_days">%d päeva</string>
     <string name="_hours">%d tundi</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Meeldetuletuse aeg</string>
     <string name="header_checked_date_time">Märkimise aeg</string>
     <string name="header_checklist_id">Kontroll-loendi ID</string>
+    <string name="header_item_lending_borrower">Laenuvõtja</string>
+    <string name="header_lend_date_time">Laenutatud</string>
+    <string name="header_due_date_time">Tähtaeg</string>
+    <string name="header_returned_date_time">Tagastatud</string>
+    <string name="header_note">Märkus</string>
 
     <string name="min_amount_must_be_zero_or_more">Lävi peab olema 0 või suurem</string>
     <string name="form_min_amount">Madala laoseisu hoiatuse lävi</string>

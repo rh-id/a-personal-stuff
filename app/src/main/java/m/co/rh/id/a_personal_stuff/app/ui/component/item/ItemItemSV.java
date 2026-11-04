@@ -55,6 +55,9 @@ import m.co.rh.id.a_personal_stuff.item_checklist.provider.command.QueryItemChec
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistSelectPage;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistsPage;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.command.QueryItemLendingCmd;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.notifier.ItemLendingChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_lending.ui.page.ItemLendingsPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.command.QueryItemPurchaseCmd;
@@ -84,6 +87,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient QueryItemUsageCmd mQueryItemUsageCmd;
     private transient QueryItemPurchaseCmd mQueryItemPurchaseCmd;
     private transient QueryItemChecklistCmd mQueryItemChecklistCmd;
+    private transient QueryItemLendingCmd mQueryItemLendingCmd;
     /**
      * The currently shown more-actions popup, if any. Kept so it can be
      * dismissed when this card's view tree detaches (BACK navigation) or when
@@ -97,6 +101,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private final SerialBehaviorSubject<ItemState> mItemState;
     private final SerialOptionalBehaviorSubject<Integer> mUsageCount;
     private final SerialOptionalBehaviorSubject<Integer> mChecklistCount;
+    private final SerialOptionalBehaviorSubject<Integer> mLendingCount;
     private final DateFormat mDateFormat;
     private transient BehaviorSubject<Optional<ItemImage>> mItemImageDisplay;
     private transient int mDefaultExpiredDateColor;
@@ -123,6 +128,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mCompact.onNext(compact);
         mUsageCount = new SerialOptionalBehaviorSubject<>();
         mChecklistCount = new SerialOptionalBehaviorSubject<>();
+        mLendingCount = new SerialOptionalBehaviorSubject<>();
         mDateFormat = new SimpleDateFormat("dd MMM yyyy, HH:mm");
     }
 
@@ -144,6 +150,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mQueryItemUsageCmd = mSvProvider.get(QueryItemUsageCmd.class);
         mQueryItemPurchaseCmd = mSvProvider.get(QueryItemPurchaseCmd.class);
         mQueryItemChecklistCmd = mSvProvider.get(QueryItemChecklistCmd.class);
+        mQueryItemLendingCmd = mSvProvider.get(QueryItemLendingCmd.class);
         mItemImageDisplay = BehaviorSubject.create();
         mDefaultExpiredDateColor = ContextCompat.getColor(provider.getContext(), m.co.rh.id.a_personal_stuff.base.R.color.light_green_600);
         mExpiredDateColor = BehaviorSubject.createDefault(mDefaultExpiredDateColor);
@@ -192,6 +199,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         usageCountButton.setOnClickListener(this);
         Button checklistCountButton = rootLayout.findViewById(R.id.button_checklist_count);
         checklistCountButton.setOnClickListener(this);
+        Button lendingCountButton = rootLayout.findViewById(R.id.button_lending_count);
+        lendingCountButton.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
 
         // Apply the matching constraints whenever the mode changes (and once on
@@ -404,6 +413,24 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                                 recomputeChecklistCount(itemState);
                             }
                         }));
+        // Lending count subscriptions: the badge shows the number of currently
+        // open (unreturned) lendings. Lending events carry the affected item
+        // id, so filter to this card's item (same shape as the purchase/usage
+        // live-refresh subscriptions).
+        mRxDisposer.add("createView_onItemStateChanged_updateLendingCount",
+                mItemState.getSubject().observeOn(Schedulers.from(mExecutorService))
+                        .subscribe(this::recomputeLentCount));
+        mRxDisposer.add("createView_onLendingChanged_updateLendingCount",
+                mSvProvider.get(ItemLendingChangeNotifier.class).getAnyItemLendingChangeFlow()
+                        .observeOn(Schedulers.from(mExecutorService))
+                        .filter(itemId -> itemId != null
+                                && itemId.equals(getCurrentItemId()))
+                        .subscribe(itemId -> {
+                            ItemState itemState = mItemState.getValue();
+                            if (itemState != null) {
+                                recomputeLentCount(itemState);
+                            }
+                        }));
         mRxDisposer.add("createView_onUsageCountChanged", mUsageCount.getSubject()
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(optLong -> {
@@ -426,6 +453,18 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         checklistCountButton.setVisibility(View.VISIBLE);
                     } else {
                         checklistCountButton.setVisibility(View.GONE);
+                    }
+                }));
+        mRxDisposer.add("createView_onLendingCountChanged", mLendingCount.getSubject()
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(optCount -> {
+                    // Lending button is detailed-only, like the usage button;
+                    // compact mode hides it via the ConstraintSet.
+                    if (optCount.isPresent() && !isCompact()) {
+                        lendingCountButton.setText(optCount.get().toString());
+                        lendingCountButton.setVisibility(View.VISIBLE);
+                    } else {
+                        lendingCountButton.setVisibility(View.GONE);
                     }
                 }));
         return rootLayout;
@@ -480,6 +519,15 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mChecklistCount.onNext(count > 0 ? count : null);
     }
 
+    /**
+     * Recompute the lending badge as the number of currently open (unreturned)
+     * lendings of this item; hidden when nothing is out (null).
+     */
+    private void recomputeLentCount(ItemState itemState) {
+        int count = mQueryItemLendingCmd.countOpenLendingsByItemId(itemState.getItemId()).blockingGet();
+        mLendingCount.onNext(count > 0 ? count : null);
+    }
+
     private Long getCurrentItemId() {
         ItemState itemState = mItemState.getValue();
         return itemState == null ? null : itemState.getItemId();
@@ -530,6 +578,12 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 mNavigator.push(Routes.ITEM_CHECKLISTS_PAGE,
                         ItemChecklistsPage.Args.with(itemState.getItemId(), itemState.getItemName()));
             }
+        } else if (id == R.id.button_lending_count) {
+            ItemState itemState = mItemState.getValue();
+            if (itemState != null && itemState.getItemId() != null) {
+                mNavigator.push(Routes.ITEM_LENDINGS_PAGE,
+                        ItemLendingsPage.Args.with(itemState.getItemId()));
+            }
         }
     }
 
@@ -541,6 +595,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 context.getString(m.co.rh.id.a_personal_stuff.item_purchase.R.string.title_purchases),
                 context.getString(m.co.rh.id.a_personal_stuff.item_maintenance.R.string.title_maintenances),
                 context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders),
+                context.getString(m.co.rh.id.a_personal_stuff.item_lending.R.string.title_lendings),
                 DIVIDER,
                 context.getString(m.co.rh.id.a_personal_stuff.item_checklist.R.string.title_add_to_checklist),
                 context.getString(R.string.title_duplicate),
@@ -553,6 +608,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 R.id.menu_item_purchase_list,
                 R.id.menu_item_maintenance_list,
                 R.id.menu_item_reminder_list,
+                R.id.menu_item_lending_list,
                 R.id.menu_item_add_to_checklist,
                 R.id.menu_item_duplicate,
                 R.id.menu_item_delete,
@@ -649,6 +705,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_REMINDERS_PAGE,
                     ItemRemindersPage.Args.with(itemId));
+        } else if (id == R.id.menu_item_lending_list) {
+            Long itemId = mItemState.getValue().getItemId();
+            mNavigator.push(Routes.ITEM_LENDINGS_PAGE,
+                    ItemLendingsPage.Args.with(itemId));
         } else if (id == R.id.menu_item_add_to_checklist) {
             ItemState itemState = mItemState.getValue();
             if (itemState != null && itemState.getItemId() != null) {

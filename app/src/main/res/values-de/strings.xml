@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Tag gelöscht</string>
     <string name="success_add_item_tag">Tag hinzugefügt</string>
     <string name="notification_title_item_reminder_">Erinnerung für %s</string>
+    <string name="notification_title_item_lending_return_">Rückgabe fällig für %s</string>
     <string name="expired_in_">Läuft ab in: %s</string>
     <string name="_days">%d Tag(e)</string>
     <string name="_hours">%d Stunde(n)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Erinnert am</string>
     <string name="header_checked_date_time">Abgehakt am</string>
     <string name="header_checklist_id">Checklisten-ID</string>
+    <string name="header_item_lending_borrower">Ausleiher</string>
+    <string name="header_lend_date_time">Ausgeliehen am</string>
+    <string name="header_due_date_time">Fällig am</string>
+    <string name="header_returned_date_time">Zurückgegeben am</string>
+    <string name="header_note">Notiz</string>
 
     <string name="min_amount_must_be_zero_or_more">Grenzwert muss 0 oder mehr sein</string>
     <string name="form_min_amount">Grenzwert für Warnung bei geringem Bestand</string>

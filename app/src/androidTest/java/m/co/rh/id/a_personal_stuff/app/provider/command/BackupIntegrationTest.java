@@ -86,10 +86,18 @@ import m.co.rh.id.a_personal_stuff.item_checklist.room.ItemChecklistDatabase;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_lending.dao.ItemLendingDao;
+import m.co.rh.id.a_personal_stuff.item_lending.entity.ItemLending;
+import m.co.rh.id.a_personal_stuff.item_lending.entity.ItemLendingImage;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.component.ItemLendingBackupContributor;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.component.ItemLendingFileHelper;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.notifier.ItemLendingChangeNotifier;
+import m.co.rh.id.a_personal_stuff.item_lending.room.ItemLendingDatabase;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.aprovider.Provider;
 import m.co.rh.id.aprovider.ProviderModule;
 import m.co.rh.id.aprovider.ProviderRegistry;
+import androidx.work.WorkInfo;
 import androidx.work.WorkManager;
 import androidx.work.testing.WorkManagerTestInitHelper;
 
@@ -110,6 +118,7 @@ public class BackupIntegrationTest {
     private ItemReminderDatabase mReminderDb;
     private ItemPurchaseDatabase mPurchaseDb;
     private ItemChecklistDatabase mChecklistDb;
+    private ItemLendingDatabase mLendingDb;
     private Provider mProvider;
     private File mTempZipDir;
     private ExecutorService mExecutorService;
@@ -136,6 +145,9 @@ public class BackupIntegrationTest {
         mChecklistDb = Room.inMemoryDatabaseBuilder(mContext, ItemChecklistDatabase.class)
                 .allowMainThreadQueries().build();
 
+        mLendingDb = Room.inMemoryDatabaseBuilder(mContext, ItemLendingDatabase.class)
+                .allowMainThreadQueries().build();
+
         mTempZipDir = new File(mContext.getCacheDir(), "test_zips_" + System.currentTimeMillis());
         mTempZipDir.mkdirs();
 
@@ -160,6 +172,8 @@ public class BackupIntegrationTest {
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_USAGE_IMAGE_THUMBNAIL));
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE));
         deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_PURCHASE_IMAGE_THUMBNAIL));
+        deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE));
+        deleteRecursive(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE_THUMBNAIL));
         deleteRecursive(mTempZipDir);
         // also wipe the FileHelper cache temp root (<cacheDir>/tmp) where exported
         // and imported zips live, covering leaked zips and empty temp dirs
@@ -197,6 +211,9 @@ public class BackupIntegrationTest {
         if (mChecklistDb != null) {
             mChecklistDb.close();
         }
+        if (mLendingDb != null) {
+            mLendingDb.close();
+        }
     }
 
     @Test
@@ -226,7 +243,9 @@ public class BackupIntegrationTest {
                 "itemMaintenanceImages",
                 "itemReminders",
                 "itemChecklists",
-                "itemChecklistItems");
+                "itemChecklistItems",
+                "itemLendings",
+                "itemLendingImages");
         Collections.sort(actualKeys);
         Collections.sort(expectedKeys);
         assertEquals(expectedKeys, actualKeys);
@@ -256,6 +275,8 @@ public class BackupIntegrationTest {
         assertSectionSize(json, "itemReminders", 0);
         assertSectionSize(json, "itemChecklists", 0);
         assertSectionSize(json, "itemChecklistItems", 0);
+        assertSectionSize(json, "itemLendings", 0);
+        assertSectionSize(json, "itemLendingImages", 0);
 
         Set<String> entries = getZipEntryNames(zipFile);
         assertEquals(1, entries.size());
@@ -937,6 +958,25 @@ public class BackupIntegrationTest {
                 new Date(now.getTime() + 172800000), now);
         mReminderDb.itemReminderDao().insertItemReminder(reminder);
 
+        File lendingImageDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE);
+        lendingImageDir.mkdirs();
+        File lendingImageFile = new File(lendingImageDir, "rt_lending.jpg");
+        writeBytes(lendingImageFile, "rt-lending-data".getBytes());
+        File lendingThumbDir = new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE_THUMBNAIL);
+        lendingThumbDir.mkdirs();
+        File lendingThumbFile = new File(lendingThumbDir, "rt_lending.jpg");
+        writeBytes(lendingThumbFile, "rt-lending-thumb".getBytes());
+
+        ItemLending lending = TestSeeds.itemLending(itemId, "RT borrower", now);
+        lending.taskId = "rt-lend-task";
+        lending.dueDateTime = new Date(now.getTime() + 172800000);
+        long lendingId = mLendingDb.itemLendingDao().insert(lending);
+        ItemLendingImage lendingImg = new ItemLendingImage();
+        lendingImg.itemLendingId = lendingId;
+        lendingImg.fileName = "rt_lending.jpg";
+        lendingImg.createdDateTime = now;
+        mLendingDb.itemLendingDao().insert(lendingImg);
+
         ItemChecklist checklist = TestSeeds.itemChecklist("RT checklist", now);
         checklist.updatedDateTime = new Date(now.getTime() + 1000);
         ItemChecklistState checklistState = new ItemChecklistState();
@@ -955,11 +995,13 @@ public class BackupIntegrationTest {
         mMaintenanceDb.clearAllTables();
         mReminderDb.clearAllTables();
         mChecklistDb.clearAllTables();
+        mLendingDb.clearAllTables();
         assertTrue(mUsageDb.itemUsageDao().findAllItemUsages().isEmpty());
         assertTrue(mPurchaseDb.itemPurchaseDao().findAllItemPurchases().isEmpty());
         assertTrue(mMaintenanceDb.itemMaintenanceDao().findAllItemMaintenances().isEmpty());
         assertTrue(mReminderDb.itemReminderDao().findAllItemReminders().isEmpty());
         assertTrue(mChecklistDb.itemChecklistDao().findAllItemChecklists().isEmpty());
+        assertTrue(mLendingDb.itemLendingDao().findAllItemLendings().isEmpty());
 
         new ImportCmd(mProvider).execute(zipFile).blockingGet();
 
@@ -1017,6 +1059,27 @@ public class BackupIntegrationTest {
         assertEquals("RT reminder", reminders.get(0).message);
         assertEquals(Long.valueOf(restoredItemId), reminders.get(0).itemId);
         assertNotEquals("rt-task", reminders.get(0).taskId);
+
+        List<ItemLending> lendings = mLendingDb.itemLendingDao().findAllItemLendings();
+        assertEquals(1, lendings.size());
+        assertEquals("RT borrower", lendings.get(0).borrowerName);
+        assertEquals(Long.valueOf(restoredItemId), lendings.get(0).itemId);
+        // import must regenerate the unique-work id so the re-enqueued return
+        // reminder cannot collide with a stale WorkManager job
+        assertNotEquals("rt-lend-task", lendings.get(0).taskId);
+        List<ItemLendingImage> lendingImages = mLendingDb.itemLendingDao().findAllItemLendingImages();
+        assertEquals(1, lendingImages.size());
+        assertEquals(lendings.get(0).id, lendingImages.get(0).itemLendingId);
+        File restoredLendingImage = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE), lendingImages.get(0).fileName);
+        assertTrue(restoredLendingImage.exists());
+        File restoredLendingThumb = new File(new File(mContext.getFilesDir(), Constants.FILE_DIR_ITEM_LENDING_IMAGE_THUMBNAIL), lendingImages.get(0).fileName);
+        assertTrue(restoredLendingThumb.exists());
+        // the future-due unreturned lending's return reminder is re-enqueued
+        // under the NEW task id
+        List<WorkInfo> lendingWorkInfos = WorkManager.getInstance(mContext)
+                .getWorkInfosForUniqueWork(lendings.get(0).taskId).get();
+        assertEquals(1, lendingWorkInfos.size());
+        assertEquals(WorkInfo.State.ENQUEUED, lendingWorkInfos.get(0).getState());
 
         List<ItemChecklist> checklists = mChecklistDb.itemChecklistDao().findAllItemChecklists();
         assertEquals(1, checklists.size());
@@ -2347,6 +2410,16 @@ public class BackupIntegrationTest {
         }
     }
 
+    private static class NoOpCleanUpItemLendingFileHelper extends ItemLendingFileHelper {
+        public NoOpCleanUpItemLendingFileHelper(Provider provider) {
+            super(provider);
+        }
+
+        @Override
+        protected void cleanUp() {
+        }
+    }
+
     private class TestBackupProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {
@@ -2369,11 +2442,14 @@ public class BackupIntegrationTest {
             providerRegistry.register(WorkManager.class, this::getWorkManager);
             providerRegistry.register(ItemChecklistDao.class, this::getItemChecklistDao);
             providerRegistry.register(ItemChecklistChangeNotifier.class, this::getItemChecklistChangeNotifier);
+            providerRegistry.register(ItemLendingDao.class, this::getItemLendingDao);
+            providerRegistry.register(ItemLendingChangeNotifier.class, this::getItemLendingChangeNotifier);
             providerRegistry.registerLazy(FileHelper.class, () -> new FileHelper(provider));
             providerRegistry.registerLazy(ItemFileHelper.class, () -> new NoOpCleanUpItemFileHelper(provider));
             providerRegistry.registerLazy(ItemMaintenanceFileHelper.class, () -> new NoOpCleanUpItemMaintenanceFileHelper(provider));
             providerRegistry.registerLazy(ItemUsageFileHelper.class, () -> new NoOpCleanUpItemUsageFileHelper(provider));
             providerRegistry.registerLazy(ItemPurchaseFileHelper.class, () -> new NoOpCleanUpItemPurchaseFileHelper(provider));
+            providerRegistry.registerLazy(ItemLendingFileHelper.class, () -> new NoOpCleanUpItemLendingFileHelper(provider));
             providerRegistry.registerLazy(ExportService.class, () -> new ExportService(provider));
             ModuleContributorRegistry contributorRegistry = provider.get(ModuleContributorRegistry.class);
             contributorRegistry.register(new ItemUsageBackupContributor(provider));
@@ -2381,6 +2457,7 @@ public class BackupIntegrationTest {
             contributorRegistry.register(new ItemMaintenanceBackupContributor(provider));
             contributorRegistry.register(new ItemReminderBackupContributor(provider));
             contributorRegistry.register(new ItemChecklistBackupContributor(provider));
+            contributorRegistry.register(new ItemLendingBackupContributor(provider));
         }
 
         private ExecutorService getExecutorService() {
@@ -2440,6 +2517,14 @@ public class BackupIntegrationTest {
 
         private ItemChecklistChangeNotifier getItemChecklistChangeNotifier() {
             return new ItemChecklistChangeNotifier();
+        }
+
+        private ItemLendingDao getItemLendingDao() {
+            return mLendingDb.itemLendingDao();
+        }
+
+        private ItemLendingChangeNotifier getItemLendingChangeNotifier() {
+            return new ItemLendingChangeNotifier();
         }
     }
 }

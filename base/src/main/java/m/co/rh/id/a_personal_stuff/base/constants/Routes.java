@@ -22,6 +22,8 @@ public class Routes {
     public static final String ITEM_CHECKLIST_ADD_PAGE = "/item-checklist/add";
     public static final String ITEM_CHECKLIST_DETAIL_PAGE = "/item-checklist/detail";
     public static final String ITEM_CHECKLIST_SELECT_PAGE = "/item-checklist/select";
+    public static final String ITEM_LENDINGS_PAGE = "/item-lendings";
+    public static final String ITEM_LENDING_DETAIL_PAGE = "/item-lending/detail";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
     public static final String COMMON_SELECTION = "/common/selection";
     public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";

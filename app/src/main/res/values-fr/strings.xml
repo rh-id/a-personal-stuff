@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Étiquette supprimée</string>
     <string name="success_add_item_tag">Étiquette ajoutée</string>
     <string name="notification_title_item_reminder_">Rappel pour %s</string>
+    <string name="notification_title_item_lending_return_">Retour attendu pour %s</string>
     <string name="expired_in_">Expire dans: %s</string>
     <string name="_days">%d jour(s)</string>
     <string name="_hours">%d heure(s)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Date de rappel</string>
     <string name="header_checked_date_time">Date de vérification</string>
     <string name="header_checklist_id">ID de la liste de contrôle</string>
+    <string name="header_item_lending_borrower">Emprunteur</string>
+    <string name="header_lend_date_time">Date de prêt</string>
+    <string name="header_due_date_time">Date d\'échéance</string>
+    <string name="header_returned_date_time">Date de retour</string>
+    <string name="header_note">Note</string>
 
     <string name="min_amount_must_be_zero_or_more">Le seuil doit être supérieur ou égal à 0</string>
     <string name="form_min_amount">Seuil d\'alerte de stock faible</string>

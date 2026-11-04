@@ -36,6 +36,8 @@ import m.co.rh.id.a_personal_stuff.app.ui.page.AppItemChecklistDetailPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemChecklistAddPage;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistSelectPage;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistsPage;
+import m.co.rh.id.a_personal_stuff.item_lending.ui.page.ItemLendingDetailPage;
+import m.co.rh.id.a_personal_stuff.item_lending.ui.page.ItemLendingsPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemReminderDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.ui.page.ItemRemindersPage;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsageDetailPage;
@@ -96,6 +98,8 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.ITEM_CHECKLIST_ADD_PAGE, (args, activity) -> new ItemChecklistAddPage());
         navMap.put(Routes.ITEM_CHECKLIST_DETAIL_PAGE, (args, activity) -> new AppItemChecklistDetailPage());
         navMap.put(Routes.ITEM_CHECKLIST_SELECT_PAGE, (args, activity) -> new ItemChecklistSelectPage(ItemChecklistSelectPage.Args.of(args)));
+        navMap.put(Routes.ITEM_LENDINGS_PAGE, (args, activity) -> new ItemLendingsPage());
+        navMap.put(Routes.ITEM_LENDING_DETAIL_PAGE, (args, activity) -> new ItemLendingDetailPage());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
         navMap.put(Routes.COMMON_SELECTION, (args, activity) -> new SelectionPage());
         navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());

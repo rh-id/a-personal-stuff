@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Tag dihapus</string>
     <string name="success_add_item_tag">Tag ditambahkan</string>
     <string name="notification_title_item_reminder_">Pengingat untuk %s</string>
+    <string name="notification_title_item_lending_return_">Pengembalian jatuh tempo: %s</string>
     <string name="expired_in_">Kedaluwarsa dalam: %s</string>
     <string name="_days">%d hari</string>
     <string name="_hours">%d jam</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Tanggal pengingat</string>
     <string name="header_checked_date_time">Tanggal dicentang</string>
     <string name="header_checklist_id">ID Daftar Periksa</string>
+    <string name="header_item_lending_borrower">Peminjam</string>
+    <string name="header_lend_date_time">Tanggal peminjaman</string>
+    <string name="header_due_date_time">Tanggal jatuh tempo</string>
+    <string name="header_returned_date_time">Tanggal pengembalian</string>
+    <string name="header_note">Catatan</string>
 
     <string name="min_amount_must_be_zero_or_more">Ambang batas harus 0 atau lebih</string>
     <string name="form_min_amount">Ambang batas peringatan stok menipis</string>

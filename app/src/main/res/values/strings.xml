@@ -51,6 +51,7 @@
     <string name="success_deleting_tag">Tag deleted</string>
     <string name="success_add_item_tag">Tag added</string>
     <string name="notification_title_item_reminder_">Reminder for %s</string>
+    <string name="notification_title_item_lending_return_">Return due for %s</string>
     <string name="expired_in_">Expired in: %s</string>
     <string name="_days">%d day(s)</string>
     <string name="_hours">%d hour(s)</string>
@@ -123,7 +124,7 @@
     <string name="report_record_line">%1$s: %2$s · %3$s</string>
     <!-- test-only label (no user-visible surface): resolves ItemPdfRecord.labelKey
          in ExportPdfReportCmdTest.secondContributorDataSurvives -->
-    <string name="report_record_test_label">Test record</string>
+    <string name="report_record_test_label" translatable="false">Test record</string>
     <string name="report_expires">Expires: %1$s</string>
     <string name="report_created">Created: %1$s</string>
     <string name="report_photo_omitted">(photo omitted — image limit reached)</string>
@@ -143,6 +144,11 @@
     <string name="header_reminder_date_time">Reminder date time</string>
     <string name="header_checked_date_time">Checked date time</string>
     <string name="header_checklist_id">Checklist ID</string>
+    <string name="header_item_lending_borrower">Borrower</string>
+    <string name="header_lend_date_time">Lend date time</string>
+    <string name="header_due_date_time">Due date time</string>
+    <string name="header_returned_date_time">Returned date time</string>
+    <string name="header_note">Note</string>
 
     <!-- Dashboard cards -->
     <string name="title_dashboard_inventory">Inventory</string>

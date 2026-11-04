@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">标签已删除</string>
     <string name="success_add_item_tag">标签已添加</string>
     <string name="notification_title_item_reminder_">%s 的提醒</string>
+    <string name="notification_title_item_lending_return_">%s 归还到期</string>
     <string name="expired_in_">过期时间：%s</string>
     <string name="_days">%d 天</string>
     <string name="_hours">%d 小时</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">提醒时间</string>
     <string name="header_checked_date_time">勾选时间</string>
     <string name="header_checklist_id">核对清单ID</string>
+    <string name="header_item_lending_borrower">借用人</string>
+    <string name="header_lend_date_time">出借日期时间</string>
+    <string name="header_due_date_time">到期日期时间</string>
+    <string name="header_returned_date_time">归还日期时间</string>
+    <string name="header_note">备注</string>
 
     <string name="min_amount_must_be_zero_or_more">阈值必须大于或等于0</string>
     <string name="form_min_amount">低库存提醒阈值</string>

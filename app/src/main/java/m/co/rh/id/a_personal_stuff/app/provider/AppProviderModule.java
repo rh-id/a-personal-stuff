@@ -17,6 +17,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.RxProviderModule;
 import m.co.rh.id.a_personal_stuff.item_maintenance.provider.ItemMaintenanceProviderModule;
 import m.co.rh.id.a_personal_stuff.item_purchase.provider.ItemPurchaseProviderModule;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.ItemChecklistProviderModule;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.ItemLendingProviderModule;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.ItemReminderProviderModule;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.ItemUsageProviderModule;
 import m.co.rh.id.a_personal_stuff.settings.provider.SettingsProviderModule;
@@ -43,6 +44,7 @@ public class AppProviderModule implements ProviderModule {
         providerRegistry.registerModule(new ItemMaintenanceProviderModule());
         providerRegistry.registerModule(new ItemReminderProviderModule());
         providerRegistry.registerModule(new ItemChecklistProviderModule());
+        providerRegistry.registerModule(new ItemLendingProviderModule());
         providerRegistry.registerModule(new SettingsProviderModule());
 
         providerRegistry.registerLazy(AppNotificationHandler.class, () -> new AppNotificationHandler(provider));

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Il num dal receptur è necessari</string>
+    <string name="lend_date_time_is_required">La data d\'imprest è necessaria</string>
+    <string name="borrower_">Receptur: %s</string>
+    <string name="due_">Termin: %s</string>
+    <string name="note_">Remartga: %s</string>
+    <string name="title_confirm_delete">Confermar la stiraziun</string>
+    <string name="confirm_delete_">Vuls ti propi stizzar %s?</string>
+    <string name="success_delete_item_lending">Imprest dals objects stizzà</string>
+    <string name="title_lendings">Imprests</string>
+    <string name="title_update_item_lending">Actualisar l\'imprest dals objects</string>
+    <string name="title_add_item_lending">Agiuntar imprest dals objects</string>
+    <string name="success_add_item_lending_image">Maletg da l\'imprest agiuntà</string>
+    <string name="success_delete_item_lending_image">Maletg da l\'imprest stizzà</string>
+    <string name="success_add_item_lending">Imprest dals objects agiuntà</string>
+    <string name="success_update_item_lending">Imprest dals objects actualisà</string>
+    <string name="title_add">Agiuntar</string>
+    <string name="save">Memorisar</string>
+    <string name="hint_type_to_search">Tipisar per tschertgar</string>
+    <string name="form_borrower_name">Il num dal receptur</string>
+    <string name="form_lend_date_time">Data d\'imprest</string>
+    <string name="form_due_date_time">Data dal termin</string>
+    <string name="form_returned_date_time">Data da restituziun</string>
+    <string name="form_note">Remartga</string>
+    <string name="status_lent">Imprestà</string>
+    <string name="status_returned">Restituì</string>
+    <string name="status_overdue">Surpassà il termin</string>
+    <string name="notification_name_item_lending_return">Restituziun da l\'imprest</string>
+    <string name="notification_description_item_lending_return">Chanal d\'infurmaziuns per la restituziun da l\'imprest</string>
+</resources>

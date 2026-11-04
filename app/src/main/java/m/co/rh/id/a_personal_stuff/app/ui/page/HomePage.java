@@ -48,6 +48,7 @@ import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistDetailPage;
+import m.co.rh.id.a_personal_stuff.item_lending.ui.page.ItemLendingsPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_purchase.ui.page.ItemPurchaseDetailPage;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
@@ -174,6 +175,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         addItemMaintenanceButton.setOnClickListener(this);
         Button addItemReminderButton = rootLayout.findViewById(R.id.button_add_item_reminder);
         addItemReminderButton.setOnClickListener(this);
+        Button addItemLendingButton = rootLayout.findViewById(R.id.button_add_item_lending);
+        addItemLendingButton.setOnClickListener(this);
         Button addItemChecklistButton = rootLayout.findViewById(R.id.button_add_item_checklist);
         addItemChecklistButton.setOnClickListener(this);
         mButtonExport = rootLayout.findViewById(R.id.button_export);
@@ -249,6 +252,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                                         ItemsPage.Args.showItem(itemState.getItemId()));
                             }
                         }));
+        mRxDisposer.add("createView_onItemLendingNotificationEvent",
+                mAppNotificationHandler.getItemLendingFlow()
+                        .map(itemLending -> itemLending.itemId)
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemId -> mNavigator.push(Routes.ITEM_LENDINGS_PAGE,
+                                ItemLendingsPage.Args.with(itemId))));
         mRxDisposer.add("createView_onInventoryAlert",
                 mAppNotificationHandler.getInventoryAlertFlow()
                         // recompute on a worker thread: the calculator issues
@@ -403,6 +412,9 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_add_item_reminder) {
             mNavigator.push(Routes.ITEM_SELECT_PAGE,
                     (navigator, navRoute, activity, currentView) -> itemSelectedForReminder(navRoute));
+        } else if (id == R.id.button_add_item_lending) {
+            mNavigator.push(Routes.ITEM_SELECT_PAGE,
+                    (navigator, navRoute, activity, currentView) -> itemSelectedForLending(navRoute));
         } else if (id == R.id.button_add_item_checklist) {
             mNavigator.push(Routes.ITEM_CHECKLIST_ADD_PAGE);
         } else if (id == R.id.button_export) {
@@ -808,6 +820,15 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             ItemState itemState = result.getItemState();
             mNavigator.push(Routes.ITEM_REMINDER_DETAIL_PAGE,
                     ItemReminderDetailPage.Args.with(itemState.getItemId()));
+        }
+    }
+
+    private void itemSelectedForLending(NavRoute navRoute) {
+        ItemSelectPage.Result result = ItemSelectPage.Result.of(navRoute);
+        if (result != null) {
+            ItemState itemState = result.getItemState();
+            mNavigator.push(Routes.ITEM_LENDINGS_PAGE,
+                    ItemLendingsPage.Args.with(itemState.getItemId()));
         }
     }
 

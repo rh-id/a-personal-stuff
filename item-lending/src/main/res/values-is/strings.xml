@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Nafn lántaka er nauðsynlegt</string>
+    <string name="lend_date_time_is_required">Lánsdagsetning og tími er nauðsynleg</string>
+    <string name="borrower_">Lántaki: %s</string>
+    <string name="due_">Fallist: %s</string>
+    <string name="note_">Athugasemd: %s</string>
+    <string name="title_confirm_delete">Staðfesta eyðingu</string>
+    <string name="confirm_delete_">Ertu viss um að þú viljir eyða %s?</string>
+    <string name="success_delete_item_lending">Hlutaútlán eytt</string>
+    <string name="title_lendings">Útlán</string>
+    <string name="title_update_item_lending">Uppfæra útlán hluta</string>
+    <string name="title_add_item_lending">Bæta við útláni hluta</string>
+    <string name="success_add_item_lending_image">Mynd útláns hluta bætt við</string>
+    <string name="success_delete_item_lending_image">Mynd útláns hluta eytt</string>
+    <string name="success_add_item_lending">Útlán hluta bætt við</string>
+    <string name="success_update_item_lending">Útlán hluta uppfært</string>
+    <string name="title_add">Bæta við</string>
+    <string name="save">Vista</string>
+    <string name="hint_type_to_search">Skrifaðu til að leita</string>
+    <string name="form_borrower_name">Nafn lántaka</string>
+    <string name="form_lend_date_time">Lánsdagsetning og tími</string>
+    <string name="form_due_date_time">Skiladagur og tími</string>
+    <string name="form_returned_date_time">Skiladagsetning og tími</string>
+    <string name="form_note">Athugasemd</string>
+    <string name="status_lent">Í útláni</string>
+    <string name="status_returned">Skilað</string>
+    <string name="status_overdue">Fallið á skiladag</string>
+    <string name="notification_name_item_lending_return">Skila útláni hluta</string>
+    <string name="notification_description_item_lending_return">Tilkynningarrás fyrir skil útláns hluta</string>
+</resources>

@@ -48,6 +48,7 @@
     <string name="success_deleting_tag">Tag stizzà</string>
     <string name="success_add_item_tag">Tag agiuntà</string>
     <string name="notification_title_item_reminder_">Promemoria per %s</string>
+    <string name="notification_title_item_lending_return_">Restituziun scadenta per %s</string>
     <string name="expired_in_">Scadenza en: %s</string>
     <string name="_days">%d di(s)</string>
     <string name="_hours">%d ura(s)</string>
@@ -135,6 +136,11 @@
     <string name="header_reminder_date_time">Data da promemoria</string>
     <string name="header_checked_date_time">Data da marcar</string>
     <string name="header_checklist_id">ID da la glista</string>
+    <string name="header_item_lending_borrower">Receptur</string>
+    <string name="header_lend_date_time">Data d\'imprest</string>
+    <string name="header_due_date_time">Data dal termin</string>
+    <string name="header_returned_date_time">Data da restituziun</string>
+    <string name="header_note">Remartga</string>
 
     <string name="min_amount_must_be_zero_or_more">La siena sto esser 0 u pli</string>
     <string name="form_min_amount">Siena d\'alerta per provisiun bassa</string>

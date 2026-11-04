@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Il nome del mutuatario è obbligatorio</string>
+    <string name="lend_date_time_is_required">Data e ora del prestito richieste</string>
+    <string name="borrower_">Mutuatario: %s</string>
+    <string name="due_">Scadenza: %s</string>
+    <string name="note_">Nota: %s</string>
+    <string name="title_confirm_delete">Conferma eliminazione</string>
+    <string name="confirm_delete_">Sei sicuro di voler eliminare %s?</string>
+    <string name="success_delete_item_lending">Prestito eliminato</string>
+    <string name="title_lendings">Prestiti</string>
+    <string name="title_update_item_lending">Aggiorna prestito</string>
+    <string name="title_add_item_lending">Aggiungi prestito</string>
+    <string name="success_add_item_lending_image">Immagine del prestito aggiunta</string>
+    <string name="success_delete_item_lending_image">Immagine del prestito eliminata</string>
+    <string name="success_add_item_lending">Prestito aggiunto</string>
+    <string name="success_update_item_lending">Prestito aggiornato</string>
+    <string name="title_add">Aggiungi</string>
+    <string name="save">Salva</string>
+    <string name="hint_type_to_search">Digita per cercare</string>
+    <string name="form_borrower_name">Nome del mutuatario</string>
+    <string name="form_lend_date_time">Data e ora del prestito</string>
+    <string name="form_due_date_time">Data e ora di scadenza</string>
+    <string name="form_returned_date_time">Data e ora di restituzione</string>
+    <string name="form_note">Nota</string>
+    <string name="status_lent">In prestito</string>
+    <string name="status_returned">Restituito</string>
+    <string name="status_overdue">In ritardo</string>
+    <string name="notification_name_item_lending_return">Restituzione prestito oggetto</string>
+    <string name="notification_description_item_lending_return">Canale di notifica per la restituzione dei prestiti</string>
+</resources>

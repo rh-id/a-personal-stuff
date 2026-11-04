@@ -33,15 +33,19 @@ import m.co.rh.id.a_personal_stuff.app.receiver.NotificationDeleteReceiver;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.base.entity.AndroidNotification;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
+import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.repository.AndroidNotificationRepo;
 import m.co.rh.id.a_personal_stuff.base.util.NotificationPermissionHelper;
+import m.co.rh.id.a_personal_stuff.item_lending.dao.ItemLendingDao;
+import m.co.rh.id.a_personal_stuff.item_lending.entity.ItemLending;
+import m.co.rh.id.a_personal_stuff.item_lending.provider.component.ILendingNotificationHandler;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
 import m.co.rh.id.a_personal_stuff.item_reminder.provider.component.IItemReminderNotificationHandler;
 import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
 import m.co.rh.id.aprovider.Provider;
 
-public class AppNotificationHandler implements IItemReminderNotificationHandler {
+public class AppNotificationHandler implements IItemReminderNotificationHandler, ILendingNotificationHandler {
     static final String KEY_INT_REQUEST_ID = "KEY_INT_REQUEST_ID";
     public static final String CHANNEL_ID_INVENTORY_ALERT = "CHANNEL_ID_INVENTORY_ALERT";
     public static final String GROUP_KEY_INVENTORY_ALERT = "GROUP_KEY_INVENTORY_ALERT";
@@ -54,8 +58,10 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
     private final AndroidNotificationRepo mAndroidNotificationRepo;
     private final ItemDao mItemDao;
     private final ItemReminderDao mItemReminderDao;
+    private final ItemLendingDao mItemLendingDao;
     private ReentrantLock mLock;
     private QueueSubject<ItemReminder> mItemReminderSubject;
+    private QueueSubject<ItemLending> mItemLendingSubject;
     private QueueSubject<Long> mInventoryAlertSubject;
 
     public AppNotificationHandler(Provider provider) {
@@ -64,8 +70,10 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
         mAndroidNotificationRepo = provider.get(AndroidNotificationRepo.class);
         mItemDao = provider.get(ItemDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
+        mItemLendingDao = provider.get(ItemLendingDao.class);
         mLock = new ReentrantLock();
         mItemReminderSubject = new QueueSubject<>();
+        mItemLendingSubject = new QueueSubject<>();
         mInventoryAlertSubject = new QueueSubject<>();
     }
 
@@ -93,6 +101,11 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
                         ItemReminder itemReminder = mItemReminderDao.findItemReminderById(androidNotification.refId);
                         if (itemReminder != null) {
                             mItemReminderSubject.onNext(itemReminder);
+                        }
+                    } else if (androidNotification.groupKey.equals(GROUP_KEY_ITEM_LENDING_RETURN)) {
+                        ItemLending itemLending = mItemLendingDao.findItemLendingById(androidNotification.refId);
+                        if (itemLending != null) {
+                            mItemLendingSubject.onNext(itemLending);
                         }
                     } else if (androidNotification.groupKey.equals(GROUP_KEY_INVENTORY_ALERT)) {
                         mInventoryAlertSubject.onNext((long) androidNotification.requestId);
@@ -174,6 +187,57 @@ public class AppNotificationHandler implements IItemReminderNotificationHandler 
 
     public Flowable<ItemReminder> getItemReminderFlow() {
         return Flowable.fromObservable(mItemReminderSubject, BackpressureStrategy.BUFFER);
+    }
+
+    @SuppressLint("MissingPermission") // NotificationPermissionHelper.canPostNotifications is the permission check
+    @Override
+    public void postItemLendingReturnNotification(ItemLending itemLending, ItemState itemState) {
+        if (!NotificationPermissionHelper.canPostNotifications(mAppContext)) {
+            return;
+        }
+        mLock.lock();
+        createLendingReturnNotificationChannel(mAppContext);
+        AndroidNotification androidNotification = new AndroidNotification();
+        androidNotification.groupKey = GROUP_KEY_ITEM_LENDING_RETURN;
+        androidNotification.refId = itemLending.id;
+        mAndroidNotificationRepo.insertNotification(androidNotification);
+        Intent receiverIntent = new Intent(mAppContext, MainActivity.class);
+        receiverIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        int intentFlag = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intentFlag = PendingIntent.FLAG_IMMUTABLE;
+        }
+        PendingIntent pendingIntent = PendingIntent.getActivity(mAppContext, androidNotification.requestId, receiverIntent,
+                intentFlag);
+        Intent deleteIntent = new Intent(mAppContext, NotificationDeleteReceiver.class);
+        deleteIntent.putExtra(KEY_INT_REQUEST_ID, (Integer) androidNotification.requestId);
+        PendingIntent deletePendingIntent = PendingIntent.getBroadcast(mAppContext, androidNotification.requestId, deleteIntent,
+                intentFlag);
+
+        String title = mAppContext.getString(R.string.notification_title_item_lending_return_, itemState.getItemName());
+        // the borrower identifies the open lending at a glance, mirroring how
+        // the reminder notification surfaces its message
+        String content = itemLending.borrowerName;
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(mAppContext, CHANNEL_ID_ITEM_LENDING_RETURN)
+                .setSmallIcon(m.co.rh.id.a_personal_stuff.base.R.drawable.ic_notification_launcher)
+                .setColorized(true)
+                .setColor(ContextCompat.getColor(mAppContext, m.co.rh.id.a_personal_stuff.base.R.color.daynight_light_green_600_green_600))
+                .setContentTitle(title)
+                .setContentText(content)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setContentIntent(pendingIntent)
+                .setDeleteIntent(deletePendingIntent)
+                .setGroup(GROUP_KEY_ITEM_LENDING_RETURN)
+                .setAutoCancel(true);
+        NotificationManagerCompat notificationManagerCompat = NotificationManagerCompat.from(mAppContext);
+        notificationManagerCompat.notify(GROUP_KEY_ITEM_LENDING_RETURN,
+                androidNotification.requestId,
+                builder.build());
+        mLock.unlock();
+    }
+
+    public Flowable<ItemLending> getItemLendingFlow() {
+        return Flowable.fromObservable(mItemLendingSubject, BackpressureStrategy.BUFFER);
     }
 
     public Flowable<Long> getInventoryAlertFlow() {

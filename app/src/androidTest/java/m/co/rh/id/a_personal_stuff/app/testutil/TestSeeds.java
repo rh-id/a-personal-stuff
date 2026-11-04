@@ -14,6 +14,7 @@ import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.room.AppDatabase;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklist;
 import m.co.rh.id.a_personal_stuff.item_checklist.entity.ItemChecklistItem;
+import m.co.rh.id.a_personal_stuff.item_lending.entity.ItemLending;
 import m.co.rh.id.a_personal_stuff.item_maintenance.entity.ItemMaintenance;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_reminder.entity.ItemReminder;
@@ -120,6 +121,18 @@ public final class TestSeeds {
         itemReminder.message = message;
         itemReminder.createdDateTime = now;
         return itemReminder;
+    }
+
+    /**
+     * Lending of the given borrower with no due/returned date and no note;
+     * lend = now. Override fields on the returned entity as needed.
+     */
+    public static ItemLending itemLending(long itemId, String borrowerName, Date now) {
+        ItemLending itemLending = new ItemLending();
+        itemLending.itemId = itemId;
+        itemLending.borrowerName = borrowerName;
+        itemLending.lendDateTime = now;
+        return itemLending;
     }
 
     /** Checklist with the given title, no description; created = updated = now. */

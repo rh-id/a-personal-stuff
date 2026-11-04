@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">Låntakaren sitt namn er påkravd</string>
+    <string name="lend_date_time_is_required">Utlånsdato og -tid er påkravd</string>
+    <string name="borrower_">Låntakar: %s</string>
+    <string name="due_">Forfallsdato: %s</string>
+    <string name="note_">Merknad: %s</string>
+    <string name="title_confirm_delete">Stadfest sletting</string>
+    <string name="confirm_delete_">Er du sikker på at du vil slette %s?</string>
+    <string name="success_delete_item_lending">Gjenstandutlån sletta</string>
+    <string name="title_lendings">Utlån</string>
+    <string name="title_update_item_lending">Oppdater gjenstandutlån</string>
+    <string name="title_add_item_lending">Legg til gjenstandutlån</string>
+    <string name="success_add_item_lending_image">Utlånsbilete lagt til</string>
+    <string name="success_delete_item_lending_image">Utlånsbilete sletta</string>
+    <string name="success_add_item_lending">Gjenstandutlån lagt til</string>
+    <string name="success_update_item_lending">Gjenstandutlån oppdatert</string>
+    <string name="title_add">Legg til</string>
+    <string name="save">Lagre</string>
+    <string name="hint_type_to_search">Skriv for å søkje</string>
+    <string name="form_borrower_name">Låntakaren sitt namn</string>
+    <string name="form_lend_date_time">Utlånsdato og -tid</string>
+    <string name="form_due_date_time">Forfallsdato og -tid</string>
+    <string name="form_returned_date_time">Innleveringsdato og -tid</string>
+    <string name="form_note">Merknad</string>
+    <string name="status_lent">Utlånt</string>
+    <string name="status_returned">Levert tilbake</string>
+    <string name="status_overdue">Forfalt</string>
+    <string name="notification_name_item_lending_return">Gjenstandinnlevering</string>
+    <string name="notification_description_item_lending_return">Varslingskanal for gjenstandinnlevering</string>
+</resources>

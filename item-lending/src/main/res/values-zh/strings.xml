@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="borrower_name_is_required">借用人姓名为必填项</string>
+    <string name="lend_date_time_is_required">出借日期时间为必填项</string>
+    <string name="borrower_">借用人：%s</string>
+    <string name="due_">到期：%s</string>
+    <string name="note_">备注：%s</string>
+    <string name="title_confirm_delete">确认删除</string>
+    <string name="confirm_delete_">确定要删除 %s 吗？</string>
+    <string name="success_delete_item_lending">出借记录已删除</string>
+    <string name="title_lendings">出借记录</string>
+    <string name="title_update_item_lending">更新出借记录</string>
+    <string name="title_add_item_lending">添加出借记录</string>
+    <string name="success_add_item_lending_image">出借记录图片已添加</string>
+    <string name="success_delete_item_lending_image">出借记录图片已删除</string>
+    <string name="success_add_item_lending">出借记录已添加</string>
+    <string name="success_update_item_lending">出借记录已更新</string>
+    <string name="title_add">添加</string>
+    <string name="save">保存</string>
+    <string name="hint_type_to_search">输入以搜索</string>
+    <string name="form_borrower_name">借用人姓名</string>
+    <string name="form_lend_date_time">出借日期时间</string>
+    <string name="form_due_date_time">到期日期时间</string>
+    <string name="form_returned_date_time">归还日期时间</string>
+    <string name="form_note">备注</string>
+    <string name="status_lent">已出借</string>
+    <string name="status_returned">已归还</string>
+    <string name="status_overdue">已逾期</string>
+    <string name="notification_name_item_lending_return">物品归还提醒</string>
+    <string name="notification_description_item_lending_return">物品归还通知渠道</string>
+</resources>

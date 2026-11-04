@@ -10,6 +10,7 @@ import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
 import m.co.rh.id.a_personal_stuff.item_checklist.dao.ItemChecklistDao;
+import m.co.rh.id.a_personal_stuff.item_lending.dao.ItemLendingDao;
 import m.co.rh.id.a_personal_stuff.item_maintenance.dao.ItemMaintenanceDao;
 import m.co.rh.id.a_personal_stuff.item_purchase.dao.ItemPurchaseDao;
 import m.co.rh.id.a_personal_stuff.item_reminder.dao.ItemReminderDao;
@@ -49,6 +50,7 @@ public class OrphanSweep {
     private ItemMaintenanceDao mItemMaintenanceDao;
     private ItemReminderDao mItemReminderDao;
     private ItemChecklistDao mItemChecklistDao;
+    private ItemLendingDao mItemLendingDao;
     private ILogger mLogger;
 
     public OrphanSweep(Provider provider) {
@@ -59,6 +61,7 @@ public class OrphanSweep {
         mItemMaintenanceDao = provider.get(ItemMaintenanceDao.class);
         mItemReminderDao = provider.get(ItemReminderDao.class);
         mItemChecklistDao = provider.get(ItemChecklistDao.class);
+        mItemLendingDao = provider.get(ItemLendingDao.class);
         mLogger = provider.get(ILogger.class);
         // startup side effect: run the sweep in the background on every
         // construction (construction happens on every app start, see class doc)
@@ -97,11 +100,13 @@ public class OrphanSweep {
             int maintenanceCount = sweepItemMaintenances(validItemIdSet);
             int reminderCount = sweepItemReminders(validItemIdSet);
             int checklistItemCount = sweepItemChecklistItems(validItemIdSet);
+            int lendingCount = sweepItemLendings(validItemIdSet);
             mLogger.d(TAG, "Orphan sweep done: itemUsageOrphanItemIds=" + usageCount +
                     ", itemPurchaseOrphanItemIds=" + purchaseCount +
                     ", itemMaintenanceOrphanItemIds=" + maintenanceCount +
                     ", itemReminderOrphanItemIds=" + reminderCount +
-                    ", itemChecklistItemOrphanItemIds=" + checklistItemCount);
+                    ", itemChecklistItemOrphanItemIds=" + checklistItemCount +
+                    ", itemLendingOrphanItemIds=" + lendingCount);
         } catch (Throwable throwable) {
             mLogger.e(TAG, "Orphan sweep failed: " + throwable.getMessage(), throwable);
         }
@@ -168,6 +173,23 @@ public class OrphanSweep {
                     chunk -> mItemChecklistDao.deleteItemChecklistItemsByItemIds(chunk));
         } catch (Throwable throwable) {
             mLogger.e(TAG, "Orphan sweep failed for item_checklist_item: " +
+                    throwable.getMessage(), throwable);
+            return 0;
+        }
+    }
+
+    /**
+     * Mirrors ItemReminderEventHandler minus the WorkManager unique-work
+     * cancellation: deleting lending rows without cancelling their return
+     * reminder is safe and intended because
+     * ItemLendingReturnNotificationWorker no-ops when the lending row is gone.
+     */
+    private int sweepItemLendings(Set<Long> validItemIds) {
+        try {
+            return deleteOrphans(mItemLendingDao.findDistinctItemIds(), validItemIds,
+                    chunk -> mItemLendingDao.deleteItemLendingStatesByItemIds(chunk));
+        } catch (Throwable throwable) {
+            mLogger.e(TAG, "Orphan sweep failed for item_lending: " +
                     throwable.getMessage(), throwable);
             return 0;
         }
