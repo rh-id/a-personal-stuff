@@ -5,6 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.Window;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
@@ -12,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import com.google.android.material.color.DynamicColors;
 
@@ -56,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
                         .observeOn(AndroidSchedulers.mainThread())
                         .subscribe(aBoolean -> {
                             if (aBoolean) {
+                                applyStatusBarIconAppearance();
                                 // mirrors the onCreate applyStyle gate: the overrides are
                                 // skipped only when dynamic colors are actually active
                                 boolean dynamicColorsActive = mSettingsSharedPreferences.isDynamicColorsEnabled()
@@ -105,6 +108,7 @@ public class MainActivity extends AppCompatActivity {
                 });
         mAppNotificationHandler.processNotification(getIntent());
         super.onCreate(savedInstanceState);
+        applyStatusBarIconAppearance();
     }
 
     @Override
@@ -132,6 +136,17 @@ public class MainActivity extends AppCompatActivity {
         // using AppCompatDelegate.setDefaultNightMode trigger this method
         // but not triggering Application.onConfigurationChanged
         mRebuildUi.onNext(true);
+    }
+
+    private void applyStatusBarIconAppearance() {
+        // theme attrs like windowLightStatusBar are only read when the decor
+        // view is first created; the activity switches day/night without
+        // recreation, so re-assert the icon appearance for the new mode
+        boolean isLightMode = (getResources().getConfiguration().uiMode
+                & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
+        Window window = getWindow();
+        WindowCompat.getInsetsController(window, window.getDecorView())
+                .setAppearanceLightStatusBars(isLightMode);
     }
 
     @Override

@@ -3,7 +3,7 @@
     <style name="Theme.Apersonalstuff" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
         <item name="colorPrimary">@color/green_600</item>
-        <item name="colorPrimaryVariant">@color/green_200</item>
+        <item name="colorPrimaryVariant">@color/green_900</item>
         <item name="colorOnPrimary">@color/black</item>
         <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/lime_600</item>

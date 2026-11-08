@@ -10,6 +10,7 @@
     <color name="light_green_200">#C5E1A5</color>
     <color name="lime_600">#C0CA33</color>
     <color name="green_600">#43A047</color>
+    <color name="green_900">#1B5E20</color>
     <color name="green_200">#A5D6A7</color>
     <color name="daynight_white_black">@color/white</color>
     <color name="daynight_gray_700_white">@color/gray_700</color>
@@ -18,6 +19,6 @@
     <color name="daynight_status_bar_color">@color/light_green_200</color>
     <!-- Material You dynamic palette wrappers: resolved per UI mode so the
          status bar follows the system colors in both light and dark. -->
-    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_light_primary</color>
+    <color name="dynamic_primary_variant">@color/m3_sys_color_dynamic_light_primary_container</color>
     <color name="dynamic_secondary_variant">@color/m3_sys_color_dynamic_light_secondary</color>
 </resources>
