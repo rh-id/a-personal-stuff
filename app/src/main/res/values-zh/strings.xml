@@ -187,4 +187,14 @@
     <string name="shopping_list_added_">已将 %1$d 个新条目加入购物清单</string>
     <string name="shopping_list_up_to_date_">所有库存不足的条目都已在购物清单中</string>
     <string name="no_low_stock_items">没有库存不足的条目</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">统计</string>
+    <string name="statistics_spending_per_month">每月支出</string>
+    <string name="statistics_most_consumed">消耗最多</string>
+    <string name="statistics_inventory_value">库存价值</string>
+    <string name="statistics_expired_count">已过期条目</string>
+    <string name="statistics_summary_hint">所有条目的总价值（价格 × 数量）</string>
+    <string name="statistics_expired_hint">仍在库存中的已过期条目</string>
+    <string name="statistics_empty">暂无可分析的数据。添加条目、购买和使用记录后即可在此查看统计。</string>
 </resources>

@@ -187,4 +187,14 @@
     <string name="shopping_list_added_">Aggiunti %1$d nuovi elementi alla lista della spesa</string>
     <string name="shopping_list_up_to_date_">Tutti gli elementi con scorta bassa sono già nella lista della spesa</string>
     <string name="no_low_stock_items">Nessun elemento con scorta bassa</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiche</string>
+    <string name="statistics_spending_per_month">Spese mensili</string>
+    <string name="statistics_most_consumed">I più consumati</string>
+    <string name="statistics_inventory_value">Valore dell\'inventario</string>
+    <string name="statistics_expired_count">Elementi scaduti</string>
+    <string name="statistics_summary_hint">Valore totale di tutti gli elementi (prezzo × quantità)</string>
+    <string name="statistics_expired_hint">Elementi scaduti che sono ancora in scorta</string>
+    <string name="statistics_empty">Niente da analizzare per ora. Aggiungi elementi, acquisti e utilizzi per vedere le tue statistiche qui.</string>
 </resources>

@@ -14,6 +14,7 @@ import java.util.List;
 
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchase;
 import m.co.rh.id.a_personal_stuff.item_purchase.entity.ItemPurchaseImage;
+import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseMonthTotal;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseState;
 import m.co.rh.id.a_personal_stuff.item_purchase.model.ItemPurchaseTotal;
 
@@ -176,6 +177,15 @@ public abstract class ItemPurchaseDao {
 
     @Query("SELECT item_id AS itemId, SUM(amount) AS total FROM item_purchase GROUP BY item_id")
     public abstract List<ItemPurchaseTotal> sumAmountGroupByItem();
+
+    // monthly spend bucketed by the DEVICE-LOCAL month: 'unixepoch' +
+    // 'localtime' (not a naive UTC strftime) so the buckets follow the
+    // device's timezone; newest month first, at most the last 12 months
+    // that actually have data (callers gap-fill missing months)
+    @Query("SELECT strftime('%Y-%m', purchase_date_time/1000, 'unixepoch', 'localtime') AS month," +
+            " SUM(cost) AS total FROM item_purchase" +
+            " GROUP BY month ORDER BY month DESC LIMIT 12")
+    public abstract List<ItemPurchaseMonthTotal> sumCostGroupByMonth();
 
     // one earliest dated purchase per item: the correlated subquery ranks a
     // row against its item's other purchases (newest-first like

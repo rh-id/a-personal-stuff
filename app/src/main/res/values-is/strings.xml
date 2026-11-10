@@ -187,4 +187,14 @@
     <string name="shopping_list_added_">Bætti %1$d nýjum hlutum við innkaupalistann</string>
     <string name="shopping_list_up_to_date_">Allir hlutir með lágar birgðir eru þegar á innkaupalistanum</string>
     <string name="no_low_stock_items">Engir hlutir með lágar birgðir</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Tölfræði</string>
+    <string name="statistics_spending_per_month">Eyðsla á mánuði</string>
+    <string name="statistics_most_consumed">Mest notað</string>
+    <string name="statistics_inventory_value">Verðmæti birgða</string>
+    <string name="statistics_expired_count">Útrunnir hlutir</string>
+    <string name="statistics_summary_hint">Heildarverðmæti allra hluta (verð × magn)</string>
+    <string name="statistics_expired_hint">Útrunnir hlutir sem eru enn í birgðum</string>
+    <string name="statistics_empty">Engin gögn til greiningar ennþá. Bættu við hlutum, kaupum og notkun til að sjá tölfræðina hér.</string>
 </resources>

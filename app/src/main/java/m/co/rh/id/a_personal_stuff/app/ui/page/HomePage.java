@@ -154,6 +154,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         menuItems.setOnClickListener(this);
         View menuItemChecklists = rootLayout.findViewById(R.id.menu_item_checklists);
         menuItemChecklists.setOnClickListener(this);
+        View menuStatistics = rootLayout.findViewById(R.id.menu_statistics);
+        menuStatistics.setOnClickListener(this);
         View menuSettings = rootLayout.findViewById(R.id.menu_settings);
         menuSettings.setOnClickListener(this);
         View menuDonation = rootLayout.findViewById(R.id.menu_donation);
@@ -394,6 +396,8 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
             mNavigator.push(Routes.ITEMS_PAGE);
         } else if (id == R.id.menu_item_checklists) {
             mNavigator.push(Routes.ITEM_CHECKLISTS_PAGE);
+        } else if (id == R.id.menu_statistics) {
+            mNavigator.push(Routes.STATISTICS_PAGE);
         } else if (id == R.id.menu_settings) {
             mNavigator.push(Routes.SETTINGS_PAGE);
         } else if (id == R.id.menu_donation) {

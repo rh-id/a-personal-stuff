@@ -514,6 +514,14 @@
             app:icon="@drawable/ic_checklist_black" />
 
         <com.google.android.material.button.MaterialButton
+            android:id="@+id/menu_statistics"
+            style="@style/Theme.Apersonalstuff.BorderlessMenuButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/title_statistics"
+            app:icon="@drawable/ic_statistics_black" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/menu_settings"
             style="@style/Theme.Apersonalstuff.BorderlessMenuButton"
             android:layout_width="match_parent"

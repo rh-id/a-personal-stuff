@@ -22,6 +22,7 @@ import m.co.rh.id.a_personal_stuff.app.ui.page.ItemSelectPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemsPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemStockMovementsPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.SplashPage;
+import m.co.rh.id.a_personal_stuff.app.ui.page.StatisticsPage;
 import m.co.rh.id.a_personal_stuff.barcode.ui.NavBarcodeConfig;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
@@ -82,6 +83,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.ITEMS_PAGE, (args, activity) -> new ItemsPage());
+        navMap.put(Routes.STATISTICS_PAGE, (args, activity) -> new StatisticsPage());
         navMap.put(Routes.ITEM_DETAIL_PAGE, (args, activity) -> new ItemDetailPage());
         navMap.put(Routes.ITEM_SELECT_PAGE, (args, activity) -> new ItemSelectPage());
         navMap.put(Routes.ITEM_MULTI_SELECT_PAGE, (args, activity) -> new ItemMultiSelectPage());

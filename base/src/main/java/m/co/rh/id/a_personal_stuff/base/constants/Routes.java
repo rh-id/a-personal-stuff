@@ -6,6 +6,7 @@ public class Routes {
     public static final String SETTINGS_PAGE = "/settings";
     public static final String DONATIONS_PAGE = "/donations";
     public static final String ITEMS_PAGE = "/items";
+    public static final String STATISTICS_PAGE = "/statistics";
     public static final String ITEM_DETAIL_PAGE = "/items/detail";
     public static final String ITEM_SELECT_PAGE = "/items/select";
     public static final String ITEM_MULTI_SELECT_PAGE = "/items/multi-select";

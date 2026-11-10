@@ -10,6 +10,7 @@ concurrent-utils = "v0.0.4"
 a-poi-spreadsheet = "v0.1.0"
 photo-view = "2.3.0"
 zxing = "3.5.4"
+mpandroidchart = "v3.2.0"
 rxjava = "3.1.12"
 rxandroid = "3.0.2"
 appcompat = "1.7.1"
@@ -41,6 +42,7 @@ concurrent-utils = { group = "com.github.rh-id", name = "concurrent-utils", vers
 a-poi-spreadsheet = { group = "com.github.rh-id", name = "a-poi-spreadsheet", version.ref = "a-poi-spreadsheet" }
 photo-view = { group = "com.github.chrisbanes", name = "PhotoView", version.ref = "photo-view" }
 zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" }
+mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava" }
 rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }

@@ -21,6 +21,7 @@ The app is designed to track, manage, and remind you of your personal belongings
 *   **Usage Tracking**: Log when and how much of an item is used.
 *   **Purchase Tracking**: Track when items are purchased or acquired.
 *   **Stock Movements**: Unified view of item usage and purchase history per item.
+*   **Statistics**: A dedicated statistics page (main menu → Statistics) with spending per month as a 12-month bar chart (device-local month buckets, missing months gap-filled at zero), the top 5 most-consumed items ranked by total used amount, and inventory summary cards showing the total inventory value (Σ price × amount) and the expired item count; the page live-refreshes on item, usage and purchase changes.
 *   **Checklists**: Create checklists over your items (e.g. a packing list when moving home), track progress by checking items off.
 *   **Maintenance Logs**: Keep track of repairs or maintenance tasks for specific items.
 *   **Barcode Support**: Scan 1D barcodes using the device camera and the ZXing library for quick input and searching.

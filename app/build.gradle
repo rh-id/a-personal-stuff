@@ -77,6 +77,7 @@ dependencies {
     implementation libs.androidx.documentfile
     implementation libs.photo.view
     implementation libs.a.poi.spreadsheet
+    implementation libs.mpandroidchart
 
     androidTestImplementation(testFixtures(project(":base")))
     androidTestImplementation libs.junit

@@ -98,6 +98,27 @@ public class InventoryStatsCalculator {
     }
 
     /**
+     * Counts the items the dashboard reports as expired: in-stock items
+     * whose expired_date_time is at or before now — the same split rule as
+     * {@link #computeExpiryCounts}, so the statistics page's expired count
+     * cannot diverge from the dashboard's (a fully used-up item is not
+     * counted as expired even when its expiry date has passed). Blocking
+     * Room queries — must run on a background thread.
+     */
+    public int countExpiredInStock(Date now) {
+        List<Item> expiringItems = filterItemsInStock(
+                mItemDao.findItemsExpiringBefore(now),
+                buildStockDeltas());
+        int expiredCount = 0;
+        for (Item item : expiringItems) {
+            if (!item.expiredDateTime.after(now)) {
+                expiredCount++;
+            }
+        }
+        return expiredCount;
+    }
+
+    /**
      * Aggregates the signed per-item stock deltas of every registered
      * dashboard contributor (usage contributes −Σamount, purchase +Σamount);
      * deltas for the same item are summed.

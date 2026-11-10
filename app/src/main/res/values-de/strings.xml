@@ -187,4 +187,14 @@
     <string name="shopping_list_added_">%1$d neue(n) Artikel zur Einkaufsliste hinzugefügt</string>
     <string name="shopping_list_up_to_date_">Alle Artikel mit geringem Bestand sind bereits auf der Einkaufsliste</string>
     <string name="no_low_stock_items">Keine Artikel mit geringem Bestand</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiken</string>
+    <string name="statistics_spending_per_month">Ausgaben pro Monat</string>
+    <string name="statistics_most_consumed">Am häufigsten verbraucht</string>
+    <string name="statistics_inventory_value">Inventarwert</string>
+    <string name="statistics_expired_count">Abgelaufene Artikel</string>
+    <string name="statistics_summary_hint">Gesamtwert aller Artikel (Preis × Menge)</string>
+    <string name="statistics_expired_hint">Abgelaufene Artikel, die sich noch im Bestand befinden</string>
+    <string name="statistics_empty">Noch nichts zu analysieren. Füge Artikel, Einkäufe und Verwendungen hinzu, um hier deine Statistiken zu sehen.</string>
 </resources>

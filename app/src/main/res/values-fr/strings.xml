@@ -187,4 +187,14 @@
     <string name="shopping_list_added_">%1$d nouveau(x) élément(s) ajouté(s) à la liste de courses</string>
     <string name="shopping_list_up_to_date_">Tous les éléments en stock faible sont déjà dans la liste de courses</string>
     <string name="no_low_stock_items">Aucun élément en stock faible</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistiques</string>
+    <string name="statistics_spending_per_month">Dépenses par mois</string>
+    <string name="statistics_most_consumed">Les plus consommés</string>
+    <string name="statistics_inventory_value">Valeur de l\'inventaire</string>
+    <string name="statistics_expired_count">Éléments expirés</string>
+    <string name="statistics_summary_hint">Valeur totale de tous les éléments (prix × quantité)</string>
+    <string name="statistics_expired_hint">Éléments expirés encore en stock</string>
+    <string name="statistics_empty">Rien à analyser pour le moment. Ajoutez des éléments, des achats et des utilisations pour voir vos statistiques ici.</string>
 </resources>

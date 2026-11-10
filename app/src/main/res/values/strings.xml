@@ -191,4 +191,14 @@
     <string name="shopping_list_added_">Added %1$d new item(s) to the shopping list</string>
     <string name="shopping_list_up_to_date_">All low-stock items are already on the shopping list</string>
     <string name="no_low_stock_items">No low-stock items</string>
+
+    <!-- Statistics page -->
+    <string name="title_statistics">Statistics</string>
+    <string name="statistics_spending_per_month">Spending per month</string>
+    <string name="statistics_most_consumed">Most consumed</string>
+    <string name="statistics_inventory_value">Inventory value</string>
+    <string name="statistics_expired_count">Expired items</string>
+    <string name="statistics_summary_hint">Total value of all items (price × amount)</string>
+    <string name="statistics_expired_hint">Expired items that are still in stock</string>
+    <string name="statistics_empty">Nothing to analyze yet. Add items, purchases and usages to see your statistics here.</string>
 </resources>

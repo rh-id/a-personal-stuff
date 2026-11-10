@@ -406,6 +406,12 @@
   license: Apache License 2.0
   licenseUrl: https://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://baseflow.com
+- artifact: com.github.PhilJay:MPAndroidChart:+
+  name: MPAndroidChart
+  copyrightHolder: Philipp Jahoda
+  license: Apache License 2.0
+  licenseUrl: https://www.apache.org/licenses/LICENSE-2.0.txt
+  url: https://github.com/PhilJay/MPAndroidChart
 - artifact: com.google.android.material:material:+
   name: material
   copyrightHolder: The Android Open Source Project
