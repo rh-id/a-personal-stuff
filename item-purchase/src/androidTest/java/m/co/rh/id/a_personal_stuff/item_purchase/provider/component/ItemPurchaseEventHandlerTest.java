@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
@@ -57,12 +58,19 @@ public class ItemPurchaseEventHandlerTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         if (mHandler != null) {
             mHandler.dispose(mContext);
         }
         if (mExecutorService != null) {
-            mExecutorService.shutdownNow();
+            mExecutorService.shutdown();
+            if (!mExecutorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                mExecutorService.shutdownNow();
+                if (!mExecutorService.awaitTermination(2, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException(
+                            "handler executor did not terminate; refusing to close DB while async work may be in flight");
+                }
+            }
         }
         if (mDb != null) {
             mDb.close();

@@ -38,6 +38,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.provider.service.ExportService;
@@ -121,11 +122,21 @@ public class ExportPdfReportCmdTest {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
         if (mSeededFileNames != null && mItemFileHelper != null) {
             // deleteItemImage clears both the full-image and thumbnail dir
             for (String fileName : mSeededFileNames) {
                 mItemFileHelper.deleteItemImage(fileName);
+            }
+        }
+        if (mExecutorService != null) {
+            mExecutorService.shutdown();
+            if (!mExecutorService.awaitTermination(5, TimeUnit.SECONDS)) {
+                mExecutorService.shutdownNow();
+                if (!mExecutorService.awaitTermination(2, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException(
+                            "handler executor did not terminate; refusing to close DB while async work may be in flight");
+                }
             }
         }
         if (mAppDb != null) {
@@ -133,9 +144,6 @@ public class ExportPdfReportCmdTest {
         }
         if (mPurchaseDb != null) {
             mPurchaseDb.close();
-        }
-        if (mExecutorService != null) {
-            mExecutorService.shutdownNow();
         }
     }
 

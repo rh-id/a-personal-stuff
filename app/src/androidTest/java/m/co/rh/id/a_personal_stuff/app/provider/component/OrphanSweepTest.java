@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import co.rh.id.lib.concurrent_utils.concurrent.executor.WeightedThreadPool;
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao;
@@ -95,14 +96,19 @@ public class OrphanSweepTest {
     }
 
     @After
-    public void tearDown() {
-        // best-effort shared-state reset: stop this test's own executor pool
-        // and close the in-memory DBs, each guarded so teardown can never
-        // fail a test
+    public void tearDown() throws InterruptedException {
+        // shared-state reset: quiesce this test's own executor pool (the
+        // detached OrphanSweep sweeps run on it) BEFORE closing the in-memory
+        // DBs — if the pool will not terminate, this fails loudly and leaves
+        // the DBs open rather than closing them under in-flight async work
         if (mExecutorService != null) {
-            try {
+            mExecutorService.shutdown();
+            if (!mExecutorService.awaitTermination(5, TimeUnit.SECONDS)) {
                 mExecutorService.shutdownNow();
-            } catch (Exception ignored) {
+                if (!mExecutorService.awaitTermination(2, TimeUnit.SECONDS)) {
+                    throw new IllegalStateException(
+                            "handler executor did not terminate; refusing to close DB while async work may be in flight");
+                }
             }
         }
         if (mAppDb != null) {
