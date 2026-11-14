@@ -14,7 +14,9 @@ import java.util.Map;
 
 import m.co.rh.id.a_personal_stuff.R;
 import m.co.rh.id.a_personal_stuff.app.MainActivity;
+import m.co.rh.id.a_personal_stuff.app.ui.page.ArchivedItemsPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.DonationsPage;
+import m.co.rh.id.a_personal_stuff.app.ui.page.ExportOptionsSVDialog;
 import m.co.rh.id.a_personal_stuff.app.ui.page.HomePage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemDetailPage;
 import m.co.rh.id.a_personal_stuff.app.ui.page.ItemMultiSelectPage;
@@ -83,6 +85,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.SETTINGS_PAGE, (args, activity) -> new SettingsPage());
         navMap.put(Routes.DONATIONS_PAGE, (args, activity) -> new DonationsPage());
         navMap.put(Routes.ITEMS_PAGE, (args, activity) -> new ItemsPage());
+        navMap.put(Routes.ARCHIVED_ITEMS_PAGE, (args, activity) -> new ArchivedItemsPage());
         navMap.put(Routes.STATISTICS_PAGE, (args, activity) -> new StatisticsPage());
         navMap.put(Routes.ITEM_DETAIL_PAGE, (args, activity) -> new ItemDetailPage());
         navMap.put(Routes.ITEM_SELECT_PAGE, (args, activity) -> new ItemSelectPage());
@@ -106,6 +109,7 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.COMMON_SELECTION, (args, activity) -> new SelectionPage());
         navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());
         navMap.put(Routes.COMMON_INPUT_DIALOG, (args, activity) -> new InputSVDialog());
+        navMap.put(Routes.COMMON_EXPORT_OPTIONS_DIALOG, (args, activity) -> new ExportOptionsSVDialog());
         navMap.putAll(mNavExtDialogConfig.getNavMap());
         navMap.putAll(mNavBarcodeConfig.getNavMap());
         NavConfiguration.Builder<Activity, StatefulView> navBuilder =

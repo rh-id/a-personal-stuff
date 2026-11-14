@@ -47,6 +47,9 @@ public class Item implements Serializable, Cloneable {
     @ColumnInfo(name = "updated_date_time")
     public Date updatedDateTime;
 
+    @ColumnInfo(name = "archived")
+    public boolean archived;
+
 
     public Item() {
         Date date = new Date();

@@ -32,7 +32,18 @@ public class ExportPdfReportCmd {
     }
 
     public Single<File> execute() {
-        return Single.fromCallable(() -> mExportService.createReportPdf(mProgressSubject::onNext))
+        return execute(false);
+    }
+
+    /**
+     * @param includeArchived when true, archived items are loaded into the
+     *                        report (marked rows, cover totals over all items
+     *                        with an "includes archived" note); when false the
+     *                        report covers active items only.
+     */
+    public Single<File> execute(boolean includeArchived) {
+        return Single.fromCallable(() ->
+                        mExportService.createReportPdf(includeArchived, mProgressSubject::onNext))
                 .subscribeOn(Schedulers.from(mExecutorService));
     }
 }

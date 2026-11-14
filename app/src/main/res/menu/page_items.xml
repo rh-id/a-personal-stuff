@@ -17,5 +17,10 @@
             android:icon="@drawable/ic_add_white"
             android:title="@string/title_add"
             app:showAsAction="ifRoom" />
+        <item
+            android:id="@+id/menu_archived"
+            android:icon="@drawable/ic_archive_white"
+            android:title="@string/title_archived"
+            app:showAsAction="ifRoom" />
     </group>
 </menu>

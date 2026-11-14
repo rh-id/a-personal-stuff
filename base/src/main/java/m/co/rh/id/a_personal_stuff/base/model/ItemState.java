@@ -73,6 +73,15 @@ public class ItemState implements Serializable, Cloneable {
         return getItem().expiredDateTime;
     }
 
+    /**
+     * Null-safe archived flag of the wrapped item: an ItemState without an
+     * item is reported as not archived.
+     */
+    public boolean isArchived() {
+        Item item = getItem();
+        return item != null && item.archived;
+    }
+
     public void setItemPrice(BigDecimal price) {
         Item item = getItem();
         item.price = price;
@@ -116,8 +125,10 @@ public class ItemState implements Serializable, Cloneable {
      * autoGenerate inserts a provided id as-is). The created/updated timestamps
       * are reset to now as well, so the new item is distinguishable from the
       * source in lists that key on createdDateTime. Field values such as
-      * barcode, name, amount, minAmount, price, description and expiredDateTime
-      * are copied as-is for the user to review and edit before saving.
+     * barcode, name, amount, minAmount, price, description and expiredDateTime
+     * are copied as-is for the user to review and edit before saving. The
+     * duplicate is always created ACTIVE (archived = false): a duplicate of
+     * an archived item must re-enter the active list.
      */
     public ItemState cloneForDuplicate() {
         ItemState clone = new ItemState();
@@ -128,6 +139,7 @@ public class ItemState implements Serializable, Cloneable {
             clonedItem.id = null;
             clonedItem.createdDateTime = now;
             clonedItem.updatedDateTime = now;
+            clonedItem.archived = false;
             clone.updateItem(clonedItem);
         }
         ArrayList<ItemImage> itemImages = mItemImages.getValue();

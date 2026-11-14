@@ -234,6 +234,44 @@ public class InventoryStatsCalculatorTest {
         assertTrue(alertItemIds.isEmpty());
     }
 
+    @Test
+    public void archivedItemsExcludedFromTotalsAndAlerts() {
+        // an archived item must vanish from the dashboard totals AND never
+        // raise an expiry or low-stock alert (the DAO's aggregate and
+        // candidate queries filter archived = 0)
+        Item archivedExpired = insertItem("Archived Milk", 5, null, null,
+                new Date(NOW_MILLIS - MILLIS_PER_DAY));
+        Item archivedLowStock = insertItem("Archived Salt", 1, 3, null, null);
+        insertItem("Active Flour", 3, null, new BigDecimal("2.50"), null);
+
+        archivedExpired.archived = true;
+        ItemState archivedExpiredState = new ItemState();
+        archivedExpiredState.updateItem(archivedExpired);
+        mItemDao.updateItem(archivedExpiredState);
+        archivedLowStock.archived = true;
+        ItemState archivedLowStockState = new ItemState();
+        archivedLowStockState.updateItem(archivedLowStock);
+        mItemDao.updateItem(archivedLowStockState);
+
+        InventoryStatsCalculator.AlertSummary alertSummary =
+                mCalculator.compute(new Date(NOW_MILLIS), 7);
+
+        assertEquals("only the active item counts", 1, alertSummary.totalItems);
+        assertEquals(3 * 2.50, alertSummary.inventoryValue, 0.0001);
+        assertTrue(alertSummary.expiringItems.isEmpty());
+        assertEquals(0, alertSummary.expiredCount);
+        assertEquals(0, alertSummary.expiringCount);
+        assertTrue("archived low-stock items must not raise alerts",
+                alertSummary.lowStockItems.isEmpty());
+
+        List<Long> alertItemIds = mCalculator.findAlertItemIds(
+                EnumSet.of(InventoryStatsCalculator.AlertType.EXPIRED,
+                        InventoryStatsCalculator.AlertType.EXPIRING_SOON,
+                        InventoryStatsCalculator.AlertType.LOW_STOCK),
+                new Date(NOW_MILLIS), 7);
+        assertTrue(alertItemIds.isEmpty());
+    }
+
     private Item insertItem(String name, int amount, Integer minAmount,
                             BigDecimal price, Date expiredDateTime) {
         ItemState itemState = new ItemState();

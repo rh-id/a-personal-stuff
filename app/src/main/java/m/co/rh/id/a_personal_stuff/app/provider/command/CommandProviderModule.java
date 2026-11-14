@@ -23,6 +23,7 @@ public class CommandProviderModule implements ProviderModule {
         providerRegistry.registerLazy(NewItemCmd.class, () -> new NewItemCmd(provider));
         providerRegistry.registerLazy(UpdateItemCmd.class, () -> new UpdateItemCmd(provider));
         providerRegistry.registerLazy(DeleteItemCmd.class, () -> new DeleteItemCmd(provider));
+        providerRegistry.registerLazy(ArchiveItemCmd.class, () -> new ArchiveItemCmd(provider));
         providerRegistry.registerLazy(DuplicateItemCmd.class, () -> new DuplicateItemCmd(provider));
         providerRegistry.registerLazy(PagedItemCmd.class, () -> new PagedItemCmd(provider));
         providerRegistry.registerLazy(QueryItemCmd.class, () -> new QueryItemCmd(provider));

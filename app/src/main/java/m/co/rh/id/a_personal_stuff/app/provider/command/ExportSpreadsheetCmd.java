@@ -47,7 +47,18 @@ public class ExportSpreadsheetCmd {
     }
 
     public Single<File> execute() {
-        return Single.fromCallable(() -> mExportService.createSpreadsheetXlsx(mProgressSubject::onNext))
+        return execute(false);
+    }
+
+    /**
+     * @param includeArchived when true, archived items are also written to the
+     *                        Items sheet (with an extra "Archived" column); the
+     *                        module contributor sheets always resolve names for
+     *                        archived items either way.
+     */
+    public Single<File> execute(boolean includeArchived) {
+        return Single.fromCallable(() ->
+                        mExportService.createSpreadsheetXlsx(includeArchived, mProgressSubject::onNext))
                 .subscribeOn(mSpreadsheetScheduler);
     }
 }

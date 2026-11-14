@@ -334,6 +334,33 @@ public class GenerateShoppingListCmdTest {
         assertEquals(Long.valueOf(beans.id), rows.get(0).itemId);
     }
 
+    @Test
+    public void archivedLowStockItemsAreExcludedFromShoppingList() {
+        // the low-stock candidate query (findItemsWithMinAmount) is
+        // active-only: archiving an item removes it from the shopping-list
+        // generation the same way it leaves the dashboard's low-stock row
+        Item beans = insertLowStockItem("Beans", 1, 3);
+        ItemChecklist existing = insertChecklist(mShoppingListTitle);
+        settings().setShoppingListChecklistId(existing.id);
+        insertChecklistItemRow(existing.id, beans.id, null);
+        // second, archived low-stock item: NOT a candidate anymore
+        Item archivedSalt = insertLowStockItem("Salt", 1, 5);
+        archivedSalt.archived = true;
+        ItemState archivedState = new ItemState();
+        archivedState.updateItem(archivedSalt);
+        mAppDb.itemDao().updateItem(archivedState);
+
+        GenerateShoppingListCmd cmd = new GenerateShoppingListCmd(mProvider);
+        GenerateShoppingListCmd.ShoppingListResult result = cmd.execute().blockingGet();
+
+        assertEquals("archived low-stock items must not count", 1, result.lowStockCount);
+        assertEquals(0, result.addedCount);
+        List<ItemChecklistItem> rows = mChecklistDb.itemChecklistDao()
+                .findItemChecklistItemsByChecklistId(existing.id);
+        assertEquals(1, rows.size());
+        assertEquals(Long.valueOf(beans.id), rows.get(0).itemId);
+    }
+
     private SettingsSharedPreferences settings() {
         return mProvider.get(SettingsSharedPreferences.class);
     }

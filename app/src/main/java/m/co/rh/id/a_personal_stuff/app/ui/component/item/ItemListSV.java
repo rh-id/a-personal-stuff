@@ -23,8 +23,10 @@ import java.util.concurrent.TimeUnit;
 
 import co.rh.id.lib.rx3_utils.subject.SerialBehaviorSubject;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.app.provider.command.ArchiveItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.DeleteItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.DuplicateItemCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.PagedItemCmd;
@@ -49,7 +51,7 @@ import m.co.rh.id.anavigator.component.RequireComponent;
 import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
 import m.co.rh.id.aprovider.Provider;
 
-public class ItemListSV extends StatefulView<Activity> implements RequireComponent<Provider>, ItemItemSV.OnItemEditClicked, ItemItemSV.OnItemDeleteClicked, ItemItemSV.OnItemDuplicateClicked, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
+public class ItemListSV extends StatefulView<Activity> implements RequireComponent<Provider>, ItemItemSV.OnItemEditClicked, ItemItemSV.OnItemDeleteClicked, ItemItemSV.OnItemDuplicateClicked, ItemItemSV.OnItemArchiveClicked, SwipeRefreshLayout.OnRefreshListener, View.OnClickListener {
 
     private static final String TAG = ItemListSV.class.getName();
     private static final int ORDER_BY_EXPIRED_DATE_TIME = 1;
@@ -72,6 +74,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private transient ItemUsageChangeNotifier mItemUsageChangeNotifier;
     private transient PagedItemCmd mPagedItemCmd;
     private transient DeleteItemCmd mDeleteItemCmd;
+    private transient ArchiveItemCmd mArchiveItemCmd;
     private transient DuplicateItemCmd mDuplicateItemCmd;
     private transient QueryItemCmd mQueryItemCmd;
 
@@ -81,6 +84,11 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
 
     private boolean mSelectMode;
     private boolean mCheckMode;
+    /**
+     * Archived-lists mode: this list serves the ARCHIVED items (and its
+     * archive button unarchives). False serves the active list.
+     */
+    private final boolean mArchivedMode;
     private Set<Long> mCheckedItemIds;
     private SerialBehaviorSubject<String> mSearchEditText;
     private SerialBehaviorSubject<String> mSearchString;
@@ -96,8 +104,13 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     }
 
     public ItemListSV(boolean selectMode, boolean checkMode) {
+        this(selectMode, checkMode, false);
+    }
+
+    public ItemListSV(boolean selectMode, boolean checkMode, boolean archivedMode) {
         mSelectMode = selectMode;
         mCheckMode = checkMode;
+        mArchivedMode = archivedMode;
         mCheckedItemIds = new LinkedHashSet<>();
         mSearchEditText = new SerialBehaviorSubject<>();
         mSearchString = new SerialBehaviorSubject<>();
@@ -116,8 +129,12 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mItemChangeNotifier = mSvProvider.get(ItemChangeNotifier.class);
         mItemUsageChangeNotifier = mSvProvider.get(ItemUsageChangeNotifier.class);
         mPagedItemCmd = mSvProvider.get(PagedItemCmd.class);
+        // must be set BEFORE the first refresh below: it decides which side
+        // of the archive boundary this cmd's list serves
+        mPagedItemCmd.setArchivedOnly(mArchivedMode);
         mPagedItemCmd.refresh();
         mDeleteItemCmd = mSvProvider.get(DeleteItemCmd.class);
+        mArchiveItemCmd = mSvProvider.get(ArchiveItemCmd.class);
         mDuplicateItemCmd = mSvProvider.get(DuplicateItemCmd.class);
         mQueryItemCmd = mSvProvider.get(QueryItemCmd.class);
         if (mCheckMode) {
@@ -125,7 +142,7 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         } else if (mSelectMode) {
             mItemRecyclerViewAdapter = new SelectableItemRecyclerViewAdapter(mPagedItemCmd, mNavigator, this);
         } else {
-            ItemRecyclerViewAdapter adapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, mNavigator, this);
+            ItemRecyclerViewAdapter adapter = new ItemRecyclerViewAdapter(mPagedItemCmd, this, this, this, this, mNavigator, this);
             mItemRecyclerViewAdapter = adapter;
             SettingsSharedPreferences settings = mSvProvider.get(SettingsSharedPreferences.class);
             mRxDisposer.add("provideComponent_itemViewModeChanged",
@@ -193,6 +210,11 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         EditText searchEditText = rootLayout.findViewById(R.id.edit_text_search);
         searchEditText.addTextChangedListener(mSearchTextWatcher);
         Button scanButton = rootLayout.findViewById(R.id.button_scan_barcode);
+        if (mArchivedMode) {
+            // the archived list is not a scanning target: scanning exists to
+            // look up / add active stock, so hide the entry point entirely
+            scanButton.setVisibility(View.GONE);
+        }
         scanButton.setOnClickListener(this);
         SwipeRefreshLayout swipeRefreshLayout = rootLayout.findViewById(R.id.container_swipe_refresh_list);
         swipeRefreshLayout.setOnRefreshListener(this);
@@ -225,8 +247,15 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer.add("createView_onItemAdded",
                 mItemChangeNotifier.getAddedItemFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(itemState -> {
-                            mItemRecyclerViewAdapter.notifyItemAdded(itemState);
-                            recyclerView.scrollToPosition(0);
+                            // An import emits itemAdded per row regardless of its
+                            // archived flag; only let rows matching THIS list's
+                            // archive side into the adapter (main mode skips
+                            // archived import rows, archived mode admits archived
+                            // rows only). Mismatching rows arrive via refresh.
+                            if (itemState.isArchived() == mArchivedMode) {
+                                mItemRecyclerViewAdapter.notifyItemAdded(itemState);
+                                recyclerView.scrollToPosition(0);
+                            }
                         }));
         mRxDisposer.add("createView_onItemUpdated",
                 mItemChangeNotifier.getUpdatedItemFlow().observeOn(AndroidSchedulers.mainThread())
@@ -234,6 +263,28 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         mRxDisposer.add("createView_onItemDeleted",
                 mItemChangeNotifier.getDeletedItemFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(mItemRecyclerViewAdapter::notifyItemDeleted));
+        // Archive flips move a row ACROSS the archive boundary: the side the
+        // row LEFT drops it in place (notifyItemDeleted), the side it entered
+        // refreshes (so order/paging stay query-derived). NEVER routed through
+        // getDeletedItemFlow - that flow wipes module child data.
+        mRxDisposer.add("createView_onItemArchived",
+                mItemChangeNotifier.getArchivedItemFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> {
+                            if (mArchivedMode) {
+                                mPagedItemCmd.refresh();
+                            } else {
+                                mItemRecyclerViewAdapter.notifyItemDeleted(itemState);
+                            }
+                        }));
+        mRxDisposer.add("createView_onItemUnarchived",
+                mItemChangeNotifier.getUnarchivedItemFlow().observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(itemState -> {
+                            if (mArchivedMode) {
+                                mItemRecyclerViewAdapter.notifyItemDeleted(itemState);
+                            } else {
+                                mPagedItemCmd.refresh();
+                            }
+                        }));
         mRxDisposer.add("createView_onItemTagDeleted",
                 mItemChangeNotifier.getDeletedItemTagFlow()
                         .map(itemTag -> mQueryItemCmd.findItemStateByItemId(itemTag.itemId)
@@ -401,6 +452,34 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
                                 }
                             }));
         }
+    }
+
+    /**
+     * Archive/unarchive toggle from the item card (either mode). Reversible,
+     * so unlike delete there is NO confirmation dialog. The list itself
+     * updates via the archived/unarchived flow subscriptions in createView.
+     */
+    @Override
+    public void itemItemSv_onItemArchiveClicked(ItemState itemState) {
+        boolean unarchive = itemState.isArchived();
+        Single<ItemState> toggleSingle = unarchive
+                ? mArchiveItemCmd.unarchive(itemState)
+                : mArchiveItemCmd.archive(itemState);
+        Context context = mSvProvider.getContext();
+        mRxDisposer.add(unarchive ? "unarchiveItem" : "archiveItem",
+                toggleSingle.observeOn(AndroidSchedulers.mainThread())
+                        .subscribe((toggledItemState, throwable) -> {
+                            if (throwable != null) {
+                                Throwable cause = throwable.getCause();
+                                if (cause == null) cause = throwable;
+                                mLogger.e(TAG, cause.getMessage(), cause);
+                            } else {
+                                mLogger.i(TAG, context.getString(unarchive
+                                                ? R.string.success_unarchive_item_
+                                                : R.string.success_archive_item_,
+                                        toggledItemState.getItemName()));
+                            }
+                        }));
     }
 
     @Override

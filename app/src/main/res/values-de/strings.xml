@@ -31,8 +31,14 @@
     <string name="title_duplicate">Duplizieren</string>
     <string name="title_delete">Löschen</string>
     <string name="success_duplicate_">Artikel dupliziert: %s</string>
+    <string name="title_archive">Archivieren</string>
+    <string name="title_unarchive">Wiederherstellen</string>
+    <string name="success_archive_item_">Artikel archiviert: %s</string>
+    <string name="success_unarchive_item_">Artikel aus dem Archiv entfernt: %s</string>
     <string name="progress_duplicate">Wird dupliziert…</string>
     <string name="title_items">Artikel</string>
+    <string name="title_archived_items">Archivierte Artikel</string>
+    <string name="title_archived">Archiviert</string>
     <string name="title_checklists">Checklisten</string>
     <string name="title_add_item_checklist">Checkliste hinzufügen</string>
     <string name="success_add_checklist_">Checkliste hinzugefügt: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Beschreibung: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Exportieren</string>
+    <string name="export_include_archived">Archivierte Artikel einschließen</string>
     <string name="export_spreadsheet">Tabelle exportieren</string>
     <string name="share_spreadsheet_file">Tabellendatei teilen</string>
     <string name="export_spreadsheet_failed">Export in Tabelle fehlgeschlagen</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Läuft ab: %1$s</string>
     <string name="report_created">Erstellt: %1$s</string>
     <string name="report_photo_omitted">(Foto weggelassen — Bildlimit erreicht)</string>
+    <string name="report_includes_archived">Enthält archivierte Artikel</string>
+    <string name="report_archived_suffix">archiviert</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Bilder</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Titel</string>
     <string name="header_created_date_time">Erstellt am</string>
     <string name="header_updated_date_time">Aktualisiert am</string>
+    <string name="header_archived">Archiviert</string>
     <string name="header_usage_date_time">Verwendet am</string>
     <string name="header_purchase_date_time">Gekauft am</string>
     <string name="header_maintenance_date_time">Gewartet am</string>

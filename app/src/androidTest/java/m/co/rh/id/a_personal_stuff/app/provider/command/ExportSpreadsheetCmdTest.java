@@ -542,6 +542,78 @@ public class ExportSpreadsheetCmdTest {
     }
 
     @Test
+    public void archivedRowsExcludedByDefaultAndIncludedWithArchivedColumn() throws Exception {
+        Date now = new Date();
+
+        Item activeItem = TestSeeds.item("Active Item", now);
+        activeItem.price = new BigDecimal("1.00");
+        TestSeeds.insertItemWithRelations(mAppDb, activeItem, null, null);
+
+        // distinct timestamps so the default composite order (expired DESC,
+        // updated DESC, created DESC) puts the archived row FIRST (row 1)
+        Item archivedItem = TestSeeds.item("Archived Item", now);
+        archivedItem.price = new BigDecimal("2.00");
+        archivedItem.createdDateTime = new Date(now.getTime() + 1000);
+        archivedItem.updatedDateTime = new Date(now.getTime() + 1000);
+        archivedItem.archived = true;
+        long archivedItemId = TestSeeds.insertItemWithRelations(mAppDb, archivedItem, null, null);
+
+        // a usage of the archived item: the module sheet's item-name join is
+        // built from the UNFILTERED item list, so the name must resolve in
+        // BOTH modes
+        mUsageDb.itemUsageDao().insert(
+                TestSeeds.itemUsage(archivedItemId, "used while archived", now));
+
+        // include=false (also the execute() default): archived row is NOT
+        // written into the Items sheet and no Archived column exists, but the
+        // Usages sheet still resolves the archived item's name
+        File xlsxDefault = new ExportSpreadsheetCmd(mProvider).execute(false).blockingGet();
+        try {
+            XSSFWorkbook workbook = openWorkbook(xlsxDefault);
+            try {
+                Sheet itemsSheet = workbook.getSheet("Items");
+                assertEquals(2, itemsSheet.getPhysicalNumberOfRows());
+                assertEquals(12, itemsSheet.getRow(0).getPhysicalNumberOfCells());
+                assertEquals("Active Item",
+                        itemsSheet.getRow(1).getCell(1).getStringCellValue());
+
+                Sheet usagesSheet = workbook.getSheet("Usages");
+                assertEquals(2, usagesSheet.getPhysicalNumberOfRows());
+                assertEquals("Archived Item",
+                        usagesSheet.getRow(1).getCell(2).getStringCellValue());
+            } finally {
+                workbook.close();
+            }
+        } finally {
+            xlsxDefault.delete();
+        }
+
+        // include=true: archived row IS written with the trailing Archived
+        // column (header + per-row 1/0)
+        File xlsxIncluded = new ExportSpreadsheetCmd(mProvider).execute(true).blockingGet();
+        try {
+            XSSFWorkbook workbook = openWorkbook(xlsxIncluded);
+            try {
+                Sheet itemsSheet = workbook.getSheet("Items");
+                assertEquals(3, itemsSheet.getPhysicalNumberOfRows());
+                assertEquals(13, itemsSheet.getRow(0).getPhysicalNumberOfCells());
+                assertEquals(mContext.getString(R.string.header_archived),
+                        itemsSheet.getRow(0).getCell(12).getStringCellValue());
+                assertEquals("Archived Item",
+                        itemsSheet.getRow(1).getCell(1).getStringCellValue());
+                assertEquals(1, itemsSheet.getRow(1).getCell(12).getNumericCellValue(), 0);
+                assertEquals("Active Item",
+                        itemsSheet.getRow(2).getCell(1).getStringCellValue());
+                assertEquals(0, itemsSheet.getRow(2).getCell(12).getNumericCellValue(), 0);
+            } finally {
+                workbook.close();
+            }
+        } finally {
+            xlsxIncluded.delete();
+        }
+    }
+
+    @Test
     public void exportProgressFlow() throws Exception {
         Date now = new Date();
 

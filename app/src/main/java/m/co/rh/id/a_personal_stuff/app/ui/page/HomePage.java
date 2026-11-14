@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.core.os.ConfigurationCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -424,9 +425,27 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         } else if (id == R.id.button_export) {
             doExport((Activity) view.getContext());
         } else if (id == R.id.button_export_spreadsheet) {
-            doExportSpreadsheet((Activity) view.getContext());
+            Activity activity = (Activity) view.getContext();
+            // options first, then the export: the dialog pops with a Boolean
+            // (null = canceled) and only a confirmed result starts the flow
+            mNavigator.push(Routes.COMMON_EXPORT_OPTIONS_DIALOG,
+                    ExportOptionsSVDialog.Args.newArgs(activity.getString(R.string.export_spreadsheet)),
+                    (navigator, navRoute, activity2, currentView) -> {
+                        Serializable result = navRoute.getRouteResult();
+                        if (result instanceof Boolean) {
+                            doExportSpreadsheet(activity2, (Boolean) result);
+                        }
+                    });
         } else if (id == R.id.button_export_pdf_report) {
-            doExportPdfReport((Activity) view.getContext());
+            Activity activity = (Activity) view.getContext();
+            mNavigator.push(Routes.COMMON_EXPORT_OPTIONS_DIALOG,
+                    ExportOptionsSVDialog.Args.newArgs(activity.getString(R.string.export_pdf_report)),
+                    (navigator, navRoute, activity2, currentView) -> {
+                        Serializable result = navRoute.getRouteResult();
+                        if (result instanceof Boolean) {
+                            doExportPdfReport(activity2, (Boolean) result);
+                        }
+                    });
         } else if (id == R.id.button_import) {
             doImport((Activity) view.getContext());
         } else if (id == R.id.card_dashboard_inventory) {
@@ -699,7 +718,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         setLoading(true);
     }
 
-    private void doExportSpreadsheet(Activity activity) {
+    /**
+     * Runs the XLSX spreadsheet export with the user's archived-items choice
+     * (from {@link ExportOptionsSVDialog}); the actual flow is identical to the
+     * pre-archive-dialog version.
+     */
+    private void doExportSpreadsheet(Activity activity, boolean includeArchived) {
         showExportingState();
         ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
                 activity.getString(R.string.export_spreadsheet),
@@ -714,7 +738,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         })
         );
         mRxDisposer.add("home_export_spreadsheet_execute",
-                mExportSpreadsheetCmd.execute()
+                mExportSpreadsheetCmd.execute(includeArchived)
                         .observeOn(AndroidSchedulers.mainThread())
                         .doFinally(() -> mNavigator.pop())
                         .subscribe(
@@ -732,7 +756,12 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         );
     }
 
-    private void doExportPdfReport(Activity activity) {
+    /**
+     * Runs the PDF inventory report export with the user's archived-items
+     * choice (from {@link ExportOptionsSVDialog}); the actual flow is identical
+     * to the pre-archive-dialog version.
+     */
+    private void doExportPdfReport(Activity activity, boolean includeArchived) {
         showExportingState();
         ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
                 activity.getString(R.string.export_pdf_report),
@@ -747,7 +776,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
                         })
         );
         mRxDisposer.add("home_export_pdf_report_execute",
-                mExportPdfReportCmd.execute()
+                mExportPdfReportCmd.execute(includeArchived)
                         .observeOn(AndroidSchedulers.mainThread())
                         .doFinally(() -> mNavigator.pop())
                         .subscribe(

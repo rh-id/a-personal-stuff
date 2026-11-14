@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.nio.charset.StandardCharsets;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
@@ -304,22 +305,42 @@ public class ExportService {
      *     the detail pages are drawn.</li>
      * </ul>
      * <p>
-     * Totals are never recomputed from the loaded list: the cover reads
-     * {@link ItemDao#sumInventoryValue()} and {@link ItemDao#countItems()} — the
-     * same single source of truth the dashboard uses — while items are
-     * deliberately full-loaded (small anchor table, their rows feed every page).
+     * Totals are never recomputed from the loaded list: the cover reads the
+     * DAO aggregates ({@link ItemDao#sumInventoryValue()} and
+     * {@link ItemDao#countItems()} — the same single source of truth the
+     * dashboard uses), matched to the requested archive mode, while items are
+     * deliberately full-loaded (small anchor table, their rows feed every
+     * page). Because the summary table's grand total IS recomputed from the
+     * loaded rows, the mode-matched aggregates keep cover and table
+     * consistent in both modes.
      *
+     * @param includeArchived when true, archived items are loaded too: marked
+     *                        rows in the summary table (" [archived]" suffix),
+     *                        cover totals over ALL items and a note line on
+     *                        the cover; when false the report covers active
+     *                        items only.
      * @param progressListener optional; receives localized progress messages
      */
-    public File createReportPdf(ProgressListener progressListener) throws Exception {
+    public File createReportPdf(boolean includeArchived, ProgressListener progressListener) throws Exception {
         progress(progressListener, R.string.export_progress_gathering);
         // Items are deliberately full-loaded: a small anchor table whose rows
         // feed every page of the report (same rationale as the XLSX export).
-        List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
+        // include=false keeps the active-only default; include=true loads
+        // UNFILTERED so archived rows are reported (marked) instead of
+        // silently vanishing.
+        List<ItemState> itemStates = includeArchived
+                ? mItemDao.findAllItemStatesWithLimit(Integer.MAX_VALUE, null)
+                : mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
         // Cover totals come from the dashboard's own queries — never recomputed
         // from the list, so the report can never disagree with the dashboard.
-        Double totalInventoryValue = mItemDao.sumInventoryValue();
-        int totalItems = mItemDao.countItems();
+        // Mode-matched: the archived-inclusive aggregates when archived rows
+        // are loaded, so the cover keeps describing exactly the table's rows.
+        Double totalInventoryValue = includeArchived
+                ? mItemDao.sumInventoryValueIncludingArchived()
+                : mItemDao.sumInventoryValue();
+        int totalItems = includeArchived
+                ? mItemDao.countAllItems()
+                : mItemDao.countItems();
         // The module contributors own the per-item PDF data now; the merge is
         // STRUCTURAL — date columns are appended per contributor in
         // registration order at the summary table's date-column anchor and
@@ -342,10 +363,10 @@ public class ExportService {
         File pdfFile;
         try {
             progress(progressListener, R.string.export_pdf_report_progress_cover);
-            writer.drawCoverPage(totalItems, totalInventoryValue, photosOmitted);
+            writer.drawCoverPage(totalItems, totalInventoryValue, photosOmitted, includeArchived);
 
             progress(progressListener, R.string.export_pdf_report_progress_table);
-            writer.drawSummaryTable(itemStates, pdfContributorData);
+            writer.drawSummaryTable(itemStates, pdfContributorData, includeArchived);
 
             // one details message per 10-item batch (the first batch reports
             // from 0, so the cover/table stages above stay distinct events)
@@ -400,17 +421,26 @@ public class ExportService {
      * is loaded, written to the sheet, then dropped, which bounds peak memory
      * regardless of table size.
      *
+     * @param includeArchived when true, archived items are ALSO written into
+     *                        the Items sheet with an extra trailing "Archived"
+     *                        column (1/0); when false the Items sheet keeps
+     *                        the active rows only. Either way the rows feed
+     *                        the join map, so module contributor sheets keep
+     *                        resolving Item Names for archived items.
      * @param progressListener optional; receives localized progress messages
      */
-    public File createSpreadsheetXlsx(ProgressListener progressListener) throws Exception {
+    public File createSpreadsheetXlsx(boolean includeArchived, ProgressListener progressListener) throws Exception {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             throw new IllegalStateException("XLSX export requires Android 8.0 or newer");
         }
         progress(progressListener, R.string.export_progress_gathering);
         // The Items sheet is :app-owned (base-DB anchor). Items are
-        // deliberately full-loaded: their rows feed the Items sheet AND the
-        // item-name join map shared with every module sheet.
-        List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
+        // deliberately full-loaded (UNFILTERED: archived rows included): their
+        // rows feed the item-name join map shared with every module sheet,
+        // which must keep resolving archived items' names regardless of the
+        // includeArchived choice. includeArchived only decides which rows are
+        // WRITTEN into the Items sheet (see writeItemsSheet).
+        List<ItemState> itemStates = mItemDao.findAllItemStatesWithLimit(Integer.MAX_VALUE, null);
         Map<Long, Item> itemMap = new HashMap<>();
         Map<Long, String> itemTagsMap = new HashMap<>();
         Map<Long, String> itemImagesByItemId = new HashMap<>();
@@ -437,7 +467,8 @@ public class ExportService {
         try {
             SpreadsheetWriter writer = new SpreadsheetWriter(progressListener, totalSheets, workbook);
 
-            writer.writeItemsSheet(workbook, itemStates, itemTagsMap, itemImagesByItemId, 1);
+            writer.writeItemsSheet(workbook, itemStates, itemTagsMap, itemImagesByItemId,
+                    includeArchived, 1);
             // module sheets in contributor registration order (usage,
             // purchase, maintenance, reminder, checklist) followed by each
             // contributor's own sheet order (checklist: Checklists, Checklist
@@ -529,7 +560,9 @@ public class ExportService {
 
     private BackupData gatherData() {
         BackupData data = new BackupData();
-        List<ItemState> itemStates = mItemDao.findItemStateWithLimit(Integer.MAX_VALUE, null);
+        // UNFILTERED on purpose: a backup that silently drops archived items
+        // would lose them from every manual + auto backup ZIP
+        List<ItemState> itemStates = mItemDao.findAllItemStatesWithLimit(Integer.MAX_VALUE, null);
         for (ItemState state : itemStates) {
             data.items.add(state.getItem());
             data.itemImages.addAll(state.getItemImages());
@@ -821,7 +854,8 @@ public class ExportService {
             }
         }
 
-        void drawCoverPage(int totalItems, Double totalInventoryValue, int photosOmitted) {
+        void drawCoverPage(int totalItems, Double totalInventoryValue, int photosOmitted,
+                           boolean includeArchived) {
             newPage();
             float y = 160f;
             String title = mAppContext.getString(R.string.report_title);
@@ -841,6 +875,12 @@ public class ExportService {
                 y = drawCenteredCoverLine(y, mAppContext.getString(
                         R.string.report_total_value, "-"));
             }
+            if (includeArchived) {
+                // tells the reader why these totals can exceed the dashboard's
+                // (which covers active items only)
+                y = drawCenteredCoverLine(y,
+                        mAppContext.getString(R.string.report_includes_archived));
+            }
             if (photosOmitted > 0) {
                 drawCenteredCoverLine(y, mAppContext.getString(
                         R.string.report_photos_omitted, photosOmitted));
@@ -854,7 +894,8 @@ public class ExportService {
         }
 
         void drawSummaryTable(List<ItemState> itemStates,
-                              List<PdfContributorData> pdfContributorData) {
+                              List<PdfContributorData> pdfContributorData,
+                              boolean includeArchived) {
             // PASS 1: build every column (header, data cells, totals-row cell)
             // and measure the widest text per column BEFORE drawing anything.
             // The first live run proved fixed column guesses collide — the
@@ -886,7 +927,7 @@ public class ExportService {
             for (int i = 0; i < dataRowCount; i++) {
                 Item item = itemStates.get(i).getItem();
                 noColumn.cells.add(String.valueOf(i + 1));
-                nameColumn.cells.add(item.name == null ? "" : item.name);
+                nameColumn.cells.add(buildSummaryName(item, includeArchived));
                 qtyColumn.cells.add(String.valueOf(item.amount));
                 if (item.price != null) {
                     BigDecimal lineTotal = item.price.multiply(BigDecimal.valueOf(item.amount));
@@ -919,6 +960,22 @@ public class ExportService {
             drawTotalsRow(layout, nameColumn.cells.get(dataRowCount),
                     lineColumn.cells.get(dataRowCount));
             finishCurrentPage();
+        }
+
+        /**
+         * Summary-table Name cell text: the item's name, suffixed with the
+         * localized " [archived]" marker when archived rows are part of this
+         * report, so an archived item is never mistaken for an active one in
+         * the printed table (the cell is ellipsized at draw time, the suffix
+         * travels with the name).
+         */
+        private String buildSummaryName(Item item, boolean includeArchived) {
+            String name = item.name == null ? "" : item.name;
+            if (includeArchived && item.archived) {
+                name = name + " ["
+                        + mAppContext.getString(R.string.report_archived_suffix) + "]";
+            }
+            return name;
         }
 
         /**
@@ -1515,12 +1572,21 @@ public class ExportService {
             }
         }
 
+        /**
+         * Writes the :app-owned Items sheet. {@code includeArchived} decides
+         * which rows are WRITTEN: when false archived rows are skipped (the
+         * join maps built by the caller stay unfiltered, so module sheets
+         * still resolve archived names); when true every row is written and
+         * an "Archived" column (1/0) is APPENDED LAST so consumers parsing
+         * the historical column layout are unaffected.
+         */
         private void writeItemsSheet(SXSSFWorkbook workbook, List<ItemState> itemStates,
                                      Map<Long, String> itemTagsMap,
-                                     Map<Long, String> itemImagesByItemId, int sheetIndex) {
+                                     Map<Long, String> itemImagesByItemId,
+                                     boolean includeArchived, int sheetIndex) {
             emitSheetProgress(sheetIndex);
             Sheet sheet = workbook.createSheet(SHEET_ITEMS);
-            int[] columnChars = writeHeaderRow(sheet, mHeaderStyle, new String[]{
+            String[] headers = new String[]{
                     mAppContext.getString(R.string.header_id),
                     mAppContext.getString(R.string.form_name),
                     mAppContext.getString(R.string.form_amount),
@@ -1533,10 +1599,19 @@ public class ExportService {
                     mAppContext.getString(R.string.header_updated_date_time),
                     mAppContext.getString(R.string.header_tags),
                     mAppContext.getString(R.string.header_images),
-            });
+            };
+            if (includeArchived) {
+                headers = Arrays.copyOf(headers, headers.length + 1);
+                headers[headers.length - 1] = mAppContext.getString(R.string.header_archived);
+            }
+            int[] columnChars = writeHeaderRow(sheet, mHeaderStyle, headers);
+            int archivedColumn = includeArchived ? headers.length - 1 : -1;
             int rowIndex = 1;
             for (ItemState itemState : itemStates) {
                 Item item = itemState.getItem();
+                if (!includeArchived && item.archived) {
+                    continue;
+                }
                 Row row = sheet.createRow(rowIndex++);
                 columnChars[0] = Math.max(columnChars[0], writeLongCell(row, 0, item.id));
                 columnChars[1] = Math.max(columnChars[1], writeStringCell(row, 1, item.name));
@@ -1556,6 +1631,10 @@ public class ExportService {
                         writeStringCell(row, 10, itemTagsMap.get(item.id)));
                 columnChars[11] = Math.max(columnChars[11],
                         writeStringCell(row, 11, itemImagesByItemId.get(item.id)));
+                if (archivedColumn >= 0) {
+                    columnChars[archivedColumn] = Math.max(columnChars[archivedColumn],
+                            writeAmountCell(row, archivedColumn, item.archived ? 1 : 0));
+                }
             }
             applyColumnWidths(sheet, columnChars);
         }

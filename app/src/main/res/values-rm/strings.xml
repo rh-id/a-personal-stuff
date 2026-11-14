@@ -31,8 +31,14 @@
     <string name="title_duplicate">Duplicar</string>
     <string name="title_delete">Stizzar</string>
     <string name="success_duplicate_">Object duplicà: %s</string>
+    <string name="title_archive">Arcunar</string>
+    <string name="title_unarchive">Ordinar da l\'arcun</string>
+    <string name="success_archive_item_">Object arcunà: %s</string>
+    <string name="success_unarchive_item_">Object ordi da l\'arcun: %s</string>
     <string name="progress_duplicate">Duplicar…</string>
     <string name="title_items">Objects</string>
+    <string name="title_archived_items">Objects arcunads</string>
+    <string name="title_archived">Arcunà</string>
     <string name="title_checklists">Glistas da controlla</string>
     <string name="title_add_item_checklist">Agiuntar glista da controlla</string>
     <string name="success_add_checklist_">Glista da controlla agiuntada: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Descripziun: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Exportar</string>
+    <string name="export_include_archived">Objects arcunads includair</string>
     <string name="export_spreadsheet">Exportar tabella</string>
     <string name="share_spreadsheet_file">Cundivider la datoteca da tabella</string>
     <string name="export_spreadsheet_failed">Export en tabella n\'è betg reussì</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Scada: %1$s</string>
     <string name="report_created">Creà: %1$s</string>
     <string name="report_photo_omitted">(foto omessa — limit da maletgs cuntanschì)</string>
+    <string name="report_includes_archived">Includa objects arcunads</string>
+    <string name="report_archived_suffix">arcunà</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Maletgs</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Titel</string>
     <string name="header_created_date_time">Creà il</string>
     <string name="header_updated_date_time">Actualisà il</string>
+    <string name="header_archived">Arcunà</string>
     <string name="header_usage_date_time">Data d\'utilisaziun</string>
     <string name="header_purchase_date_time">Data da cumpra</string>
     <string name="header_maintenance_date_time">Data da mantegniment</string>

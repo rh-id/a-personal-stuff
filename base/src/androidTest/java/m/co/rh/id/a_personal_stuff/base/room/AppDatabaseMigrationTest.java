@@ -58,4 +58,34 @@ public class AppDatabaseMigrationTest {
             assertEquals(3, cursor.getInt(0));
         }
     }
+
+    @Test
+    public void migrate2To3AddsArchived() throws IOException {
+        SupportSQLiteDatabase db = mMigrationTestHelper.createDatabase(TEST_DB, 2);
+        ContentValues values = new ContentValues();
+        values.put("id", 1L);
+        values.put("name", "v2 item");
+        values.put("amount", 2);
+        values.put("created_date_time", System.currentTimeMillis());
+        values.put("updated_date_time", System.currentTimeMillis());
+        db.insert("item", SQLiteDatabase.CONFLICT_FAIL, values);
+        db.close();
+
+        // validates the migrated schema against the exported 3.json as well
+        SupportSQLiteDatabase migrated = mMigrationTestHelper.runMigrationsAndValidate(
+                TEST_DB, 3, true, DbMigration.MIGRATION_2_3);
+        mMigrationTestHelper.closeWhenFinished(migrated);
+
+        // existing rows must land on the default: not archived (0)
+        try (Cursor cursor = migrated.query("SELECT archived FROM item WHERE id = 1")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals(0, cursor.getInt(0));
+        }
+        // and the new column must be writable/readable (1 = archived)
+        migrated.execSQL("UPDATE item SET archived = 1 WHERE id = 1");
+        try (Cursor cursor = migrated.query("SELECT archived FROM item WHERE id = 1")) {
+            assertTrue(cursor.moveToFirst());
+            assertEquals(1, cursor.getInt(0));
+        }
+    }
 }

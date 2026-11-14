@@ -35,7 +35,13 @@
     <string name="title_delete">Delete</string>
     <string name="success_duplicate_">Item duplicated: %s</string>
     <string name="progress_duplicate">Duplicating…</string>
+    <string name="title_archive">Archive</string>
+    <string name="title_unarchive">Unarchive</string>
+    <string name="success_archive_item_">Item archived: %s</string>
+    <string name="success_unarchive_item_">Item unarchived: %s</string>
     <string name="title_items">Items</string>
+    <string name="title_archived_items">Archived items</string>
+    <string name="title_archived">Archived</string>
     <string name="title_checklists">Checklists</string>
     <string name="title_add_item_checklist">Add Checklist</string>
     <string name="success_add_checklist_">Checklist added: %s</string>
@@ -92,6 +98,8 @@
     <string name="movement_description">Description: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Export</string>
+    <string name="export_include_archived">Include archived items</string>
     <string name="export_spreadsheet">Export Spreadsheet</string>
     <string name="share_spreadsheet_file">Share spreadsheet file</string>
     <string name="export_spreadsheet_failed">Export to spreadsheet failed</string>
@@ -128,6 +136,9 @@
     <string name="report_expires">Expires: %1$s</string>
     <string name="report_created">Created: %1$s</string>
     <string name="report_photo_omitted">(photo omitted — image limit reached)</string>
+    <string name="report_includes_archived">Includes archived items</string>
+    <!-- appended to archived item names in the PDF summary table as " [suffix]" -->
+    <string name="report_archived_suffix">archived</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tags</string>
     <string name="header_images">Images</string>
@@ -138,6 +149,7 @@
     <string name="header_title">Title</string>
     <string name="header_created_date_time">Created date time</string>
     <string name="header_updated_date_time">Updated date time</string>
+    <string name="header_archived">Archived</string>
     <string name="header_usage_date_time">Usage date time</string>
     <string name="header_purchase_date_time">Purchase date time</string>
     <string name="header_maintenance_date_time">Maintenance date time</string>

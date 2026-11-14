@@ -178,6 +178,8 @@ public class ItemsPage extends StatefulView<Activity> implements RequireComponen
         int id = item.getItemId();
         if (id == R.id.menu_add) {
             mNavigator.push(Routes.ITEM_DETAIL_PAGE);
+        } else if (id == R.id.menu_archived) {
+            mNavigator.push(Routes.ARCHIVED_ITEMS_PAGE);
         } else if (id == R.id.menu_sort) {
             ArrayList<Integer> integers = new ArrayList<>();
             integers.add(R.string.sort_by_default);

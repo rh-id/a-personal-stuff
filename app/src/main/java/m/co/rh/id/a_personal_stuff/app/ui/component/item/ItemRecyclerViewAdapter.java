@@ -24,6 +24,7 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
     private ItemItemSV.OnItemEditClicked mOnItemEditClicked;
     private ItemItemSV.OnItemDeleteClicked mOnItemDeleteClicked;
     private ItemItemSV.OnItemDuplicateClicked mOnItemDuplicateClicked;
+    private ItemItemSV.OnItemArchiveClicked mOnItemArchiveClicked;
     private final INavigator mNavigator;
     private final StatefulView mParentStatefulView;
     private final List<StatefulView> mCreatedSvList;
@@ -44,10 +45,22 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
                                    ItemItemSV.OnItemDuplicateClicked onItemDuplicateClicked,
                                    INavigator navigator, StatefulView parentStatefulView
     ) {
+        this(pagedItemCmd, onItemEditClicked, onItemDeleteClicked, onItemDuplicateClicked,
+                null, navigator, parentStatefulView);
+    }
+
+    public ItemRecyclerViewAdapter(PagedItemCmd pagedItemCmd,
+                                   ItemItemSV.OnItemEditClicked onItemEditClicked,
+                                   ItemItemSV.OnItemDeleteClicked onItemDeleteClicked,
+                                   ItemItemSV.OnItemDuplicateClicked onItemDuplicateClicked,
+                                   ItemItemSV.OnItemArchiveClicked onItemArchiveClicked,
+                                   INavigator navigator, StatefulView parentStatefulView
+    ) {
         mPagedItemCmd = pagedItemCmd;
         mOnItemEditClicked = onItemEditClicked;
         mOnItemDeleteClicked = onItemDeleteClicked;
         mOnItemDuplicateClicked = onItemDuplicateClicked;
+        mOnItemArchiveClicked = onItemArchiveClicked;
         mNavigator = navigator;
         mParentStatefulView = parentStatefulView;
         mCreatedSvList = new ArrayList<>();
@@ -87,6 +100,7 @@ public class ItemRecyclerViewAdapter extends ItemAdapter {
             itemSV.setOnItemEditClicked(mOnItemEditClicked);
             itemSV.setOnItemDeleteClicked(mOnItemDeleteClicked);
             itemSV.setOnItemDuplicateClicked(mOnItemDuplicateClicked);
+            itemSV.setOnItemArchiveClicked(mOnItemArchiveClicked);
             mNavigator.injectRequired(mParentStatefulView, itemSV);
             View view = itemSV.buildView(activity, parent);
             mCreatedSvList.add(itemSV);

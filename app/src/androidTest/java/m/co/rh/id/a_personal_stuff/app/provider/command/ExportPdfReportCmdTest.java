@@ -294,6 +294,39 @@ public class ExportPdfReportCmdTest {
     }
 
     @Test
+    public void includeArchivedLoadsArchivedRowsWhileDefaultExcludesThem() throws Exception {
+        // a single ARCHIVED item: the default report (active-only after the
+        // DAO change) must not load it, while execute(true) must render its
+        // detail block — observable as the empty report's 2-page minimum
+        // (cover + table) growing past 2 pages
+        Date now = new Date();
+        Item archivedItem = TestSeeds.item("Archived Only Item", now);
+        archivedItem.archived = true;
+        TestSeeds.insertItemWithRelations(mAppDb, archivedItem, null, null);
+
+        File pdfDefault = new ExportPdfReportCmd(mProvider).execute(false).blockingGet();
+        try {
+            assertPdfMagic(pdfDefault);
+            withRenderer(pdfDefault, renderer ->
+                    assertEquals("archived-only inventory must report empty (cover + table)",
+                            2, renderer.getPageCount()));
+        } finally {
+            pdfDefault.delete();
+        }
+
+        File pdfIncluded = new ExportPdfReportCmd(mProvider).execute(true).blockingGet();
+        try {
+            assertPdfMagic(pdfIncluded);
+            withRenderer(pdfIncluded, renderer ->
+                    assertTrue("the archived item's detail block must render, got "
+                            + renderer.getPageCount() + " pages",
+                            renderer.getPageCount() >= 3));
+        } finally {
+            pdfIncluded.delete();
+        }
+    }
+
+    @Test
     public void exportProgressFlow() throws Exception {
         Date now = new Date();
 

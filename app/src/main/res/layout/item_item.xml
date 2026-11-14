@@ -162,6 +162,14 @@
                 app:iconTint="@color/daynight_black_white" />
 
             <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_archive"
+                style="@style/Widget.AppCompat.Button.Borderless"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                app:icon="@drawable/ic_archive_black"
+                app:iconTint="@color/daynight_black_white" />
+
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_delete"
                 style="@style/Widget.AppCompat.Button.Borderless"
                 android:layout_width="48dp"

@@ -31,8 +31,14 @@
     <string name="title_duplicate">Duplica</string>
     <string name="title_delete">Elimina</string>
     <string name="success_duplicate_">Elemento duplicato: %s</string>
+    <string name="title_archive">Archivia</string>
+    <string name="title_unarchive">Annulla archiviazione</string>
+    <string name="success_archive_item_">Elemento archiviato: %s</string>
+    <string name="success_unarchive_item_">Elemento ripristinato dall\'archivio: %s</string>
     <string name="progress_duplicate">Duplicazione…</string>
     <string name="title_items">Elementi</string>
+    <string name="title_archived_items">Elementi archiviati</string>
+    <string name="title_archived">Archiviati</string>
     <string name="title_checklists">Liste di controllo</string>
     <string name="title_add_item_checklist">Aggiungi lista di controllo</string>
     <string name="success_add_checklist_">Lista di controllo aggiunta: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Descrizione: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Esporta</string>
+    <string name="export_include_archived">Includi elementi archiviati</string>
     <string name="export_spreadsheet">Esporta foglio di calcolo</string>
     <string name="share_spreadsheet_file">Condividi il file foglio di calcolo</string>
     <string name="export_spreadsheet_failed">Esportazione nel foglio di calcolo non riuscita</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Scade: %1$s</string>
     <string name="report_created">Creato: %1$s</string>
     <string name="report_photo_omitted">(foto omessa — limite di immagini raggiunto)</string>
+    <string name="report_includes_archived">Include elementi archiviati</string>
+    <string name="report_archived_suffix">archiviato</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tag</string>
     <string name="header_images">Immagini</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Titolo</string>
     <string name="header_created_date_time">Data di creazione</string>
     <string name="header_updated_date_time">Data di aggiornamento</string>
+    <string name="header_archived">Archiviato</string>
     <string name="header_usage_date_time">Data di utilizzo</string>
     <string name="header_purchase_date_time">Data di acquisto</string>
     <string name="header_maintenance_date_time">Data di manutenzione</string>

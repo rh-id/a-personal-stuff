@@ -31,8 +31,14 @@
     <string name="title_duplicate">Afrita</string>
     <string name="title_delete">Eyða</string>
     <string name="success_duplicate_">Hlutur afritaður: %s</string>
+    <string name="title_archive">Geyma</string>
+    <string name="title_unarchive">Taka úr geymslu</string>
+    <string name="success_archive_item_">Hlutur geymdur: %s</string>
+    <string name="success_unarchive_item_">Hlutur tekinn úr geymslu: %s</string>
     <string name="progress_duplicate">Afritar…</string>
     <string name="title_items">Hlutir</string>
+    <string name="title_archived_items">Geymdir hlutir</string>
+    <string name="title_archived">Geymt</string>
     <string name="title_checklists">Gátlistar</string>
     <string name="title_add_item_checklist">Bæta við gátlista</string>
     <string name="success_add_checklist_">Gátlista bætt við: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Lýsing: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Flytja út</string>
+    <string name="export_include_archived">Hafa geynda hluti með</string>
     <string name="export_spreadsheet">Flytja út töfluskrá</string>
     <string name="share_spreadsheet_file">Deila töfluskrá</string>
     <string name="export_spreadsheet_failed">Útflutningur í töfluskrá mistókst</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Rennur út: %1$s</string>
     <string name="report_created">Búið til: %1$s</string>
     <string name="report_photo_omitted">(ljósmynd sleppt — myndamörk náð)</string>
+    <string name="report_includes_archived">Tekur geynda hluti með</string>
+    <string name="report_archived_suffix">geymdur</string>
     <string name="header_id">Auðkenni</string>
     <string name="header_tags">Merki</string>
     <string name="header_images">Myndir</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Titill</string>
     <string name="header_created_date_time">Búið til</string>
     <string name="header_updated_date_time">Uppfært</string>
+    <string name="header_archived">Geymt</string>
     <string name="header_usage_date_time">Notkunartími</string>
     <string name="header_purchase_date_time">Kauptími</string>
     <string name="header_maintenance_date_time">Viðhaldstími</string>

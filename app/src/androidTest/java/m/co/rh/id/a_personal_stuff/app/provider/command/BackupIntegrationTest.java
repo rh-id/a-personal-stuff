@@ -1861,6 +1861,75 @@ public class BackupIntegrationTest {
     }
 
     @Test
+    public void archivedFlagRoundTripsThroughBackupImport() throws Exception {
+        // the backup must carry the archived flag (and the export must include
+        // archived rows at all) so a restore does not silently reactivate
+        // archived items
+        Date now = new Date();
+        BackupData data = new BackupData();
+        Item item = new Item();
+        item.id = 1L;
+        item.name = "Archived Import Item";
+        item.amount = 2;
+        item.createdDateTime = now;
+        item.updatedDateTime = now;
+        item.archived = true;
+        data.items.add(item);
+
+        File zipFile = createBackupZip(data);
+        new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        // import asserts through the UNFILTERED query family: the imported
+        // row is archived, so the active-only queries would (correctly) hide it
+        List<ItemState> importedStates =
+                mAppDb.itemDao().findAllItemStatesWithLimit(Integer.MAX_VALUE, null);
+        assertEquals(1, importedStates.size());
+        assertTrue("archived flag must survive the backup round trip",
+                importedStates.get(0).getItem().archived);
+        assertTrue("an archived import must NOT surface in the active list",
+                mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null).isEmpty());
+
+        zipFile.delete();
+    }
+
+    @Test
+    public void preArchiveBackupWithoutArchivedKeyImportsAsActive() throws Exception {
+        // a pre-archive backup's item entry omits the "archived" key entirely;
+        // it must import ACTIVE (optBoolean default false), not fail
+        Date now = new Date();
+        JSONObject itemObj = new JSONObject();
+        itemObj.put("id", 1L);
+        itemObj.put("name", "Pre-archive item");
+        itemObj.put("amount", 1);
+        itemObj.put("createdDateTime", now.getTime());
+        itemObj.put("updatedDateTime", now.getTime());
+        // intentionally NO archived key
+        JSONArray items = new JSONArray();
+        items.put(itemObj);
+
+        JSONObject json = new JSONObject();
+        json.put("version", 2);
+        json.put("exportedAt", now.getTime());
+        json.put("items", items);
+
+        BackupData restored = BackupData.fromJson(json);
+        assertEquals(1, restored.items.size());
+        assertFalse("missing archived key must deserialize to false",
+                restored.items.get(0).archived);
+
+        File zipFile = createBackupZip(restored);
+        new ImportCmd(mProvider).execute(zipFile).blockingGet();
+
+        List<ItemState> importedStates =
+                mAppDb.itemDao().findItemStateWithLimit(Integer.MAX_VALUE, null);
+        assertEquals(1, importedStates.size());
+        assertFalse("pre-archive backups must import as active",
+                importedStates.get(0).getItem().archived);
+
+        zipFile.delete();
+    }
+
+    @Test
     public void exportWithItemChecklists() throws Exception {
         Date now = new Date();
 

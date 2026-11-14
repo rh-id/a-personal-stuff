@@ -37,6 +37,13 @@ public class PagedItemCmd {
      * empty collection.
      */
     private List<Long> mFilterItemIds;
+    /**
+     * When true this cmd serves the ARCHIVED list (archived = 1 rows only)
+     * instead of the active one (archived = 0). Must be set BEFORE the first
+     * refresh (each page sub-provider owns its own PagedItemCmd instance, so
+     * the flag never needs to flip mid-life).
+     */
+    private boolean mArchivedOnly;
     private final BehaviorSubject<ArrayList<ItemState>> mItemStatesSubject;
     private final BehaviorSubject<Boolean> mIsLoadingSubject;
     private final Subject<ArrayList<ItemState>> mItemStatesEmitter;
@@ -80,7 +87,13 @@ public class PagedItemCmd {
                     );
                     Future<List<Long>> itemSearchResult = mExecutorService.submit(
                             () -> {
-                                List<Item> items = mItemDao.searchItem(search);
+                                // the text query is mode-aware: searchItem is
+                                // active-only, so the archived page must search
+                                // with searchArchivedItem instead or it could
+                                // never match by name/description/barcode
+                                List<Item> items = mArchivedOnly
+                                        ? mItemDao.searchArchivedItem(search)
+                                        : mItemDao.searchItem(search);
                                 List<Long> itemIds = new ArrayList<>();
                                 if (!items.isEmpty()) {
                                     for (Item item : items) {
@@ -103,7 +116,13 @@ public class PagedItemCmd {
                     }
                     List<ItemState> itemStates =
                             mItemDao.findItemStateByIdsWithLimit(new ArrayList<>(itemIds), mQueryOrderBy, mLimit);
-                    mItemStatesEmitter.onNext(new ArrayList<>(itemStates));
+                    // The tag-search union is unfiltered by design (searchItemTag
+                    // has no archive filter), so the post-filter below is what
+                    // keeps a search from leaking rows across the archive
+                    // boundary. It runs AFTER the LIMIT, so an archived-mode page
+                    // can underfill until the next refresh — same accepted class
+                    // of behavior as deletes not rebalancing loaded pages.
+                    mItemStatesEmitter.onNext(new ArrayList<>(filterByArchiveMode(itemStates)));
                 } catch (Throwable throwable) {
                     mLogger.e(TAG, throwable.getMessage(), throwable);
                     mItemStatesEmitter.onNext(new ArrayList<>());
@@ -154,6 +173,10 @@ public class PagedItemCmd {
     }
 
     private ArrayList<ItemState> loadItems() {
+        if (mArchivedOnly) {
+            // archived-items page: archived rows only
+            return new ArrayList<>(mItemDao.findArchivedItemStatesWithLimit(mLimit, mQueryOrderBy));
+        }
         if (mFilterItemIds != null) {
             // an empty filter matches nothing; Room's IN () throws on an empty
             // list, so short-circuit without touching the DAO
@@ -195,6 +218,34 @@ public class PagedItemCmd {
         } else {
             mFilterItemIds = new ArrayList<>(filterItemIds);
         }
+    }
+
+    /**
+     * Switches this cmd between the active list (false) and the archived
+     * list (true), see {@link #mArchivedOnly}. Must be set before the first
+     * refresh; no refresh is triggered here.
+     */
+    public void setArchivedOnly(boolean archivedOnly) {
+        mArchivedOnly = archivedOnly;
+    }
+
+    /**
+     * Keeps only the rows matching this cmd's archive side: active mode
+     * drops archived rows, archived mode keeps archived rows only. Applied
+     * to search results in BOTH modes because the tag-search union
+     * ({@code searchItemTag}) is unfiltered by design.
+     */
+    private List<ItemState> filterByArchiveMode(List<ItemState> itemStates) {
+        if (itemStates.isEmpty()) {
+            return itemStates;
+        }
+        List<ItemState> filtered = new ArrayList<>(itemStates.size());
+        for (ItemState itemState : itemStates) {
+            if (itemState.isArchived() == mArchivedOnly) {
+                filtered.add(itemState);
+            }
+        }
+        return filtered;
     }
 
     public void refreshWithItemId(long itemId) {

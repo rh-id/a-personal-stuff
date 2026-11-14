@@ -31,8 +31,14 @@
     <string name="title_duplicate">复制</string>
     <string name="title_delete">删除</string>
     <string name="success_duplicate_">条目已复制：%s</string>
+    <string name="title_archive">归档</string>
+    <string name="title_unarchive">取消归档</string>
+    <string name="success_archive_item_">条目已归档：%s</string>
+    <string name="success_unarchive_item_">条目已取消归档：%s</string>
     <string name="progress_duplicate">正在复制…</string>
     <string name="title_items">条目</string>
+    <string name="title_archived_items">已归档条目</string>
+    <string name="title_archived">已归档</string>
     <string name="title_checklists">核对清单</string>
     <string name="title_add_item_checklist">添加核对清单</string>
     <string name="success_add_checklist_">核对清单已添加：%s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">描述：%s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">导出</string>
+    <string name="export_include_archived">包含已归档条目</string>
     <string name="export_spreadsheet">导出电子表格</string>
     <string name="share_spreadsheet_file">分享电子表格文件</string>
     <string name="export_spreadsheet_failed">导出到电子表格失败</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">到期时间：%1$s</string>
     <string name="report_created">创建时间：%1$s</string>
     <string name="report_photo_omitted">（照片已省略 — 已达图片上限）</string>
+    <string name="report_includes_archived">包含已归档条目</string>
+    <string name="report_archived_suffix">已归档</string>
     <string name="header_id">ID</string>
     <string name="header_tags">标签</string>
     <string name="header_images">图片</string>
@@ -130,6 +140,7 @@
     <string name="header_title">标题</string>
     <string name="header_created_date_time">创建时间</string>
     <string name="header_updated_date_time">更新时间</string>
+    <string name="header_archived">已归档</string>
     <string name="header_usage_date_time">使用时间</string>
     <string name="header_purchase_date_time">购买时间</string>
     <string name="header_maintenance_date_time">维护时间</string>

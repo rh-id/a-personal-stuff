@@ -14,6 +14,8 @@ public class ItemChangeNotifier {
     private Subject<ItemState> mAddedSubject;
     private Subject<ItemState> mUpdatedSubject;
     private Subject<ItemState> mDeletedSubject;
+    private Subject<ItemState> mArchivedSubject;
+    private Subject<ItemState> mUnarchivedSubject;
     private Subject<List<ItemImage>> mDeletedItemImagesSubject;
     private Subject<ItemImage> mAddedItemImageSubject;
     private Subject<ItemTag> mDeletedItemTagSubject;
@@ -23,6 +25,8 @@ public class ItemChangeNotifier {
         mAddedSubject = PublishSubject.<ItemState>create().toSerialized();
         mUpdatedSubject = PublishSubject.<ItemState>create().toSerialized();
         mDeletedSubject = PublishSubject.<ItemState>create().toSerialized();
+        mArchivedSubject = PublishSubject.<ItemState>create().toSerialized();
+        mUnarchivedSubject = PublishSubject.<ItemState>create().toSerialized();
         mDeletedItemImagesSubject = PublishSubject.<List<ItemImage>>create().toSerialized();
         mAddedItemImageSubject = PublishSubject.<ItemImage>create().toSerialized();
         mDeletedItemTagSubject = PublishSubject.<ItemTag>create().toSerialized();
@@ -41,6 +45,14 @@ public class ItemChangeNotifier {
         mDeletedSubject.onNext(itemState);
     }
 
+    public void itemArchived(ItemState itemState) {
+        mArchivedSubject.onNext(itemState);
+    }
+
+    public void itemUnarchived(ItemState itemState) {
+        mUnarchivedSubject.onNext(itemState);
+    }
+
     public Flowable<ItemState> getAddedItemFlow() {
         return Flowable.fromObservable(mAddedSubject, BackpressureStrategy.BUFFER);
     }
@@ -53,15 +65,25 @@ public class ItemChangeNotifier {
         return Flowable.fromObservable(mDeletedSubject, BackpressureStrategy.BUFFER);
     }
 
+    public Flowable<ItemState> getArchivedItemFlow() {
+        return Flowable.fromObservable(mArchivedSubject, BackpressureStrategy.BUFFER);
+    }
+
+    public Flowable<ItemState> getUnarchivedItemFlow() {
+        return Flowable.fromObservable(mUnarchivedSubject, BackpressureStrategy.BUFFER);
+    }
+
     /**
-     * Emits the affected item on any item add/update/delete.
+     * Emits the affected item on any item add/update/delete/archive/unarchive.
      * Convenience for consumers that only need to know "something about this item changed".
      */
     public Flowable<ItemState> getAnyItemChangeFlow() {
-        return Flowable.merge(
+        return Flowable.mergeArray(
                 getAddedItemFlow(),
                 getUpdatedItemFlow(),
-                getDeletedItemFlow());
+                getDeletedItemFlow(),
+                getArchivedItemFlow(),
+                getUnarchivedItemFlow());
     }
 
     public void itemImageDeleted(List<ItemImage> itemImages) {

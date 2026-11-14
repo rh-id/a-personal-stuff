@@ -6,6 +6,7 @@ public class Routes {
     public static final String SETTINGS_PAGE = "/settings";
     public static final String DONATIONS_PAGE = "/donations";
     public static final String ITEMS_PAGE = "/items";
+    public static final String ARCHIVED_ITEMS_PAGE = "/items/archived";
     public static final String STATISTICS_PAGE = "/statistics";
     public static final String ITEM_DETAIL_PAGE = "/items/detail";
     public static final String ITEM_SELECT_PAGE = "/items/select";
@@ -29,6 +30,7 @@ public class Routes {
     public static final String COMMON_SELECTION = "/common/selection";
     public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";
     public static final String COMMON_INPUT_DIALOG = "/common/inputDialog";
+    public static final String COMMON_EXPORT_OPTIONS_DIALOG = "/common/exportOptionsDialog";
 
     private Routes() {
     }

@@ -180,10 +180,22 @@ public abstract class ItemDao {
     @Query("SELECT * FROM item_tag WHERE item_id IN (:itemIds)")
     public abstract List<ItemTag> findItemTagsByItemIds(List<Long> itemIds);
 
-    @Query("SELECT * FROM item WHERE name LIKE '%'||:search||'%'" +
+    @Query("SELECT * FROM item WHERE archived = 0" +
+            " AND (name LIKE '%'||:search||'%'" +
             " OR description LIKE '%'||:search||'%'" +
-            " OR barcode LIKE '%'||:search||'%'")
+            " OR barcode LIKE '%'||:search||'%')")
     public abstract List<Item> searchItem(String search);
+
+    /**
+     * Search restricted to archived items - the exact {@link #searchItem(String)}
+     * LIKE shape with {@code archived = 1} instead of {@code archived = 0},
+     * so the archived-items page searches the same fields.
+     */
+    @Query("SELECT * FROM item WHERE archived = 1" +
+            " AND (name LIKE '%'||:search||'%'" +
+            " OR description LIKE '%'||:search||'%'" +
+            " OR barcode LIKE '%'||:search||'%')")
+    public abstract List<Item> searchArchivedItem(String search);
 
     @Query("SELECT * FROM item WHERE barcode LIKE '%'||:search||'%'")
     public abstract List<Item> searchItemBarcode(String search);
@@ -192,7 +204,43 @@ public abstract class ItemDao {
     public abstract List<ItemTag> searchItemTag(String search);
 
     public List<ItemState> findItemStateWithLimit(int limit, QueryOrderBy queryOrderBy) {
-        String sql = "SELECT * FROM item" + orderClause(queryOrderBy) + " LIMIT ?";
+        return findItemStatesWhereWithLimit(WHERE_ACTIVE, limit, queryOrderBy);
+    }
+
+    /**
+     * Paged list restricted to archived items (the archived-items page's
+     * load path) - same ordering and paging semantics as
+     * {@link #findItemStateWithLimit(int, QueryOrderBy)}.
+     */
+    public List<ItemState> findArchivedItemStatesWithLimit(int limit, QueryOrderBy queryOrderBy) {
+        return findItemStatesWhereWithLimit(WHERE_ARCHIVED, limit, queryOrderBy);
+    }
+
+    /**
+     * Paged list with NO archive filter (every item row, active and
+     * archived). Used by the backup/export paths, which must never drop
+     * archived rows.
+     */
+    public List<ItemState> findAllItemStatesWithLimit(int limit, QueryOrderBy queryOrderBy) {
+        return findItemStatesWhereWithLimit(null, limit, queryOrderBy);
+    }
+
+    /**
+     * WHERE fragment shared by the {@link #findItemsRaw} wrappers. The
+     * fragment comes ONLY from the constants in this class - never user
+     * input - which is the injection boundary that makes the string
+     * concatenation in the @RawQuery builders safe (same contract as
+     * {@link #orderClause(QueryOrderBy)}).
+     */
+    private static final String WHERE_ACTIVE = " WHERE archived = 0";
+    private static final String WHERE_ARCHIVED = " WHERE archived = 1";
+
+    private List<ItemState> findItemStatesWhereWithLimit(String whereClause,
+                                                         int limit,
+                                                         QueryOrderBy queryOrderBy) {
+        String sql = "SELECT * FROM item"
+                + (whereClause == null ? "" : whereClause)
+                + orderClause(queryOrderBy) + " LIMIT ?";
         return prepareItemState(findItemsRaw(new SimpleSQLiteQuery(sql, new Object[]{limit})));
     }
 
@@ -304,24 +352,49 @@ public abstract class ItemDao {
     @Query("SELECT id FROM item")
     public abstract List<Long> getAllItemIds();
 
-    @Query("SELECT COUNT(*) FROM item")
+    /**
+     * Active items only: archived items must not surface in the dashboard
+     * totals or alert computations. Use {@link #countAllItems()} for the
+     * unfiltered count (exports/backup cover totals).
+     */
+    @Query("SELECT COUNT(*) FROM item WHERE archived = 0")
     public abstract int countItems();
 
-    @Query("SELECT SUM(price * amount) FROM item")
+    /**
+     * Unfiltered COUNT across active AND archived items (backups/exports).
+     */
+    @Query("SELECT COUNT(*) FROM item")
+    public abstract int countAllItems();
+
+    /**
+     * Active items only - see {@link #countItems()}. Use
+     * {@link #sumInventoryValueIncludingArchived()} for the unfiltered sum.
+     */
+    @Query("SELECT SUM(price * amount) FROM item WHERE archived = 0")
     public abstract Double sumInventoryValue();
 
+    /**
+     * Unfiltered SUM across active AND archived items (exports with
+     * archived items included).
+     */
+    @Query("SELECT SUM(price * amount) FROM item")
+    public abstract Double sumInventoryValueIncludingArchived();
+
     @TypeConverters({Converter.class})
-    @Query("SELECT * FROM item WHERE expired_date_time IS NOT NULL" +
+    @Query("SELECT * FROM item WHERE archived = 0" +
+            " AND expired_date_time IS NOT NULL" +
             " AND expired_date_time <= :to" +
             " ORDER BY expired_date_time ASC, id ASC")
     public abstract List<Item> findItemsExpiringBefore(Date to);
 
     @TypeConverters({Converter.class})
-    @Query("SELECT COUNT(*) FROM item WHERE expired_date_time IS NOT NULL" +
+    @Query("SELECT COUNT(*) FROM item WHERE archived = 0" +
+            " AND expired_date_time IS NOT NULL" +
             " AND expired_date_time <= :to")
     public abstract int countItemsExpiringBefore(Date to);
 
-    @Query("SELECT * FROM item WHERE min_amount IS NOT NULL" +
+    @Query("SELECT * FROM item WHERE archived = 0" +
+            " AND min_amount IS NOT NULL" +
             " AND min_amount > 0" +
             " ORDER BY id ASC")
     public abstract List<Item> findItemsWithMinAmount();

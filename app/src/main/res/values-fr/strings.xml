@@ -31,8 +31,14 @@
     <string name="title_duplicate">Dupliquer</string>
     <string name="title_delete">Supprimer</string>
     <string name="success_duplicate_">Élément dupliqué: %s</string>
+    <string name="title_archive">Archiver</string>
+    <string name="title_unarchive">Désarchiver</string>
+    <string name="success_archive_item_">Élément archivé: %s</string>
+    <string name="success_unarchive_item_">Élément désarchivé: %s</string>
     <string name="progress_duplicate">Duplication…</string>
     <string name="title_items">Éléments</string>
+    <string name="title_archived_items">Éléments archivés</string>
+    <string name="title_archived">Archivés</string>
     <string name="title_checklists">Listes de contrôle</string>
     <string name="title_add_item_checklist">Ajouter une liste de contrôle</string>
     <string name="success_add_checklist_">Liste de contrôle ajoutée: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Description : %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Exporter</string>
+    <string name="export_include_archived">Inclure les éléments archivés</string>
     <string name="export_spreadsheet">Exporter le tableur</string>
     <string name="share_spreadsheet_file">Partager le fichier tableur</string>
     <string name="export_spreadsheet_failed">Échec de l\'export vers le tableur</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Expire : %1$s</string>
     <string name="report_created">Créé : %1$s</string>
     <string name="report_photo_omitted">(photo omise — limite d\'images atteinte)</string>
+    <string name="report_includes_archived">Inclut les éléments archivés</string>
+    <string name="report_archived_suffix">archivé</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Étiquettes</string>
     <string name="header_images">Images</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Titre</string>
     <string name="header_created_date_time">Date de création</string>
     <string name="header_updated_date_time">Date de mise à jour</string>
+    <string name="header_archived">Archivé</string>
     <string name="header_usage_date_time">Date d\'utilisation</string>
     <string name="header_purchase_date_time">Date d\'achat</string>
     <string name="header_maintenance_date_time">Date d\'entretien</string>

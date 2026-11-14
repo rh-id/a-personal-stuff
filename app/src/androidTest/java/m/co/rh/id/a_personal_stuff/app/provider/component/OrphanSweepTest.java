@@ -283,6 +283,41 @@ public class OrphanSweepTest {
         assertEquals("Anchor Item", remainingItems.get(0).name);
     }
 
+    @Test
+    public void sweepKeepsChildRowsOfArchivedItem() {
+        // ARCHIVING keeps the row IN the item table (only the flag flips), so
+        // getAllItemIds() still reports its id and the sweep must never treat
+        // its child rows as orphans — unlike delete, which removes the id and
+        // orphans the children by design
+        ItemState itemState = insertItem("Archived Item");
+        long itemId = itemState.getItemId();
+        itemState.getItem().archived = true;
+        mAppDb.itemDao().updateItem(itemState);
+        // sanity: the archived row is invisible to the active list...
+        assertTrue(mAppDb.itemDao().findItemStateWithLimit(100, null).isEmpty());
+        // ...but its id is still in the anchor table the sweep validates against
+        assertEquals(1, mAppDb.itemDao().getAllItemIds().size());
+
+        Date now = new Date();
+        ItemUsage usage = new ItemUsage();
+        usage.itemId = itemId;
+        usage.description = "archived usage";
+        usage.amount = 1;
+        usage.createdDateTime = now;
+        mUsageDb.itemUsageDao().insert(usage);
+
+        ItemLending lending = new ItemLending();
+        lending.itemId = itemId;
+        lending.borrowerName = "archived borrower";
+        lending.lendDateTime = now;
+        mLendingDb.itemLendingDao().insert(lending);
+
+        new OrphanSweep(mProvider).sweep();
+
+        assertEquals(1, mUsageDb.itemUsageDao().findAllItemUsages().size());
+        assertEquals(1, mLendingDb.itemLendingDao().findAllItemLendings().size());
+    }
+
     private ItemState insertItem(String name) {
         Date now = new Date();
         ItemState itemState = new ItemState();

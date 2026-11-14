@@ -1,6 +1,8 @@
 package m.co.rh.id.a_personal_stuff.base.dao;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -20,6 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import java.math.BigDecimal;
 
 import m.co.rh.id.a_personal_stuff.base.dao.ItemDao.QueryOrderBy;
 import m.co.rh.id.a_personal_stuff.base.entity.Item;
@@ -317,6 +320,90 @@ public class ItemDaoTest {
         item.updatedDateTime = updated;
         item.expiredDateTime = expired;
         return item;
+    }
+
+    // archived-flag query family tests
+
+    private void archiveItem(Item item) {
+        item.archived = true;
+        ItemState itemState = new ItemState();
+        itemState.updateItem(item);
+        mItemDao.updateItem(itemState);
+    }
+
+    /**
+     * Pins the archive query-family split: the ACTIVE-ONLY family
+     * (paged list, search, COUNT) must exclude an archived row, the
+     * ARCHIVED family must return exactly it, and the UNFILTERED family
+     * (all-states list, COUNT, findAllItems, id lookups — used by
+     * backups/exports and name/id resolution) must keep seeing it.
+     */
+    @Test
+    public void activeQueriesExcludeArchivedWhileArchivedAndUnfilteredQueriesIncludeThem() {
+        Item archivedItem = mInsertedItems.get(3);
+        archiveItem(archivedItem);
+        long archivedId = archivedItem.id;
+
+        // ACTIVE-ONLY family: the archived row is gone
+        List<String> activeNames = actualNames(
+                mItemDao.findItemStateWithLimit(ITEM_COUNT + 10, null));
+        assertFalse("archived row must not surface in the active list",
+                activeNames.contains(archivedItem.name));
+        assertEquals(ITEM_COUNT - 1, activeNames.size());
+        assertEquals(ITEM_COUNT - 1, mItemDao.countItems());
+        assertEquals(ITEM_COUNT - 1, mItemDao.searchItem("item").size());
+        assertEquals(0, mItemDao.searchItem("item-3").size());
+
+        // ARCHIVED family: exactly the archived row
+        List<String> archivedNames = actualNames(
+                mItemDao.findArchivedItemStatesWithLimit(ITEM_COUNT + 10, null));
+        assertEquals(Collections.singletonList(archivedItem.name), archivedNames);
+        assertEquals(1, mItemDao.searchArchivedItem("item").size());
+        assertEquals(archivedItem.name, mItemDao.searchArchivedItem("item-3").get(0).name);
+
+        // UNFILTERED family: the archived row stays a row and resolvable
+        assertEquals(ITEM_COUNT,
+                mItemDao.findAllItemStatesWithLimit(ITEM_COUNT + 10, null).size());
+        assertEquals(ITEM_COUNT, mItemDao.countAllItems());
+        assertEquals(ITEM_COUNT, mItemDao.findAllItems().size());
+        assertTrue(mItemDao.getAllItemIds().contains(archivedId));
+        assertEquals(1, mItemDao.findItemStatesByIds(
+                Collections.singletonList(archivedId)).size());
+        assertNotNull(mItemDao.findItemById(archivedId));
+    }
+
+    /**
+     * The aggregates and alert candidates (SUM, expiry, min-amount) are
+     * active-only: archived items must not count toward the dashboard value
+     * nor raise expiry/low-stock alerts. The default dataset rows have null
+     * prices / no expiry at epoch / no min_amount, so they contribute nothing
+     * to any of the assertions.
+     */
+    @Test
+    public void sumsAndAlertCandidateQueriesExcludeArchivedItems() {
+        Date epoch = new Date(0L);
+        Item active = item("active-priced", date(0), date(0), epoch);
+        active.price = new BigDecimal("2.00");
+        active.minAmount = 1;
+        insertItem(active);
+        Item archived = item("archived-priced", date(1), date(1), epoch);
+        archived.price = new BigDecimal("3.00");
+        archived.minAmount = 1;
+        insertItem(archived);
+        archiveItem(archived);
+
+        assertEquals(2.0, mItemDao.sumInventoryValue(), 0.0001);
+        assertEquals(5.0, mItemDao.sumInventoryValueIncludingArchived(), 0.0001);
+
+        // epoch expiry: only the two seeded items expire at/before this cutoff
+        List<Item> expiring = mItemDao.findItemsExpiringBefore(new Date(1_000L));
+        assertEquals(1, expiring.size());
+        assertEquals("active-priced", expiring.get(0).name);
+        assertEquals(1, mItemDao.countItemsExpiringBefore(new Date(1_000L)));
+
+        List<Item> minAmountItems = mItemDao.findItemsWithMinAmount();
+        assertEquals(1, minAmountItems.size());
+        assertEquals("active-priced", minAmountItems.get(0).name);
     }
 
     // static helper tests - moved from the JVM source set per owner decision

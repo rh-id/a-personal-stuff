@@ -214,6 +214,77 @@ public class PagedItemCmdTest {
         return itemState;
     }
 
+    private void archiveItem(ItemState itemState) {
+        itemState.getItem().archived = true;
+        mItemDao.updateItem(itemState);
+    }
+
+    @Test
+    public void archivedOnlyLoadsOnlyArchivedRowsWhileDefaultLoadsActiveRows() {
+        insertItem("Active A", null);
+        insertItem("Active B", null);
+        archiveItem(insertItem("Archived C", null));
+
+        PagedItemCmd activeCmd = new PagedItemCmd(mProvider);
+        activeCmd.refresh();
+        assertEquals(2, activeCmd.getAllItems().size());
+
+        PagedItemCmd archivedCmd = new PagedItemCmd(mProvider);
+        archivedCmd.setArchivedOnly(true);
+        archivedCmd.refresh();
+        assertEquals(1, archivedCmd.getAllItems().size());
+        assertEquals("Archived C", archivedCmd.getAllItems().get(0).getItemName());
+    }
+
+    @Test
+    public void searchInActiveModeDropsArchivedTagMatches() {
+        // regression for the tag-search union leak: searchItemTag has no
+        // archive filter, so the archived "Beans" row enters the id union via
+        // its tag AND matches by name; the post-filter must drop it from the
+        // ACTIVE results
+        archiveItem(insertItem("Beans", "beans"));
+
+        PagedItemCmd pagedItemCmd = new PagedItemCmd(mProvider);
+        pagedItemCmd.search("beans");
+
+        assertTrue(pagedItemCmd.getAllItems().isEmpty());
+    }
+
+    @Test
+    public void archivedModeNameSearchFindsTaglessArchivedItemActiveModeDoesNot() {
+        // regression for the mode-aware text query: a TAGLESS archived item
+        // can only enter the search union through the text query, so the
+        // archived page's name search must hit searchArchivedItem — the
+        // active-only searchItem would strand it (and its active-mode
+        // counterpart must keep it out)
+        archiveItem(insertItem("Tagless Archived", null));
+
+        PagedItemCmd archivedCmd = new PagedItemCmd(mProvider);
+        archivedCmd.setArchivedOnly(true);
+        archivedCmd.search("tagless");
+        assertEquals(1, archivedCmd.getAllItems().size());
+        assertEquals("Tagless Archived", archivedCmd.getAllItems().get(0).getItemName());
+
+        PagedItemCmd activeCmd = new PagedItemCmd(mProvider);
+        activeCmd.search("tagless");
+        assertTrue(activeCmd.getAllItems().isEmpty());
+    }
+
+    @Test
+    public void searchInArchivedModeKeepsOnlyArchivedMatches() {
+        // mirrored leak: the ACTIVE "Beans" row matches the same tag union
+        // but must not surface in ARCHIVED search results
+        insertItem("Beans", "beans");
+        archiveItem(insertItem("Archived Beans", "beans"));
+
+        PagedItemCmd pagedItemCmd = new PagedItemCmd(mProvider);
+        pagedItemCmd.setArchivedOnly(true);
+        pagedItemCmd.search("beans");
+
+        assertEquals(1, pagedItemCmd.getAllItems().size());
+        assertEquals("Archived Beans", pagedItemCmd.getAllItems().get(0).getItemName());
+    }
+
     private class TestProviderModule implements ProviderModule {
         @Override
         public void provides(ProviderRegistry providerRegistry, Provider provider) {

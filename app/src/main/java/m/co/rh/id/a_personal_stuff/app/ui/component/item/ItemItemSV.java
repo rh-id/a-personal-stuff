@@ -19,6 +19,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import androidx.core.content.ContextCompat;
 import androidx.core.os.ConfigurationCompat;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.chip.Chip;
 
 import java.io.File;
@@ -117,6 +118,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     private transient OnItemEditClicked mOnItemEditClicked;
     private transient OnItemDeleteClicked mOnItemDeleteClicked;
     private transient OnItemDuplicateClicked mOnItemDuplicateClicked;
+    private transient OnItemArchiveClicked mOnItemArchiveClicked;
 
     public ItemItemSV() {
         this(false);
@@ -175,6 +177,8 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         TextView barcodeText = rootLayout.findViewById(R.id.text_barcode);
         Button editButton = rootLayout.findViewById(R.id.button_edit);
         editButton.setOnClickListener(this);
+        MaterialButton archiveButton = rootLayout.findViewById(R.id.button_archive);
+        archiveButton.setOnClickListener(this);
         Button deleteButton = rootLayout.findViewById(R.id.button_delete);
         deleteButton.setOnClickListener(this);
         Button moreActionButton = rootLayout.findViewById(R.id.button_more_action);
@@ -219,13 +223,14 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                         .subscribe(compact -> {
                             ConstraintSet set = compact ? compactSet : detailedSet;
                             set.applyTo(constraintRoot);
-                            // button_edit/button_delete live nested inside the action
-                            // container, so ConstraintSet (which targets direct
+                            // button_edit/button_delete/button_archive live nested inside
+                            // the action container, so ConstraintSet (which targets direct
                             // children) can't reliably change their visibility — do it
                             // here. In compact mode only the overflow button shows.
                             int secondaryVisibility = compact ? View.GONE : View.VISIBLE;
                             editButton.setVisibility(secondaryVisibility);
                             deleteButton.setVisibility(secondaryVisibility);
+                            archiveButton.setVisibility(secondaryVisibility);
                             // Re-publish the current item so data-driven visibility
                             // (e.g. thumbnail hidden when there's no image, description
                             // hidden when empty, detailed-only fields in detailed mode)
@@ -357,6 +362,23 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                                     tagDisplayContainer.setVisibility(View.GONE);
                                 }
                             }
+                            // Archive state drives the archive button's icon (archive
+                            // vs unarchive) and hides the overflow menu while archived
+                            // (delete stays reachable through the archive page's card).
+                            // Applied on EVERY emission, unconditionally: both writes
+                            // are idempotent (View.setVisibility no-ops when unchanged),
+                            // so re-publishing the same state (e.g. the compact-mode
+                            // switch re-publishing after applyTo) is cheap and the views
+                            // self-heal after any reset. button_archive's own visibility
+                            // is NOT touched here: the compact block owns it.
+                            boolean archived = itemState.isArchived();
+                            // the icons live in :base (same package-R rule as
+                            // the base color/transition references in this file)
+                            archiveButton.setIconResource(archived
+                                    ? m.co.rh.id.a_personal_stuff.base.R.drawable.ic_unarchive_black
+                                    : m.co.rh.id.a_personal_stuff.base.R.drawable.ic_archive_black);
+                            moreActionButton.setVisibility(archived
+                                    ? View.GONE : View.VISIBLE);
                         }));
         mRxDisposer.add("createView_onItemStateChanged_updateUsageCount",
                 mItemState.getSubject().observeOn(Schedulers.from(mExecutorService))
@@ -563,6 +585,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             if (mOnItemDeleteClicked != null) {
                 mOnItemDeleteClicked.itemItemSv_onItemDeleteClicked(mItemState.getValue());
             }
+        } else if (id == R.id.button_archive) {
+            if (mOnItemArchiveClicked != null) {
+                mOnItemArchiveClicked.itemItemSv_onItemArchiveClicked(mItemState.getValue());
+            }
         } else if (id == R.id.button_more_action) {
             showMoreActionList(view);
         } else if (id == R.id.button_usage_count) {
@@ -600,6 +626,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 context.getString(m.co.rh.id.a_personal_stuff.item_checklist.R.string.title_add_to_checklist),
                 context.getString(R.string.title_duplicate),
                 DIVIDER,
+                context.getString(R.string.title_archive),
                 context.getString(R.string.title_delete),
         };
         int[] actionIds = new int[]{
@@ -611,6 +638,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
                 R.id.menu_item_lending_list,
                 R.id.menu_item_add_to_checklist,
                 R.id.menu_item_duplicate,
+                R.id.menu_item_archive,
                 R.id.menu_item_delete,
         };
         ListPopupWindow listPopupWindow = new ListPopupWindow(context);
@@ -719,6 +747,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
             if (mOnItemDuplicateClicked != null) {
                 mOnItemDuplicateClicked.itemItemSv_onItemDuplicateClicked(mItemState.getValue());
             }
+        } else if (id == R.id.menu_item_archive) {
+            if (mOnItemArchiveClicked != null) {
+                mOnItemArchiveClicked.itemItemSv_onItemArchiveClicked(mItemState.getValue());
+            }
         } else if (id == R.id.menu_item_delete) {
             if (mOnItemDeleteClicked != null) {
                 mOnItemDeleteClicked.itemItemSv_onItemDeleteClicked(mItemState.getValue());
@@ -746,6 +778,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         mOnItemDuplicateClicked = onItemDuplicateClicked;
     }
 
+    public void setOnItemArchiveClicked(OnItemArchiveClicked onItemArchiveClicked) {
+        mOnItemArchiveClicked = onItemArchiveClicked;
+    }
+
     public interface OnItemEditClicked {
         void itemItemSv_onItemEditClicked(ItemState itemState);
     }
@@ -756,6 +792,10 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     public interface OnItemDuplicateClicked {
         void itemItemSv_onItemDuplicateClicked(ItemState itemState);
+    }
+
+    public interface OnItemArchiveClicked {
+        void itemItemSv_onItemArchiveClicked(ItemState itemState);
     }
 
     /**

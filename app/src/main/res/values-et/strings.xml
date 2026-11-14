@@ -31,8 +31,14 @@
     <string name="title_duplicate">Dubleeri</string>
     <string name="title_delete">Kustuta</string>
     <string name="success_duplicate_">Ese dubleeritud: %s</string>
+    <string name="title_archive">Arhiveeri</string>
+    <string name="title_unarchive">Taasta</string>
+    <string name="success_archive_item_">Ese arhiveeritud: %s</string>
+    <string name="success_unarchive_item_">Ese arhiivist taastatud: %s</string>
     <string name="progress_duplicate">Dubleerimine…</string>
     <string name="title_items">Esemed</string>
+    <string name="title_archived_items">Arhiveeritud esemed</string>
+    <string name="title_archived">Arhiveeritud</string>
     <string name="title_checklists">Kontroll-loendid</string>
     <string name="title_add_item_checklist">Lisa kontroll-loend</string>
     <string name="success_add_checklist_">Kontroll-loend lisatud: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Kirjeldus: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Ekspordi</string>
+    <string name="export_include_archived">Kaasa arhiveeritud esemed</string>
     <string name="export_spreadsheet">Ekspordi arvutustabel</string>
     <string name="share_spreadsheet_file">Jaga arvutustabelifaili</string>
     <string name="export_spreadsheet_failed">Arvutustabelisse eksportimine nurjus</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Aegub: %1$s</string>
     <string name="report_created">Loodud: %1$s</string>
     <string name="report_photo_omitted">(foto jäeti välja — pildilimiit on saavutatud)</string>
+    <string name="report_includes_archived">Sisaldab arhiveeritud esemeid</string>
+    <string name="report_archived_suffix">arhiveeritud</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Sildid</string>
     <string name="header_images">Pildid</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Pealkiri</string>
     <string name="header_created_date_time">Loodud</string>
     <string name="header_updated_date_time">Uuendatud</string>
+    <string name="header_archived">Arhiveeritud</string>
     <string name="header_usage_date_time">Kasutamise aeg</string>
     <string name="header_purchase_date_time">Ostmise aeg</string>
     <string name="header_maintenance_date_time">Hooldamise aeg</string>

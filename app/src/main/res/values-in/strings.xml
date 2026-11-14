@@ -31,8 +31,14 @@
     <string name="title_duplicate">Duplikat</string>
     <string name="title_delete">Hapus</string>
     <string name="success_duplicate_">Item diduplikasi: %s</string>
+    <string name="title_archive">Arsipkan</string>
+    <string name="title_unarchive">Keluarkan dari arsip</string>
+    <string name="success_archive_item_">Item diarsipkan: %s</string>
+    <string name="success_unarchive_item_">Item dikeluarkan dari arsip: %s</string>
     <string name="progress_duplicate">Menduplikasi…</string>
     <string name="title_items">Item</string>
+    <string name="title_archived_items">Item yang diarsipkan</string>
+    <string name="title_archived">Arsip</string>
     <string name="title_checklists">Daftar periksa</string>
     <string name="title_add_item_checklist">Tambah daftar periksa</string>
     <string name="success_add_checklist_">Daftar periksa ditambahkan: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Deskripsi: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Ekspor</string>
+    <string name="export_include_archived">Sertakan item yang diarsipkan</string>
     <string name="export_spreadsheet">Ekspor Spreadsheet</string>
     <string name="share_spreadsheet_file">Bagikan file spreadsheet</string>
     <string name="export_spreadsheet_failed">Ekspor ke spreadsheet gagal</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Kedaluwarsa: %1$s</string>
     <string name="report_created">Dibuat: %1$s</string>
     <string name="report_photo_omitted">(foto dihilangkan — batas gambar tercapai)</string>
+    <string name="report_includes_archived">Termasuk item yang diarsipkan</string>
+    <string name="report_archived_suffix">diarsipkan</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Tag</string>
     <string name="header_images">Gambar</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Judul</string>
     <string name="header_created_date_time">Tanggal dibuat</string>
     <string name="header_updated_date_time">Tanggal diperbarui</string>
+    <string name="header_archived">Arsip</string>
     <string name="header_usage_date_time">Tanggal pemakaian</string>
     <string name="header_purchase_date_time">Tanggal pembelian</string>
     <string name="header_maintenance_date_time">Tanggal perawatan</string>

@@ -31,8 +31,14 @@
     <string name="title_duplicate">Dupliser</string>
     <string name="title_delete">Slett</string>
     <string name="success_duplicate_">Gjenstand duplisert: %s</string>
+    <string name="title_archive">Arkiver</string>
+    <string name="title_unarchive">Fjern fra arkiv</string>
+    <string name="success_archive_item_">Gjenstand arkivert: %s</string>
+    <string name="success_unarchive_item_">Gjenstand fjernet fra arkivet: %s</string>
     <string name="progress_duplicate">Dupliserer…</string>
     <string name="title_items">Gjenstander</string>
+    <string name="title_archived_items">Arkiverte gjenstander</string>
+    <string name="title_archived">Arkivert</string>
     <string name="title_checklists">Sjekklister</string>
     <string name="title_add_item_checklist">Legg til sjekkliste</string>
     <string name="success_add_checklist_">Sjekkliste lagt til: %s</string>
@@ -87,6 +93,8 @@
     <string name="movement_description">Beskrivelse: %s</string>
 
     <!-- Export Spreadsheet -->
+    <string name="export">Eksporter</string>
+    <string name="export_include_archived">Inkluder arkiverte gjenstander</string>
     <string name="export_spreadsheet">Eksporter regneark</string>
     <string name="share_spreadsheet_file">Del regnearkfil</string>
     <string name="export_spreadsheet_failed">Eksport til regneark feilet</string>
@@ -120,6 +128,8 @@
     <string name="report_expires">Utløper: %1$s</string>
     <string name="report_created">Opprettet: %1$s</string>
     <string name="report_photo_omitted">(foto utelatt — bildergrense nådd)</string>
+    <string name="report_includes_archived">Inkluderer arkiverte gjenstander</string>
+    <string name="report_archived_suffix">arkivert</string>
     <string name="header_id">ID</string>
     <string name="header_tags">Merker</string>
     <string name="header_images">Bilder</string>
@@ -130,6 +140,7 @@
     <string name="header_title">Tittel</string>
     <string name="header_created_date_time">Opprettet</string>
     <string name="header_updated_date_time">Oppdatert</string>
+    <string name="header_archived">Arkivert</string>
     <string name="header_usage_date_time">Brukstidspunkt</string>
     <string name="header_purchase_date_time">Kjøpstidspunkt</string>
     <string name="header_maintenance_date_time">Vedlikeholdstidspunkt</string>

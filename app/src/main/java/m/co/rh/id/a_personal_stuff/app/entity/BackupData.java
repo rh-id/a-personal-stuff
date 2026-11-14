@@ -79,6 +79,7 @@ public class BackupData {
             obj.put("expiredDateTime", item.expiredDateTime != null ? item.expiredDateTime.getTime() : JSONObject.NULL);
             obj.put("createdDateTime", item.createdDateTime != null ? item.createdDateTime.getTime() : JSONObject.NULL);
             obj.put("updatedDateTime", item.updatedDateTime != null ? item.updatedDateTime.getTime() : JSONObject.NULL);
+            obj.put("archived", item.archived);
             arr.put(obj);
         }
         return arr;
@@ -101,6 +102,7 @@ public class BackupData {
             item.expiredDateTime = obj.isNull("expiredDateTime") ? null : new Date(obj.getLong("expiredDateTime"));
             item.createdDateTime = obj.isNull("createdDateTime") ? null : new Date(obj.getLong("createdDateTime"));
             item.updatedDateTime = obj.isNull("updatedDateTime") ? null : new Date(obj.getLong("updatedDateTime"));
+            item.archived = obj.optBoolean("archived", false);
             list.add(item);
         }
         return list;
