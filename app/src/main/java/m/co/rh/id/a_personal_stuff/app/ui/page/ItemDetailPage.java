@@ -341,6 +341,12 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
         inputBarcode.setThreshold(1);
         inputBarcode.setAdapter(new ItemSuggestionAdapter
                 (activity, R.layout.adapter_item_barcode, mBarcodeSuggestionQuery));
+        inputBarcode.setOnItemClickListener((parent, view, position, id) -> {
+            // suggestion rows are ModelBarcodeDisplay: the full item behind
+            // the barcode the user just picked (default text replacement kept)
+            Item item = (Item) parent.getItemAtPosition(position);
+            offerPrefill(item);
+        });
         EditText inputExpiredDateTime = rootLayout.findViewById(R.id.input_text_expired_date_time);
         inputExpiredDateTime.setOnClickListener(this);
         ViewGroup tagDisplayContainer = rootLayout.findViewById(R.id.container_tag_display);
@@ -387,6 +393,8 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
                             if (item.price != null) {
                                 inputPrice.setText(NumberFormat.getInstance(locale)
                                         .format(item.price));
+                            } else {
+                                inputPrice.setText(null);
                             }
                             inputDescription.setText(item.description);
                             inputBarcode.setText(item.barcode);
@@ -617,7 +625,65 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
     }
 
     private void updateBarcodeResult(NavRoute navRoute) {
-        mItemState.updateBarcode(mNavBarcodeConfig.result_scanBarcodePage_barcode(navRoute));
+        String barcode = mNavBarcodeConfig.result_scanBarcodePage_barcode(navRoute);
+        if (barcode != null) {
+            // null means the scanner was cancelled - keep the current barcode
+            mItemState.updateBarcode(barcode);
+            // scan-to-prefill: a unique barcode match offers to copy that
+            // item's plain fields into the form
+            mRxDisposer.add("updateBarcodeResult",
+                    mQueryItemCmd.findItemStatesByBarcode(barcode)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((itemStates, throwable) -> {
+                                if (throwable != null) {
+                                    Throwable cause = throwable.getCause();
+                                    if (cause == null) cause = throwable;
+                                    mLogger.e(TAG, cause.getMessage(), cause);
+                                    return;
+                                }
+                                if (itemStates.size() == 1) {
+                                    offerPrefill(itemStates.get(0).getItem());
+                                }
+                            }));
+        }
+    }
+
+    /**
+     * Offers to copy the plain fields of the item carrying the current
+     * barcode into this form (add AND edit mode). Re-scanning / re-selecting
+     * the item being edited itself is skipped. Never mutates anything before
+     * the user confirms the dialog.
+     */
+    private void offerPrefill(Item sourceItem) {
+        if (isUpdate() && sourceItem.id != null
+                && sourceItem.id.equals(mItemState.getItemId())) {
+            return;
+        }
+        Context context = mSvProvider.getContext();
+        String title = context.getString(R.string.title_prefill_item);
+        String message = context.getString(R.string.confirm_prefill_item_, sourceItem.name);
+        mNavigator.push(mNavExtDialogConfig.route_confirmDialog(),
+                mNavExtDialogConfig.args_confirmDialog(title, message),
+                (navigator, navRoute, activity, currentView) -> confirmPrefill(navRoute, sourceItem));
+    }
+
+    private void confirmPrefill(NavRoute navRoute, Item sourceItem) {
+        Boolean isConfirm = mNavExtDialogConfig.result_confirmDialog(navRoute);
+        if (isConfirm != null && isConfirm) {
+            // build from the LIVE current item so id/archived/created/updated
+            // survive in both modes, then overwrite ONLY the plain fields from
+            // the source: barcode is identical already / already in the field,
+            // images and tags are persisted separately (copying them here would
+            // overwrite the row on save or clash with edit-mode commands)
+            Item item = mItemState.getItem();
+            item.name = sourceItem.name;
+            item.amount = sourceItem.amount;
+            item.minAmount = sourceItem.minAmount;
+            item.price = sourceItem.price;
+            item.description = sourceItem.description;
+            item.expiredDateTime = sourceItem.expiredDateTime;
+            mItemState.updateItem(item);
+        }
     }
 
     private void updateExpiredDateTime(NavRoute navRoute) {
@@ -718,6 +784,7 @@ public class ItemDetailPage extends StatefulView<Activity> implements RequireNav
             id = item.id;
             name = item.name;
             amount = item.amount;
+            minAmount = item.minAmount;
             price = item.price;
             description = item.description;
             barcode = item.barcode;

@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Gesamtwert aller Artikel (Preis × Menge)</string>
     <string name="statistics_expired_hint">Abgelaufene Artikel, die sich noch im Bestand befinden</string>
     <string name="statistics_empty">Noch nichts zu analysieren. Füge Artikel, Einkäufe und Verwendungen hinzu, um hier deine Statistiken zu sehen.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Artikel vorbelegen?</string>
+    <string name="confirm_prefill_item_">Artikel \'%s\' hat diesen Barcode. Daten vorbelegen?</string>
+    <string name="open_in_open_food_facts">In Open Food Facts öffnen</string>
 </resources>

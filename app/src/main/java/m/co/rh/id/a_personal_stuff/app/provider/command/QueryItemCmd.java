@@ -32,6 +32,13 @@ public class QueryItemCmd {
                 mItemDao.findItemStatesByIds(Collections.singletonList(itemId)).get(0)).subscribeOn(Schedulers.from(mExecutorService));
     }
 
+    public Single<List<ItemState>> findItemStatesByBarcode(String barcode) {
+        return Single.fromCallable(() -> {
+            if (barcode == null) return Collections.<ItemState>emptyList();
+            return mItemDao.findItemStatesByBarcode(barcode.trim());
+        }).subscribeOn(Schedulers.from(mExecutorService));
+    }
+
     public Single<LinkedHashSet<String>> searchItemTag(String search) {
         return Single.fromCallable(() ->
         {

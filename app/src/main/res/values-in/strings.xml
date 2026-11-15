@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Total nilai semua item (harga × jumlah)</string>
     <string name="statistics_expired_hint">Item kedaluwarsa yang masih dalam stok</string>
     <string name="statistics_empty">Belum ada data untuk dianalisis. Tambahkan item, pembelian, dan penggunaan untuk melihat statistik Anda di sini.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Isi awal item?</string>
+    <string name="confirm_prefill_item_">Item \'%s\' memiliki barcode ini. Isi awal datanya?</string>
+    <string name="open_in_open_food_facts">Buka di Open Food Facts</string>
 </resources>

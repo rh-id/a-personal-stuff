@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Totalverdi av alle gjenstandar (pris × mengd)</string>
     <string name="statistics_expired_hint">Utgåtte gjenstandar som framleis er på lager</string>
     <string name="statistics_empty">Ingen data å analysere enno. Legg til gjenstandar, kjøp og bruk for å sjå statistikken din her.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Førehandsutfylla gjenstanden?</string>
+    <string name="confirm_prefill_item_">Gjenstanden \'%s\' har denne strekkoden. Førehandsutfylla dataa?</string>
+    <string name="open_in_open_food_facts">Opna i Open Food Facts</string>
 </resources>

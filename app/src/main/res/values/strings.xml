@@ -21,6 +21,10 @@
     <string name="form_description">Description</string>
     <string name="form_barcode">Barcode</string>
     <string name="scan">Scan</string>
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Prefill item?</string>
+    <string name="confirm_prefill_item_">Item \'%s\' has this barcode. Prefill its data?</string>
+    <string name="open_in_open_food_facts">Open in Open Food Facts</string>
     <string name="save">Save</string>
     <string name="form_expired_date_time">Expired date time</string>
     <string name="success_add_item_">Item added: %s</string>

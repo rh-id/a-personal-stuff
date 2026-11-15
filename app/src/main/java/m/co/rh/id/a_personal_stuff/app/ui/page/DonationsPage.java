@@ -1,10 +1,7 @@
 package m.co.rh.id.a_personal_stuff.app.ui.page;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
 import android.text.method.LinkMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
@@ -14,6 +11,7 @@ import android.widget.TextView;
 import androidx.core.text.HtmlCompat;
 
 import m.co.rh.id.a_personal_stuff.R;
+import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -43,18 +41,14 @@ public class DonationsPage extends StatefulView<Activity> implements View.OnClic
     public void onClick(View view) {
         int id = view.getId();
         if (id == R.id.button_donate) {
-            Uri webpage = Uri.parse(DONATE_URL);
-            Intent webIntent = new Intent(Intent.ACTION_VIEW, webpage);
             Context context = view.getContext();
-            try {
-                context.startActivity(webIntent);
-            } catch (ActivityNotFoundException activityNotFoundException) {
-                mProvider.get(ILogger.class).e(TAG,
-                        "No application available to open donation page", activityNotFoundException);
-                return;
+            boolean opened = UiUtils.openWebUrl(context,
+                    TAG, DONATE_URL,
+                    "No application available to open donation page");
+            if (opened) {
+                mProvider.get(ILogger.class)
+                        .i(TAG, context.getString(R.string.donation_thank_you));
             }
-            mProvider.get(ILogger.class)
-                    .i(TAG, context.getString(R.string.donation_thank_you));
         }
     }
 }

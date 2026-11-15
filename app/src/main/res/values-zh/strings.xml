@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">所有条目的总价值（价格 × 数量）</string>
     <string name="statistics_expired_hint">仍在库存中的已过期条目</string>
     <string name="statistics_empty">暂无可分析的数据。添加条目、购买和使用记录后即可在此查看统计。</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">预填条目？</string>
+    <string name="confirm_prefill_item_">条目 \'%s\' 具有此条形码。是否预填其数据？</string>
+    <string name="open_in_open_food_facts">在 Open Food Facts 中打开</string>
 </resources>

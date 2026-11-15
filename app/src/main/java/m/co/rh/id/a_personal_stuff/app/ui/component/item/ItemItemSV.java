@@ -52,6 +52,7 @@ import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.component.ItemFileHelper;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
+import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.command.QueryItemChecklistCmd;
 import m.co.rh.id.a_personal_stuff.item_checklist.provider.notifier.ItemChecklistChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistSelectPage;
@@ -69,6 +70,7 @@ import m.co.rh.id.a_personal_stuff.item_usage.entity.ItemUsage;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.command.QueryItemUsageCmd;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.item_usage.ui.page.ItemUsagesPage;
+import m.co.rh.id.alogger.ILogger;
 import m.co.rh.id.anavigator.RouteOptions;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
@@ -78,10 +80,13 @@ import m.co.rh.id.aprovider.Provider;
 
 public class ItemItemSV extends StatefulView<Activity> implements RequireComponent<Provider>, View.OnClickListener {
 
+    private static final String TAG = ItemItemSV.class.getName();
+
     @NavInject
     private transient INavigator mNavigator;
 
     private transient Provider mSvProvider;
+    private transient ILogger mLogger;
     private transient ExecutorService mExecutorService;
     private transient ItemFileHelper mItemFileHelper;
     private transient RxDisposer mRxDisposer;
@@ -146,6 +151,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
     @Override
     public void provideComponent(Provider provider) {
         mSvProvider = provider.get(IStatefulViewProvider.class);
+        mLogger = mSvProvider.get(ILogger.class);
         mExecutorService = mSvProvider.get(ExecutorService.class);
         mItemFileHelper = mSvProvider.get(ItemFileHelper.class);
         mRxDisposer = mSvProvider.get(RxDisposer.class);
@@ -615,32 +621,47 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     private void showMoreActionList(View anchor) {
         Context context = anchor.getContext();
-        Object[] items = new Object[]{
-                context.getString(R.string.title_stock_movements),
-                context.getString(m.co.rh.id.a_personal_stuff.item_usage.R.string.title_usages),
-                context.getString(m.co.rh.id.a_personal_stuff.item_purchase.R.string.title_purchases),
-                context.getString(m.co.rh.id.a_personal_stuff.item_maintenance.R.string.title_maintenances),
-                context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders),
-                context.getString(m.co.rh.id.a_personal_stuff.item_lending.R.string.title_lendings),
-                DIVIDER,
-                context.getString(m.co.rh.id.a_personal_stuff.item_checklist.R.string.title_add_to_checklist),
-                context.getString(R.string.title_duplicate),
-                DIVIDER,
-                context.getString(R.string.title_archive),
-                context.getString(R.string.title_delete),
-        };
-        int[] actionIds = new int[]{
-                R.id.menu_item_stock_movements,
-                R.id.menu_item_usage_list,
-                R.id.menu_item_purchase_list,
-                R.id.menu_item_maintenance_list,
-                R.id.menu_item_reminder_list,
-                R.id.menu_item_lending_list,
-                R.id.menu_item_add_to_checklist,
-                R.id.menu_item_duplicate,
-                R.id.menu_item_archive,
-                R.id.menu_item_delete,
-        };
+        // "Open in Open Food Facts" only makes sense when the item has a
+        // barcode, so that row is added conditionally (see below).
+        ItemState itemState = mItemState.getValue();
+        boolean hasBarcode = itemState != null
+                && itemState.getItemBarcode() != null
+                && !itemState.getItemBarcode().trim().isEmpty();
+        List<Object> itemsList = new ArrayList<>();
+        itemsList.add(context.getString(R.string.title_stock_movements));
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_usage.R.string.title_usages));
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_purchase.R.string.title_purchases));
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_maintenance.R.string.title_maintenances));
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_reminder.R.string.title_reminders));
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_lending.R.string.title_lendings));
+        itemsList.add(DIVIDER);
+        itemsList.add(context.getString(m.co.rh.id.a_personal_stuff.item_checklist.R.string.title_add_to_checklist));
+        itemsList.add(context.getString(R.string.title_duplicate));
+        if (hasBarcode) {
+            itemsList.add(context.getString(R.string.open_in_open_food_facts));
+        }
+        itemsList.add(DIVIDER);
+        itemsList.add(context.getString(R.string.title_archive));
+        itemsList.add(context.getString(R.string.title_delete));
+        List<Integer> actionIdsList = new ArrayList<>();
+        actionIdsList.add(R.id.menu_item_stock_movements);
+        actionIdsList.add(R.id.menu_item_usage_list);
+        actionIdsList.add(R.id.menu_item_purchase_list);
+        actionIdsList.add(R.id.menu_item_maintenance_list);
+        actionIdsList.add(R.id.menu_item_reminder_list);
+        actionIdsList.add(R.id.menu_item_lending_list);
+        actionIdsList.add(R.id.menu_item_add_to_checklist);
+        actionIdsList.add(R.id.menu_item_duplicate);
+        if (hasBarcode) {
+            actionIdsList.add(R.id.menu_item_open_off);
+        }
+        actionIdsList.add(R.id.menu_item_archive);
+        actionIdsList.add(R.id.menu_item_delete);
+        Object[] items = itemsList.toArray(new Object[0]);
+        int[] actionIds = new int[actionIdsList.size()];
+        for (int i = 0; i < actionIdsList.size(); i++) {
+            actionIds[i] = actionIdsList.get(i);
+        }
         ListPopupWindow listPopupWindow = new ListPopupWindow(context);
         MoreActionAdapter adapter = new MoreActionAdapter(context, items);
         listPopupWindow.setAdapter(adapter);
@@ -655,7 +676,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         listPopupWindow.setOnItemClickListener((parent, view, position, id1) -> {
             int actionIndex = adapter.actionIndexForPosition(position);
             if (actionIndex >= 0 && actionIndex < actionIds.length) {
-                handleMoreAction(actionIds[actionIndex]);
+                handleMoreAction(actionIds[actionIndex], context);
             }
             listPopupWindow.dismiss();
             mMoreActionPopup = null;
@@ -712,7 +733,7 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
 
     private static final Object DIVIDER = new Object();
 
-    private void handleMoreAction(int id) {
+    private void handleMoreAction(int id, Context context) {
         if (id == R.id.menu_item_stock_movements) {
             Long itemId = mItemState.getValue().getItemId();
             mNavigator.push(Routes.ITEM_STOCK_MOVEMENTS_PAGE,
@@ -746,6 +767,19 @@ public class ItemItemSV extends StatefulView<Activity> implements RequireCompone
         } else if (id == R.id.menu_item_duplicate) {
             if (mOnItemDuplicateClicked != null) {
                 mOnItemDuplicateClicked.itemItemSv_onItemDuplicateClicked(mItemState.getValue());
+            }
+        } else if (id == R.id.menu_item_open_off) {
+            ItemState itemState = mItemState.getValue();
+            if (itemState != null) {
+                String barcode = itemState.getItemBarcode();
+                if (barcode != null && !barcode.trim().isEmpty()) {
+                    String url = "https://world.openfoodfacts.org/product/"
+                            + Uri.encode(barcode.trim());
+                    // context is the anchor's context (passed from the popup's
+                    // click listener) — the same activity hosting this card
+                    UiUtils.openWebUrl(context, TAG, url,
+                            "No application available to open Open Food Facts page");
+                }
             }
         } else if (id == R.id.menu_item_archive) {
             if (mOnItemArchiveClicked != null) {

@@ -479,6 +479,11 @@ public class ArchiveItemCmdTest {
         }
 
         @Override
+        public List<Item> findItemsByBarcode(String barcode) {
+            throw new UnsupportedOperationException(NOT_USED_MESSAGE);
+        }
+
+        @Override
         protected List<Item> findItemsRaw(SupportSQLiteQuery query) {
             throw new UnsupportedOperationException(NOT_USED_MESSAGE);
         }

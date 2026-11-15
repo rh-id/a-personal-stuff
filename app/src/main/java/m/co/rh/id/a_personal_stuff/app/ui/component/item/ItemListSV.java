@@ -529,7 +529,31 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
     private void updateScanResult(NavRoute navRoute, View currentView) {
         String barcode = mNavBarcodeConfig.result_scanBarcodePage_barcode(navRoute);
         if (barcode != null) {
-            mSearchEditText.onNext(barcode);
+            if (mSelectMode || mCheckMode || mArchivedMode) {
+                // recall only makes sense on the plain list: selection / check
+                // / archived lists keep the search-box behavior
+                mSearchEditText.onNext(barcode);
+                return;
+            }
+            // scan-to-recall: a unique barcode match opens that item's detail
+            // page, anything else falls back to the search box below
+            mRxDisposer.add("updateScanResult",
+                    mQueryItemCmd.findItemStatesByBarcode(barcode)
+                            .observeOn(AndroidSchedulers.mainThread())
+                            .subscribe((itemStates, throwable) -> {
+                                if (throwable != null) {
+                                    Throwable cause = throwable.getCause();
+                                    if (cause == null) cause = throwable;
+                                    mLogger.e(TAG, cause.getMessage(), cause);
+                                    return;
+                                }
+                                if (itemStates.size() == 1) {
+                                    mNavigator.push(Routes.ITEM_DETAIL_PAGE,
+                                            ItemDetailPage.Args.forUpdate(itemStates.get(0).clone()));
+                                } else {
+                                    mSearchEditText.onNext(barcode);
+                                }
+                            }));
         }
     }
 

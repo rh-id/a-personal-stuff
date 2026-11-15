@@ -406,6 +406,97 @@ public class ItemDaoTest {
         assertEquals("active-priced", minAmountItems.get(0).name);
     }
 
+    // barcode exact-match query family tests
+
+    private Item itemWithBarcode(String name, String barcode, Date created) {
+        Item item = item(name, created, created, null);
+        item.barcode = barcode;
+        return item;
+    }
+
+    /**
+     * Pins the scan-to-recall barcode lookup: exact string equality only
+     * ("123" must NOT match "0123" or "1234"), with the plain item list and
+     * the assembled state list returning the same rows.
+     */
+    @Test
+    public void findItemsByBarcodeMatchesExactStringOnly() {
+        Item exact = itemWithBarcode("exact", "123", date(0));
+        insertItem(exact);
+        insertItem(itemWithBarcode("padded-prefix", "0123", date(1)));
+        insertItem(itemWithBarcode("extended", "1234", date(2)));
+
+        List<Item> items = mItemDao.findItemsByBarcode("123");
+        assertEquals(1, items.size());
+        assertEquals("exact", items.get(0).name);
+
+        List<ItemState> itemStates = mItemDao.findItemStatesByBarcode("123");
+        assertEquals(1, itemStates.size());
+        assertEquals(exact.id, itemStates.get(0).getItemId());
+        assertEquals("exact", itemStates.get(0).getItemName());
+    }
+
+    /**
+     * The scan-to-recall recall target must be the most recently created
+     * item carrying the barcode: created_date_time DESC.
+     */
+    @Test
+    public void findItemsByBarcodeOrdersMostRecentCreatedFirst() {
+        Item older = itemWithBarcode("older", "777", date(0));
+        Item newer = itemWithBarcode("newer", "777", date(5));
+        insertItem(older);
+        insertItem(newer);
+
+        List<ItemState> itemStates = mItemDao.findItemStatesByBarcode("777");
+        assertEquals(2, itemStates.size());
+        assertEquals("newer", itemStates.get(0).getItemName());
+        assertEquals("older", itemStates.get(1).getItemName());
+    }
+
+    /**
+     * Same createdDateTime falls back to id DESC (rows inserted later / with
+     * the higher auto id surface first).
+     */
+    @Test
+    public void findItemsByBarcodeBreaksCreatedTiesByHigherIdFirst() {
+        Item first = itemWithBarcode("first", "888", date(3));
+        Item second = itemWithBarcode("second", "888", date(3));
+        insertItem(first); // lower auto id
+        insertItem(second); // higher auto id
+
+        List<ItemState> itemStates = mItemDao.findItemStatesByBarcode("888");
+        assertEquals(2, itemStates.size());
+        assertEquals("second", itemStates.get(0).getItemName());
+        assertEquals("first", itemStates.get(1).getItemName());
+    }
+
+    @Test
+    public void findItemsByBarcodeWithNoMatchReturnsEmptyList() {
+        insertItem(itemWithBarcode("exact", "123", date(0)));
+
+        assertTrue(mItemDao.findItemsByBarcode("999").isEmpty());
+        assertTrue(mItemDao.findItemStatesByBarcode("999").isEmpty());
+    }
+
+    /**
+     * Archived items stay recallable: the barcode lookup is intentionally
+     * NOT archive-filtered, and the archive boundary test above must not
+     * leak into this family.
+     */
+    @Test
+    public void findItemsByBarcodeIncludesArchivedItems() {
+        Item active = itemWithBarcode("active", "555", date(1));
+        Item archived = itemWithBarcode("archived", "555", date(2));
+        insertItem(active);
+        insertItem(archived);
+        archiveItem(archived);
+
+        List<ItemState> itemStates = mItemDao.findItemStatesByBarcode("555");
+        assertEquals(2, itemStates.size());
+        assertEquals("archived", itemStates.get(0).getItemName());
+        assertEquals("active", itemStates.get(1).getItemName());
+    }
+
     // static helper tests - moved from the JVM source set per owner decision
 
     @Test

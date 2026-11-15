@@ -203,6 +203,19 @@ public abstract class ItemDao {
     @Query("SELECT * FROM item_tag WHERE tag LIKE '%'||:search||'%'")
     public abstract List<ItemTag> searchItemTag(String search);
 
+    /**
+     * Exact (=) barcode match, most-recent-first (created DESC, id DESC as
+     * the tiebreaker): used by the scan-to-recall lookups. Deliberately
+     * case-sensitive instead of LIKE (EAN/UPC barcodes) and deliberately NOT
+     * archive-filtered so archived items stay recallable.
+     */
+    @Query("SELECT * FROM item WHERE barcode = :barcode ORDER BY created_date_time DESC, id DESC")
+    public abstract List<Item> findItemsByBarcode(String barcode);
+
+    public List<ItemState> findItemStatesByBarcode(String barcode) {
+        return prepareItemState(findItemsByBarcode(barcode));
+    }
+
     public List<ItemState> findItemStateWithLimit(int limit, QueryOrderBy queryOrderBy) {
         return findItemStatesWhereWithLimit(WHERE_ACTIVE, limit, queryOrderBy);
     }

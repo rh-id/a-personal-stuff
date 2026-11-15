@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Kõigi esemete koguväärtus (hind × kogus)</string>
     <string name="statistics_expired_hint">Aegunud esemed, mis on veel laoseisus</string>
     <string name="statistics_empty">Siin ei ole veel midagi analüüsida. Lisa esemed, ostud ja kasutus, et siin oma statistikat näha.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Eeltäita ese?</string>
+    <string name="confirm_prefill_item_">Ese \'%s\' on selle triipkoodiga. Eeltäita andmed?</string>
+    <string name="open_in_open_food_facts">Ava Open Food Facts</string>
 </resources>

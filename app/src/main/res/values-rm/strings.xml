@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Valur total da tut ils objects (preis × quantità)</string>
     <string name="statistics_expired_hint">Objects scadids che èn anc en provisiun</string>
     <string name="statistics_empty">Anc nagut dad analysar. Agiunta objects, cumpras e utilisaziuns per vesair la statistica qua.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Preemplenir l\'object?</string>
+    <string name="confirm_prefill_item_">L\'object \'%s\' ha quest code da stgalin. Preemplenir las datas?</string>
+    <string name="open_in_open_food_facts">Avrir en Open Food Facts</string>
 </resources>

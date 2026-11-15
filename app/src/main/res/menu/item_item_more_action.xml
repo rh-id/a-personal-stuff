@@ -38,6 +38,10 @@
             android:title="@string/title_duplicate"
             app:showAsAction="ifRoom|withText" />
         <item
+            android:id="@+id/menu_item_open_off"
+            android:title="@string/open_in_open_food_facts"
+            app:showAsAction="ifRoom|withText" />
+        <item
             android:id="@+id/menu_item_archive"
             android:title="@string/title_archive"
             app:showAsAction="ifRoom|withText" />

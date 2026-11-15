@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Heildarverðmæti allra hluta (verð × magn)</string>
     <string name="statistics_expired_hint">Útrunnir hlutir sem eru enn í birgðum</string>
     <string name="statistics_empty">Engin gögn til greiningar ennþá. Bættu við hlutum, kaupum og notkun til að sjá tölfræðina hér.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Fylla út hlut fyrirfram?</string>
+    <string name="confirm_prefill_item_">Hlutur \'%s\' hefur þetta strikamerki. Fylla út gögnin fyrirfram?</string>
+    <string name="open_in_open_food_facts">Opna í Open Food Facts</string>
 </resources>

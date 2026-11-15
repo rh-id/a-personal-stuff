@@ -208,4 +208,9 @@
     <string name="statistics_summary_hint">Valore totale di tutti gli elementi (prezzo × quantità)</string>
     <string name="statistics_expired_hint">Elementi scaduti che sono ancora in scorta</string>
     <string name="statistics_empty">Niente da analizzare per ora. Aggiungi elementi, acquisti e utilizzi per vedere le tue statistiche qui.</string>
+
+    <!-- barcode scan-to-prefill / Open Food Facts deep link -->
+    <string name="title_prefill_item">Precompila l\'elemento?</string>
+    <string name="confirm_prefill_item_">L\'elemento \'%s\' ha questo codice a barre. Precompilare i dati?</string>
+    <string name="open_in_open_food_facts">Apri in Open Food Facts</string>
 </resources>
