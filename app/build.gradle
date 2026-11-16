@@ -75,6 +75,9 @@ dependencies {
     implementation project(path: ':item-lending')
     implementation project(path: ':settings')
     implementation libs.androidx.documentfile
+    // pin activity >= 1.8 app-side: the navigator's predictive-back
+    // integration (handleOnBackStarted/Progressed) needs those APIs available
+    implementation libs.androidx.activity
     implementation libs.photo.view
     implementation libs.a.poi.spreadsheet
     implementation libs.mpandroidchart

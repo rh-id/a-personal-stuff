@@ -29,7 +29,6 @@ import m.co.rh.id.a_personal_stuff.barcode.ui.NavBarcodeConfig;
 import m.co.rh.id.a_personal_stuff.base.constants.Routes;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.ImageViewPage;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.InputSVDialog;
-import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.ui.page.common.SelectionPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenanceDetailPage;
 import m.co.rh.id.a_personal_stuff.item_maintenance.ui.page.ItemMaintenancesPage;
@@ -107,7 +106,6 @@ public class NavigatorProvider implements ProviderDisposable {
         navMap.put(Routes.ITEM_LENDING_DETAIL_PAGE, (args, activity) -> new ItemLendingDetailPage());
         navMap.put(Routes.COMMON_IMAGEVIEW, (args, activity) -> new ImageViewPage());
         navMap.put(Routes.COMMON_SELECTION, (args, activity) -> new SelectionPage());
-        navMap.put(Routes.COMMON_PROGRESS_DIALOG, (args, activity) -> new ProgressSVDialog());
         navMap.put(Routes.COMMON_INPUT_DIALOG, (args, activity) -> new InputSVDialog());
         navMap.put(Routes.COMMON_EXPORT_OPTIONS_DIALOG, (args, activity) -> new ExportOptionsSVDialog());
         navMap.putAll(mNavExtDialogConfig.getNavMap());

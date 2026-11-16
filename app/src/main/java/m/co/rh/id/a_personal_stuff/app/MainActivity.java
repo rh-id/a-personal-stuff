@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.Window;
 
+import androidx.activity.BackEventCompat;
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,6 +28,9 @@ import m.co.rh.id.a_personal_stuff.base.R;
 import m.co.rh.id.a_personal_stuff.base.provider.RxProviderModule;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
+import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavBackEvent;
+import m.co.rh.id.anavigator.component.NavOnRouteChangedListener;
 import m.co.rh.id.aprovider.Provider;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,6 +40,8 @@ public class MainActivity extends AppCompatActivity {
     private SettingsSharedPreferences mSettingsSharedPreferences;
     private AppNotificationHandler mAppNotificationHandler;
     private BehaviorSubject<Boolean> mRebuildUi;
+    private INavigator mNavigator;
+    private NavOnRouteChangedListener mRouteChangedListener;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -98,14 +104,58 @@ public class MainActivity extends AppCompatActivity {
                 mSettingsSharedPreferences.getSelectedThemeFlow().observeOn(AndroidSchedulers.mainThread())
                         .subscribe(AppCompatDelegate::setDefaultNightMode));
 
-        getOnBackPressedDispatcher().addCallback(this,
-                new OnBackPressedCallback(true) {
-                    @Override
-                    public void handleOnBackPressed() {
-                        BaseApplication.of(MainActivity.this)
-                                .getNavigator(MainActivity.this).onBackPressed();
-                    }
-                });
+        // the navigator is built synchronously in NavigatorProvider's
+        // constructor, so it is non-null here (still before super.onCreate,
+        // matching the provider resolution above)
+        mNavigator = BaseApplication.of(this).getNavigator(this);
+        // Predictive-back wiring: ONE callback registered once for the whole
+        // activity lifetime (the dispatcher removes it on destroy). The
+        // gesture commit (or legacy button press) rides the legacy
+        // navigator.onBackPressed() - no separate commit path - while the
+        // progress/cancel events are forwarded so pages can animate the
+        // gesture. Requires the manifest opt-in
+        // android:enableOnBackInvokedCallback="true" (API 33+).
+        final OnBackPressedCallback callback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                // pops the route or forwards to the current page's
+                // NavOnBackPressed
+                mNavigator.onBackPressed();
+            }
+
+            @Override
+            public void handleOnBackStarted(@NonNull BackEventCompat backEvent) {
+                mNavigator.onBackStarted(toNavBackEvent(backEvent));
+            }
+
+            @Override
+            public void handleOnBackProgressed(@NonNull BackEventCompat backEvent) {
+                mNavigator.onBackProgressed(toNavBackEvent(backEvent));
+            }
+
+            @Override
+            public void handleOnBackCancelled() {
+                mNavigator.onBackCancelled();
+            }
+
+            // NOTE: gesture-event forwarding is safe on all supported
+            // a-navigator versions: v0.0.76+ contains the fix (lazy
+            // speculative-pop arming). Background: Android 16 (API 36)
+            // dispatches synthetic predictive-back gesture events for plain
+            // button/keycode back presses; forwarding them arms the
+            // navigator's speculative-pop path whose commit animation used to
+            // freeze the popped view over the revealed page
+            // (fixed in a-navigator v0.0.76).
+        };
+        getOnBackPressedDispatcher().addCallback(this, callback);
+        // the single enabled-state sync point: fires on every push/pop AND
+        // once after a saved-state restore (previous == null, the navigator
+        // announces restores); the immediate sync below covers the initial
+        // window before that restore announcement arrives
+        mRouteChangedListener = (previous, current) ->
+                callback.setEnabled(mNavigator.shouldInterceptBack());
+        mNavigator.addOnRouteChangedListener(mRouteChangedListener);
+        callback.setEnabled(mNavigator.shouldInterceptBack());
         mAppNotificationHandler.processNotification(getIntent());
         super.onCreate(savedInstanceState);
         applyStatusBarIconAppearance();
@@ -152,9 +202,24 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        // load-bearing leak guard: the navigator is application-scoped
+        // (registered in NavigatorProvider) and outlives this activity, so
+        // the route-changed listener must not retain it. Removed BEFORE the
+        // provider disposal below.
+        if (mRouteChangedListener != null) {
+            mNavigator.removeOnRouteChangedListener(mRouteChangedListener);
+            mRouteChangedListener = null;
+        }
         mProvider.dispose();
         mProvider = null;
         mRebuildUi.onComplete();
         mRebuildUi = null;
+    }
+
+    private static NavBackEvent toNavBackEvent(BackEventCompat backEvent) {
+        return new NavBackEvent(
+                backEvent.getTouchX(),
+                backEvent.getTouchY(),
+                backEvent.getProgress());
     }
 }

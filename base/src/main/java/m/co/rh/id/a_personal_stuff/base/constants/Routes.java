@@ -28,7 +28,6 @@ public class Routes {
     public static final String ITEM_LENDING_DETAIL_PAGE = "/item-lending/detail";
     public static final String COMMON_IMAGEVIEW = "/common/imageView";
     public static final String COMMON_SELECTION = "/common/selection";
-    public static final String COMMON_PROGRESS_DIALOG = "/common/progressDialog";
     public static final String COMMON_INPUT_DIALOG = "/common/inputDialog";
     public static final String COMMON_EXPORT_OPTIONS_DIALOG = "/common/exportOptionsDialog";
 

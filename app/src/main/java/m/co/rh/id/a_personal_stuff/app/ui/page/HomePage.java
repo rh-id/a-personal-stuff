@@ -46,7 +46,6 @@ import m.co.rh.id.a_personal_stuff.app.provider.command.ExportSpreadsheetCmd;
 import m.co.rh.id.a_personal_stuff.app.provider.command.ImportCmd;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.base.ui.component.AppBarSV;
-import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.util.UiUtils;
 import m.co.rh.id.a_personal_stuff.item_checklist.ui.page.ItemChecklistDetailPage;
 import m.co.rh.id.a_personal_stuff.item_lending.ui.page.ItemLendingsPage;
@@ -61,9 +60,12 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavBackPressResult;
 import m.co.rh.id.anavigator.component.NavOnActivityResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 import m.co.rh.id.anavigator.component.RequireComponent;
+import m.co.rh.id.anavigator.extension.dialog.ui.NavExtDialogConfig;
+import m.co.rh.id.anavigator.extension.dialog.ui.ProgressSVDialog;
 import m.co.rh.id.aprovider.Provider;
 
 public class HomePage extends StatefulView<Activity> implements RequireComponent<Provider>, NavOnBackPressed<Activity>, NavOnActivityResult<Activity>, DrawerLayout.DrawerListener, View.OnClickListener {
@@ -92,6 +94,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
     private transient ILogger mLogger;
     private transient InventoryStatsCalculator mInventoryStatsCalculator;
     private transient SettingsSharedPreferences mSettingsSharedPreferences;
+    private transient NavExtDialogConfig mNavExtDialogConfig;
 
     private transient DrawerLayout mDrawerLayout;
     private transient View.OnClickListener mOnNavigationClicked;
@@ -141,6 +144,7 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mLogger = mSvProvider.get(ILogger.class);
         mInventoryStatsCalculator = mSvProvider.get(InventoryStatsCalculator.class);
         mSettingsSharedPreferences = mSvProvider.get(SettingsSharedPreferences.class);
+        mNavExtDialogConfig = mSvProvider.get(NavExtDialogConfig.class);
         mOnNavigationClicked = view -> {
             if (!mDrawerLayout.isOpen()) {
                 mDrawerLayout.open();
@@ -346,20 +350,37 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
         mLocale = null;
     }
 
+    /**
+     * Home handles every back scenario itself and always returns
+     * {@link NavBackPressResult#noPop()}: under the v0.0.75 contract the
+     * navigator owns the pops, so each branch declares "keep the stack" and
+     * performs its own outcome. Returning null instead would hand the
+     * decision back to the navigator, whose default is a pop — and on the
+     * empty home stack that degenerates into popInitialRoute →
+     * exitWhenStackEmpty → a second finishActivity (double-finish), so noPop()
+     * is load-bearing in every branch below.
+     */
     @Override
-    public void onBackPressed(View currentView, Activity activity, INavigator navigator) {
+    public NavBackPressResult onBackPressed(View currentView, Activity activity, INavigator navigator) {
         if (mDrawerLayout.isOpen()) {
+            // back with the drawer open closes the drawer, nothing else
             mDrawerLayout.close();
-        } else {
-            long currentMilis = System.currentTimeMillis();
-            if ((currentMilis - mLastBackPressMilis) < 1000) {
-                navigator.finishActivity(null);
-            } else {
-                mLastBackPressMilis = currentMilis;
-                mSvProvider.get(ILogger.class).i(TAG,
-                        activity.getString(R.string.toast_back_press_exit));
-            }
+            return NavBackPressResult.noPop();
         }
+        long currentMilis = System.currentTimeMillis();
+        if ((currentMilis - mLastBackPressMilis) < 1000) {
+            // double-back within the window exits: this activity is the last
+            // route, so noPop() (NOT null) is required here — null would let
+            // the navigator pop the empty stack and trigger its
+            // popInitialRoute/exitWhenStackEmpty path on top of the finish
+            navigator.finishActivity(null);
+            return NavBackPressResult.noPop();
+        }
+        // single back: hint the user that another back within 1s exits
+        mLastBackPressMilis = currentMilis;
+        mSvProvider.get(ILogger.class).i(TAG,
+                activity.getString(R.string.toast_back_press_exit));
+        return NavBackPressResult.noPop();
     }
 
     @Override
@@ -686,14 +707,17 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     private void doExport(Activity activity) {
         setLoading(true);
-        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+        // library progress dialog (a-navigator v0.0.75): the typed Args
+        // streams live message updates via updateMessage
+        ProgressSVDialog.Args args = mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.export_data),
                 activity.getString(R.string.export_progress_gathering));
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mNavigator.push(mNavExtDialogConfig.route_progressDialog(), args);
+        // updateMessage is synchronized and internally posts to the main
+        // thread (latest-wins), so no observeOn is needed here
         mRxDisposer.add("home_export_progress",
                 mExportCmd.getProgressFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        .subscribe(args::updateMessage, throwable -> {
                         })
         );
         mRxDisposer.add("home_export_execute",
@@ -725,16 +749,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
      */
     private void doExportSpreadsheet(Activity activity, boolean includeArchived) {
         showExportingState();
-        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+        // library progress dialog (a-navigator v0.0.75): the typed Args
+        // streams live message updates via updateMessage
+        ProgressSVDialog.Args args = mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.export_spreadsheet),
                 activity.getString(R.string.export_spreadsheet_progress_writing));
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mNavigator.push(mNavExtDialogConfig.route_progressDialog(), args);
         // keyed RxDisposer subscriptions: a re-attach replaces the previous
-        // subscription per key instead of stacking duplicates
+        // subscription per key instead of stacking duplicates.
+        // updateMessage is thread-safe (posts to the main thread itself), so
+        // the progress subscription needs no observeOn
         mRxDisposer.add("home_export_spreadsheet_progress",
                 mExportSpreadsheetCmd.getProgressFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        .subscribe(args::updateMessage, throwable -> {
                         })
         );
         mRxDisposer.add("home_export_spreadsheet_execute",
@@ -763,16 +790,19 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
      */
     private void doExportPdfReport(Activity activity, boolean includeArchived) {
         showExportingState();
-        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+        // library progress dialog (a-navigator v0.0.75): the typed Args
+        // streams live message updates via updateMessage
+        ProgressSVDialog.Args args = mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.export_pdf_report),
                 activity.getString(R.string.export_pdf_report_progress_writing));
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mNavigator.push(mNavExtDialogConfig.route_progressDialog(), args);
         // keyed RxDisposer subscriptions: a re-attach replaces the previous
-        // subscription per key instead of stacking duplicates
+        // subscription per key instead of stacking duplicates.
+        // updateMessage is thread-safe (posts to the main thread itself), so
+        // the progress subscription needs no observeOn
         mRxDisposer.add("home_export_pdf_report_progress",
                 mExportPdfReportCmd.getProgressFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        .subscribe(args::updateMessage, throwable -> {
                         })
         );
         mRxDisposer.add("home_export_pdf_report_execute",
@@ -803,14 +833,17 @@ public class HomePage extends StatefulView<Activity> implements RequireComponent
 
     private void performImport(Activity activity, Uri uri) {
         setLoading(true);
-        ProgressSVDialog.Args args = ProgressSVDialog.Args.newArgs(
+        // library progress dialog (a-navigator v0.0.75): the typed Args
+        // streams live message updates via updateMessage
+        ProgressSVDialog.Args args = mNavExtDialogConfig.args_progressDialog(
                 activity.getString(R.string.import_data),
                 activity.getString(R.string.import_progress_extracting));
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG, args);
+        mNavigator.push(mNavExtDialogConfig.route_progressDialog(), args);
+        // updateMessage is synchronized and internally posts to the main
+        // thread (latest-wins), so no observeOn is needed here
         mRxDisposer.add("home_import_progress",
                 mImportCmd.getProgressFlow()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe(args.getProgressSubject()::onNext, throwable -> {
+                        .subscribe(args::updateMessage, throwable -> {
                         })
         );
         mRxDisposer.add("home_import_execute",

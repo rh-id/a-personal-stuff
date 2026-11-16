@@ -20,6 +20,7 @@ import m.co.rh.id.anavigator.NavRoute;
 import m.co.rh.id.anavigator.StatefulView;
 import m.co.rh.id.anavigator.annotation.NavInject;
 import m.co.rh.id.anavigator.component.INavigator;
+import m.co.rh.id.anavigator.component.NavBackPressResult;
 import m.co.rh.id.anavigator.component.NavOnBackPressed;
 
 public class ImageViewPage extends StatefulView<Activity>
@@ -120,12 +121,15 @@ public class ImageViewPage extends StatefulView<Activity>
     }
 
     @Override
-    public void onBackPressed(View currentView, Activity activity, INavigator navigator) {
+    public NavBackPressResult onBackPressed(View currentView, Activity activity, INavigator navigator) {
         // Handle the device back button/gesture the same way as the on-screen
-        // Back button: return the index the user ended on. Without this,
-        // a-navigator would pop with a null result (see Navigator.onBackPressed)
-        // and the launcher's index sync would never fire.
-        popWithResult();
+        // Back button: declare the outcome via the v0.0.75 NavBackPressResult
+        // contract instead of popping from inside the page. pop(mCurrentIndex)
+        // tells the navigator to perform the pop carrying the index the user
+        // ended on, so the launcher's pop callback receives it with the exact
+        // same NavPopCallback delivery as the on-screen button's
+        // mNavigator.pop(mCurrentIndex) path (see popWithResult).
+        return NavBackPressResult.pop(mCurrentIndex);
     }
 
     /**

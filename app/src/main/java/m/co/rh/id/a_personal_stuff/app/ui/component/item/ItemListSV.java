@@ -38,7 +38,6 @@ import m.co.rh.id.a_personal_stuff.base.entity.ItemImage;
 import m.co.rh.id.a_personal_stuff.base.model.ItemState;
 import m.co.rh.id.a_personal_stuff.base.provider.IStatefulViewProvider;
 import m.co.rh.id.a_personal_stuff.base.provider.notifier.ItemChangeNotifier;
-import m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog;
 import m.co.rh.id.a_personal_stuff.base.rx.RxDisposer;
 import m.co.rh.id.a_personal_stuff.item_usage.provider.notifier.ItemUsageChangeNotifier;
 import m.co.rh.id.a_personal_stuff.settings.provider.component.SettingsSharedPreferences;
@@ -400,8 +399,10 @@ public class ItemListSV extends StatefulView<Activity> implements RequireCompone
         Context context = mSvProvider.getContext();
         String title = context.getString(R.string.title_duplicate);
         String message = context.getString(R.string.progress_duplicate);
-        mNavigator.push(Routes.COMMON_PROGRESS_DIALOG,
-                ProgressSVDialog.Args.newArgs(title, message));
+        // library progress dialog (a-navigator v0.0.75), same named-route
+        // pattern as the confirm dialog above
+        mNavigator.push(mNavExtDialogConfig.route_progressDialog(),
+                mNavExtDialogConfig.args_progressDialog(title, message));
         mRxDisposer.add("duplicateItem",
                 mDuplicateItemCmd.execute(itemState)
                         .observeOn(AndroidSchedulers.mainThread())

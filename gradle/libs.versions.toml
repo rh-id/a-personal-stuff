@@ -2,7 +2,7 @@
 agp = "9.4.1"
 room = "2.7.2"
 work = "2.10.5"
-a-navigator = "v0.0.72"
+a-navigator = "v0.0.76"
 a-provider = "v0.0.27"
 a-logger = "v0.0.4"
 rx-utils = "v0.0.3"
@@ -13,6 +13,7 @@ zxing = "3.5.4"
 mpandroidchart = "v3.2.0"
 rxjava = "3.1.12"
 rxandroid = "3.0.2"
+androidx-activity = "1.8.2"
 appcompat = "1.7.1"
 material = "1.13.0"
 constraintlayout = "2.2.2"
@@ -45,6 +46,7 @@ zxing-core = { group = "com.google.zxing", name = "core", version.ref = "zxing" 
 mpandroidchart = { group = "com.github.PhilJay", name = "MPAndroidChart", version.ref = "mpandroidchart" }
 rxjava = { group = "io.reactivex.rxjava3", name = "rxjava", version.ref = "rxjava" }
 rxandroid = { group = "io.reactivex.rxjava3", name = "rxandroid", version.ref = "rxandroid" }
+androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "androidx-activity" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }

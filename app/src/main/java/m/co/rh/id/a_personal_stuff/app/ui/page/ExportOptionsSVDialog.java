@@ -18,8 +18,8 @@ import m.co.rh.id.anavigator.component.INavigator;
 import m.co.rh.id.anavigator.component.RequireNavRoute;
 
 /**
- * Pre-export options dialog (StatefulViewDialog, same pattern as
- * {@link m.co.rh.id.a_personal_stuff.base.ui.page.common.ProgressSVDialog}):
+ * Pre-export options dialog (StatefulViewDialog, same pattern as the
+ * library's {@link m.co.rh.id.anavigator.extension.dialog.ui.ProgressSVDialog}):
  * shows the export's title plus the "Include archived items" checkbox and
  * pops with a Boolean (true = include archived) when confirmed. Cancel
  * (button, BACK or outside tap) pops with a null result, which the caller
@@ -27,7 +27,7 @@ import m.co.rh.id.anavigator.component.RequireNavRoute;
  * exports unless explicitly requested.
  * <p>
  * Pushed via Routes.COMMON_EXPORT_OPTIONS_DIALOG (same named-route pattern
- * as ProgressSVDialog/InputSVDialog).
+ * as the a-navigator-extension-dialog dialogs and the base InputSVDialog).
  */
 public class ExportOptionsSVDialog extends StatefulViewDialog<Activity> implements RequireNavRoute {
 
