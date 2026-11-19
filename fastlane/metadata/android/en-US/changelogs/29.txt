@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Features:
+* Statistics: monthly spend, most consumed, inventory value, expired items
+* Archive items: hidden from lists, search, statistics; view/restore on Archived items page; exports can include archived
+* Scan barcode to recall the item and prefill data; open it in Open Food Facts
+* Predictive back gesture (Android 13+)
+
+Fixes:
+* Status bar icons invisible in light mode
+* PDF report export icon corrupted

@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Nýir eiginleikar:
+* Tölfræði: útgjöld á mánuði, mest notuð, verðmæti birgða, útrunnir hlutir
+* Geymsla: faldir af listum, leit og tölfræði; síðan Geymdir hlutir: sjá/endurheimta; útflutningur getur innifalið geymda hluti
+* Skönnun á strikamerki: finna hlut og fylla út gögnin; opna hlut í Open Food Facts
+* Predictive back (Android 13+)
+
+Villuleiðréttingar:
+* Táknmerki stöðuslárinnar ósýnileg í ljósum ham
+* Útflutningstákn PDF-skýrslunnar skemmt

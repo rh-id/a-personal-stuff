@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Fitur Baru:
+* Statistik: pengeluaran/bulan, paling banyak dipakai, nilai inventaris, item kedaluwarsa
+* Arsip item: disembunyikan dari daftar, pencarian, statistik; halaman Item yang diarsipkan: lihat/pulihkan; ekspor bisa menyertakan item terarsip
+* Pindai barcode: temukan item cocok, isi awal datanya; buka item di Open Food Facts
+* Kembali prediktif (Android 13+)
+
+Perbaikan:
+* Ikon bilah status tak terlihat di mode terang
+* Ikon ekspor laporan PDF rusak

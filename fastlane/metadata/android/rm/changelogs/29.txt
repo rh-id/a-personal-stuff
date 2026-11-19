@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Novas funcziuns:
+* Statistica: expensas mais, il pli utilisà, valur provisiun, objects scadids
+* Arcunar: zuppentads en listas/tschertga/statistica; pagina Objects arcunads: vesair/restituir; l'export po includair arcunads
+* Scannada da code da stgalin: chattar l'object, preemplenir las datas; avrir en Open Food Facts
+* Predictive Back (Android 13+)
+
+Correcziuns:
+* Icnas statusbar invisiblas en modus clar
+* Icna export rapport PDF corrumpida

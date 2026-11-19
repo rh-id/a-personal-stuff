@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Nye funksjoner:
+* Statistikk: utgifter per måned, mest forbrukt, beholdningsverdi, utløpte gjenstander
+* Arkivering: skjules fra lister, søk og statistikk; siden Arkiverte gjenstander: vis/gjenopprett; eksport kan inkludere arkiverte
+* Strekkodeskanning: finn matchende gjenstand, fyll inn dataene; åpne i Open Food Facts
+* Prediktiv tilbakegest (Android 13+)
+
+Feilrettinger:
+* Statusfeltikoner usynlige i lys modus
+* PDF-rapporteksportikon skadet

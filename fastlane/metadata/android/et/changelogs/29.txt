@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Uued funktsioonid:
+* Statistika: kuukulud, enim tarbitud, laoseisu väärtus, aegunud esemed
+* Arhiveeritud esemed: peidetud loenditest/otsingust/statistikast; uuel lehel vaadata/taastada; eksport võib neid hõlmata
+* Triipkoodi skannimine leiab eseme ja eeltäitab andmed; ava Open Food Factsis
+* Ennustav tagasiliikumine (Android 13+)
+
+Veaparandused:
+* Olekurriba ikoonid heledas reziimis nähtamatud
+* PDF-aruande ekspordiikoon kahjustatud

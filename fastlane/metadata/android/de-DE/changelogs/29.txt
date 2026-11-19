@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Neue Funktionen:
+* Statistik: Ausgaben/Monat, meistverbraucht, Inventarwert, abgelaufene Artikel
+* Archivieren: aus Listen/Suche/Statistik ausgeblendet; Archivierte Artikel: ansehen/wiederherstellen; Export inkl. Archivierter
+* Barcode-Scan: Artikel finden, Daten vorbelegen; mit Barcode in Open Food Facts öffnen
+* Predictive Back (Android 13+)
+
+Fehlerbehebungen:
+* Status-Icons im hellen Modus unsichtbar
+* PDF-Berichts-Export-Symbol beschädigt

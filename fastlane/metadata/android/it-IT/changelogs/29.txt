@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Nuove funzionalità:
+* Statistiche: spese/mese, più consumati, valore inventario, scaduti
+* Archiviazione: nascosti da elenchi/ricerca/statistiche; pagina Elementi archiviati: vedi/ripristina; export può includere archiviati
+* Scan codice a barre: trova l'elemento, precompila i dati; aprilo in Open Food Facts
+* Back predittivo (Android 13+)
+
+Correzioni:
+* Icone barra di stato invisibili in modalità chiara
+* Icona esportazione report PDF corrotta

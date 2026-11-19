@@ -1,0 +1,11 @@
+Release 2.5.0+29
+
+Nouvelles fonctionnalités :
+* Statistiques : dépenses/mois, plus consommés, valeur inventaire, expirés
+* Archivage : masqué des listes/recherche/statistiques ; page Éléments archivés : voir/restaurer ; export possible avec archives
+* Scan code-barres : retrouver l'élément, préremplir ses données ; ouvrir dans Open Food Facts
+* Retour prédictif (Android 13+)
+
+Corrections :
+* Icônes barre d'état invisibles en mode clair
+* Icône export rapport PDF corrompue
